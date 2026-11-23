@@ -4,6 +4,20 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — CI & rilis v1.0.0
+
+### Ditambahkan
+
+- `.github/workflows/ci.yml`: otomatis menjalankan ktlint 1.8.0 (checksum terverifikasi), `:app:assembleDebug`, dan `:app:testDebugUnitTest` pada push ke `main`, pull request, dan trigger manual.
+- Badge status CI di `README.md`.
+- Tag rilis beranotasi `v1.0.0` pada commit versi stabil ini.
+
+### Tidak diubah
+
+- UI, kontrak bottom navigation, tema otomatis, alur data, dan konfigurasi rilis tetap seperti versi terverifikasi.
+
+---
+
 ## 23 Nov 2026 — Verifikasi smoke test debug final
 
 ### Verifikasi

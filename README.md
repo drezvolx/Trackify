@@ -1,5 +1,7 @@
 # Trackify
 
+[![CI](https://github.com/drezvolx/Trackify/actions/workflows/ci.yml/badge.svg)](https://github.com/drezvolx/Trackify/actions/workflows/ci.yml)
+
 Aplikasi Android **offline-first** untuk kurir dan pengemudi pengiriman barang. Trackify membantu mencatat paket harian, menghitung pendapatan, menyimpan lokasi pelanggan, dan mengelola catatan lapangan — semuanya tersimpan lokal di perangkat.
 
 ## Fitur
