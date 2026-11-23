@@ -4,6 +4,27 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Fase 4: sisa usulan per tab
+
+### Ditambahkan
+
+- Home: batang grafik 7 hari kini bisa dipilih; ringkasan hari terpilih tampil di bawah label, dengan warna batang aktif memakai `primary`.
+- Catatan: tombol **Pilih** mengaktifkan mode seleksi berisi checkbox per catatan, aksi **Tandai selesai**, dan hapus massal lewat konfirmasi `TrackifyDialog`.
+- Setelan: pemilih bulan CSV memakai tombol `‹`/`›`; subtitle ekspor mengikuti bulan yang dipilih dan ekspor memakai `exportCsvForMonth`.
+
+### Diubah
+
+- `TrackifyEngine.filterNotes` menerima daftar lokasi dan ikut mencocokkan `customerName` saat mencari catatan.
+- Status "Pembagian gajian" tampil sebagai teks `2x (info)`, bukan pill menyerupai tombol.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` `BUILD SUCCESSFUL`; 14/14 tes lulus.
+- Grep kontrak tetap kosong.
+- Smoke test perangkat: grafik berpindah ke "Sel 11-17 • 91 paket" saat batang diketuk, mode Pilih menampilkan aksi massal dan `Hapus (1)` setelah satu catatan dicentang, Setelan menampilkan `Bulan CSV` serta `2x (info)`.
+
+---
+
 ## 23 Nov 2026 — Fase 3: penyempurnaan per tab
 
 ### Ditambahkan

@@ -51,9 +51,12 @@ import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 import java.text.NumberFormat
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 private val setIdLocale = Locale.forLanguageTag("id-ID")
+private val settingsMonthFmt = DateTimeFormatter.ofPattern("MMMM yyyy", setIdLocale)
 private fun Double.setIdr(): String {
     val nf = NumberFormat.getCurrencyInstance(setIdLocale)
     nf.maximumFractionDigits = 0
@@ -72,7 +75,7 @@ fun SettingsScreen(
     onUpdateBonus: (Double) -> Unit = {},
     onUpdateTarget: (Double) -> Unit = {},
     onToggleReminder: (Boolean) -> Unit = {},
-    onExportCsv: (Uri, (String) -> Unit) -> Unit = { _, _ -> },
+    onExportCsv: (Uri, YearMonth, (String) -> Unit) -> Unit = { _, _, _ -> },
     onBackupData: (Uri, (String) -> Unit) -> Unit = { _, _ -> },
     onRestoreData: (Uri, (String) -> Unit) -> Unit = { _, _ -> },
     onResetData: () -> Unit = {},
@@ -86,6 +89,8 @@ fun SettingsScreen(
     var remVal by rememberSaveable(dailyReminderEnabled) { mutableStateOf(dailyReminderEnabled) }
     var showResetConfirm by remember { mutableStateOf(false) }
     var showRestoreConfirm by remember { mutableStateOf(false) }
+    var csvMonthText by rememberSaveable { mutableStateOf(YearMonth.now().toString()) }
+    val csvMonth = runCatching { YearMonth.parse(csvMonthText) }.getOrDefault(YearMonth.now())
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -101,7 +106,7 @@ fun SettingsScreen(
     }
 
     val csvLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
-        if (uri != null) onExportCsv(uri) { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+        if (uri != null) onExportCsv(uri, csvMonth) { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
     }
     val backupLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
@@ -216,21 +221,18 @@ fun SettingsScreen(
                                     fontWeight = FontWeight.Medium,
                                     color = scheme.onSurface,
                                 )
-                                Text("Tgl 15 dan akhir bulan", fontSize = 12.sp, color = scheme.onSurfaceVariant)
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .border(1.dp, scheme.outline, CircleShape)
-                                    .padding(horizontal = 10.dp, vertical = 2.dp),
-                            ) {
                                 Text(
-                                    "2x",
+                                    "Tgl 15 dan akhir bulan • informasi",
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
                                     color = scheme.onSurfaceVariant,
                                 )
                             }
+                            Text(
+                                "2x (info)",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = scheme.onSurfaceVariant,
+                            )
                         }
                     }
                 }
@@ -309,6 +311,43 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
+                            Text(
+                                "Bulan CSV",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = scheme.onSurface,
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .clickable { csvMonthText = csvMonth.minusMonths(1).toString() }
+                                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                                ) {
+                                    Text("‹", fontSize = 18.sp, color = scheme.onSurfaceVariant)
+                                }
+                                Text(
+                                    csvMonth.format(settingsMonthFmt),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = scheme.onSurface,
+                                    modifier = Modifier.padding(horizontal = 6.dp),
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .clickable { csvMonthText = csvMonth.plusMonths(1).toString() }
+                                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                                ) {
+                                    Text("›", fontSize = 18.sp, color = scheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Column {
                                 Text(
                                     "Ekspor CSV",
@@ -316,7 +355,11 @@ fun SettingsScreen(
                                     fontWeight = FontWeight.Medium,
                                     color = scheme.onSurface,
                                 )
-                                Text("Rekap bulan yang dipilih", fontSize = 12.sp, color = scheme.onSurfaceVariant)
+                                Text(
+                                    "Rekap ${csvMonth.format(settingsMonthFmt)}",
+                                    fontSize = 12.sp,
+                                    color = scheme.onSurfaceVariant,
+                                )
                             }
                             Box(
                                 modifier = Modifier

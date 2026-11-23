@@ -317,6 +317,20 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         }
     }
 
+    fun exportCsvForMonth(uri: Uri, month: YearMonth, onResult: (String) -> Unit) {
+        viewModelScope.launch {
+            val prefix = month.toString()
+            val logs = repository.dumpLogs().filter { it.date.startsWith(prefix) }
+            val csv = TrackifyEngine.encodeMonthlyCsv(logs)
+            val ok = runCatching {
+                getApplication<Application>().contentResolver.openOutputStream(uri)?.use { out ->
+                    out.write(csv.toByteArray(Charsets.UTF_8))
+                } != null
+            }.getOrDefault(false)
+            onResult(if (ok) "CSV berhasil diekspor" else "Gagal mengekspor CSV")
+        }
+    }
+
     fun exportBackup(uri: Uri, onResult: (String) -> Unit) {
         viewModelScope.launch {
             // Backup > Export all data, not only the open month.

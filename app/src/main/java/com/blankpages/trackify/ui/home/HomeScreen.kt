@@ -26,7 +26,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -125,6 +129,8 @@ fun HomeScreen(
         }
     }
     val max7 = last7Days.maxOfOrNull { it.third }?.coerceAtLeast(1) ?: 1
+    var selectedBarIndex by rememberSaveable { mutableIntStateOf(last7Days.lastIndex) }
+    val selectedBar = last7Days.getOrNull(selectedBarIndex) ?: last7Days.last()
 
     LazyColumn(
         modifier = Modifier
@@ -763,7 +769,7 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.Bottom,
                         ) {
-                            last7Days.forEach { (dStr, _, sentVal) ->
+                            last7Days.forEachIndexed { index, (dStr, _, sentVal) ->
                                 val isToday = dStr == activeToday.date
                                 val frac = if (sentVal > 0) {
                                     (sentVal.toFloat() / max7).coerceIn(0.08f, 1f)
@@ -773,7 +779,8 @@ fun HomeScreen(
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .fillMaxHeight(),
+                                        .fillMaxHeight()
+                                        .clickable { selectedBarIndex = index },
                                     contentAlignment = Alignment.BottomCenter,
                                 ) {
                                     Box(
@@ -788,24 +795,40 @@ fun HomeScreen(
                                                     bottomEnd = 3.dp,
                                                 ),
                                             )
-                                            .background(if (isToday) scheme.onSurface else scheme.surfaceVariant),
+                                            .background(
+                                                when {
+                                                    selectedBarIndex == index -> scheme.primary
+                                                    isToday -> scheme.onSurface
+                                                    else -> scheme.surfaceVariant
+                                                },
+                                            ),
                                     )
                                 }
                             }
                         }
 
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            last7Days.forEach { (_, lbl, _) ->
+                            last7Days.forEachIndexed { index, (_, lbl, _) ->
+                                val isSelected = selectedBarIndex == index
                                 Text(
                                     text = lbl,
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = scheme.onSurfaceVariant,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                                    color = if (isSelected) scheme.onSurface else scheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.weight(1f),
                                 )
                             }
                         }
+
+                        Text(
+                            text = "${selectedBar.second} ${selectedBar.first.takeLast(5)} • " +
+                                "${selectedBar.third} paket",
+                            fontSize = 12.sp,
+                            color = scheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                     }
                 }
             }

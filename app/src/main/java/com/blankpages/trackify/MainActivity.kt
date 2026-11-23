@@ -135,7 +135,7 @@ class MainActivity : ComponentActivity() {
                                 onUpdateBonus = vm::updateDefaultBonus,
                                 onUpdateTarget = vm::updateTargetAmount,
                                 onToggleReminder = vm::setDailyReminder,
-                                onExportCsv = vm::exportMonthlyCsv,
+                                onExportCsv = vm::exportCsvForMonth,
                                 onBackupData = vm::exportBackup,
                                 onRestoreData = vm::importBackup,
                                 onResetData = {

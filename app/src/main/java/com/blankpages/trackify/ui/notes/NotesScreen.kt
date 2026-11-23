@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -72,11 +73,15 @@ fun NotesScreen(
     var editingNote by remember { mutableStateOf<CourierNote?>(null) }
     var isNewNote by remember { mutableStateOf(false) }
     var selectedTemplate by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectionMode by remember { mutableStateOf(false) }
+    var selectedIds by remember { mutableStateOf(emptySet<Int>()) }
+    var showBulkDeleteConfirm by remember { mutableStateOf(false) }
 
     val locationsById = remember(locations) { locations.associateBy { it.id } }
-    val filteredNotes = remember(notes, query, filterMode) {
-        TrackifyEngine.filterNotes(notes, query, filterMode)
+    val filteredNotes = remember(notes, query, filterMode, locations) {
+        TrackifyEngine.filterNotes(notes, query, filterMode, locations)
     }
+    val selectedNotes = remember(notes, selectedIds) { notes.filter { it.id in selectedIds } }
 
     LazyColumn(
         modifier = Modifier
@@ -98,6 +103,14 @@ fun NotesScreen(
                         text = "Catatan",
                         modifier = Modifier.weight(1f),
                     )
+                    TextButton(
+                        onClick = {
+                            selectionMode = !selectionMode
+                            selectedIds = emptySet()
+                        },
+                    ) {
+                        Text(if (selectionMode) "Batal" else "Pilih")
+                    }
                     Button(
                         onClick = {
                             isNewNote = true
@@ -208,6 +221,29 @@ fun NotesScreen(
                         )
                     }
                 }
+
+                if (selectionMode) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        TextButton(
+                            onClick = {
+                                val today = LocalDate.now().toString()
+                                selectedNotes.forEach { note ->
+                                    onSaveNote(
+                                        note.copy(isResolved = true, updatedAt = today),
+                                        false,
+                                    )
+                                }
+                                selectionMode = false
+                                selectedIds = emptySet()
+                            },
+                            enabled = selectedIds.isNotEmpty(),
+                        ) { Text("Tandai selesai") }
+                        TextButton(
+                            onClick = { showBulkDeleteConfirm = true },
+                            enabled = selectedIds.isNotEmpty(),
+                        ) { Text("Hapus (${selectedIds.size})") }
+                    }
+                }
             }
         }
 
@@ -228,9 +264,13 @@ fun NotesScreen(
             items(filteredNotes, key = { it.id }) { note ->
                 val linkedLoc = note.linkedLocationId?.let { locationsById[it] }
                 TrackifyCard(
-                    onClick = {
-                        isNewNote = false
-                        editingNote = note
+                    onClick = if (selectionMode) {
+                        null
+                    } else {
+                        {
+                            isNewNote = false
+                            editingNote = note
+                        }
                     },
                     borderColor = if (note.isPinned) scheme.primary else scheme.outlineVariant,
                     verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -244,19 +284,33 @@ fun NotesScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.weight(1f),
                         ) {
-                            Checkbox(
-                                checked = note.isResolved,
-                                onCheckedChange = { checked ->
-                                    onSaveNote(
-                                        note.copy(
-                                            isResolved = checked,
-                                            updatedAt = LocalDate.now().toString(),
-                                        ),
-                                        false,
-                                    )
-                                },
-                                modifier = Modifier.size(28.dp),
-                            )
+                            if (selectionMode) {
+                                Checkbox(
+                                    checked = note.id in selectedIds,
+                                    onCheckedChange = { checked ->
+                                        selectedIds = if (checked) {
+                                            selectedIds + note.id
+                                        } else {
+                                            selectedIds - note.id
+                                        }
+                                    },
+                                    modifier = Modifier.size(28.dp),
+                                )
+                            } else {
+                                Checkbox(
+                                    checked = note.isResolved,
+                                    onCheckedChange = { checked ->
+                                        onSaveNote(
+                                            note.copy(
+                                                isResolved = checked,
+                                                updatedAt = LocalDate.now().toString(),
+                                            ),
+                                            false,
+                                        )
+                                    },
+                                    modifier = Modifier.size(28.dp),
+                                )
+                            }
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 text = note.title.ifBlank { "Catatan" },
@@ -269,21 +323,27 @@ fun NotesScreen(
                             )
                         }
 
-                        IconButton(
-                            onClick = {
-                                onSaveNote(
-                                    note.copy(isPinned = !note.isPinned),
-                                    false,
+                        if (!selectionMode) {
+                            IconButton(
+                                onClick = {
+                                    onSaveNote(
+                                        note.copy(isPinned = !note.isPinned),
+                                        false,
+                                    )
+                                },
+                                modifier = Modifier.size(30.dp),
+                            ) {
+                                Icon(
+                                    imageVector = if (note.isPinned) {
+                                        TrackifyIcons.PinFilled
+                                    } else {
+                                        TrackifyIcons.PinOutlined
+                                    },
+                                    contentDescription = "Pin",
+                                    tint = if (note.isPinned) scheme.primary else scheme.onSurfaceVariant,
+                                    modifier = Modifier.size(16.dp),
                                 )
-                            },
-                            modifier = Modifier.size(30.dp),
-                        ) {
-                            Icon(
-                                imageVector = if (note.isPinned) TrackifyIcons.PinFilled else TrackifyIcons.PinOutlined,
-                                contentDescription = "Pin",
-                                tint = if (note.isPinned) scheme.primary else scheme.onSurfaceVariant,
-                                modifier = Modifier.size(16.dp),
-                            )
+                            }
                         }
                     }
 
@@ -343,6 +403,31 @@ fun NotesScreen(
             onDelete = {
                 onDeleteNote(target)
                 editingNote = null
+            },
+        )
+    }
+
+    if (showBulkDeleteConfirm) {
+        TrackifyDialog(
+            onDismissRequest = { showBulkDeleteConfirm = false },
+            title = { Text("Hapus catatan terpilih?") },
+            text = { Text("${selectedIds.size} catatan akan dihapus permanen.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        selectedNotes.forEach(onDeleteNote)
+                        showBulkDeleteConfirm = false
+                        selectionMode = false
+                        selectedIds = emptySet()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = scheme.error,
+                        contentColor = scheme.onError,
+                    ),
+                ) { Text("Hapus permanen") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBulkDeleteConfirm = false }) { Text("Batal") }
             },
         )
     }

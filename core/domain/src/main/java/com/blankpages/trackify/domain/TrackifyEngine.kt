@@ -328,9 +328,15 @@ object TrackifyEngine {
         return result
     }
 
-    fun filterNotes(items: List<CourierNote>, query: String, filterMode: Int = 0): List<CourierNote> {
+    fun filterNotes(
+        items: List<CourierNote>,
+        query: String,
+        filterMode: Int = 0,
+        locations: List<SavedLocation> = emptyList(),
+    ): List<CourierNote> {
         if (items.isEmpty()) return emptyList()
         val q = query.trim()
+        val locationNames = locations.associate { it.id to it.customerName }
         val result = ArrayList<CourierNote>(items.size)
         for (note in items) {
             val matchesStatus = when (filterMode) {
@@ -341,7 +347,8 @@ object TrackifyEngine {
             if (!matchesStatus) continue
             if (q.isNotEmpty() &&
                 !note.title.contains(q, ignoreCase = true) &&
-                !note.content.contains(q, ignoreCase = true)
+                !note.content.contains(q, ignoreCase = true) &&
+                locationNames[note.linkedLocationId]?.contains(q, ignoreCase = true) != true
             ) {
                 continue
             }
