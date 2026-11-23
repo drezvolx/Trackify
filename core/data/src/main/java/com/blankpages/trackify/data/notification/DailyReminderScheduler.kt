@@ -22,12 +22,11 @@ object DailyReminderScheduler {
     private const val REMINDER_HOUR = 20
     private const val REMINDER_MINUTE = 0
 
-    fun hasNotificationPermission(context: Context): Boolean =
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
+    fun hasNotificationPermission(context: Context): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS,
+        ) == PackageManager.PERMISSION_GRANTED
 
     private fun ensureChannel(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
@@ -37,10 +36,10 @@ object DailyReminderScheduler {
             NotificationChannel(
                 CHANNEL_ID,
                 "Pengingat harian",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_DEFAULT,
             ).apply {
                 description = "Pengingat untuk mencatat rekap harian Trackify pukul 20.00"
-            }
+            },
         )
     }
 
@@ -68,7 +67,7 @@ object DailyReminderScheduler {
             set(Calendar.MILLISECOND, 0)
             if (before(now)) add(Calendar.DAY_OF_YEAR, 1)
         }
-        // Alarm inexact tapi tetap dibangunkan saat idle; tidak butuh izin SCHEDULE_EXACT_ALARM.
+        // Alarm > Inexact but wakes on idle; no SCHEDULE_EXACT_ALARM permission needed.
         alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fireAt.timeInMillis, intent)
     }
 
@@ -76,9 +75,11 @@ object DailyReminderScheduler {
         if (!hasNotificationPermission(context)) return
         ensureChannel(context)
 
-        // Modul data tidak boleh bergantung ke :app, jadi buka launcher lewat package manager.
-        val openApp = (context.packageManager.getLaunchIntentForPackage(context.packageName)
-            ?: Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)).apply {
+        // Launcher > Resolve via package manager; :data must not depend on :app.
+        val openApp = (
+            context.packageManager.getLaunchIntentForPackage(context.packageName)
+                ?: Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+            ).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or
@@ -102,7 +103,7 @@ object DailyReminderScheduler {
 class DailyReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         DailyReminderScheduler.notify(context)
-        // Alarm sekali pakai: jadwalkan ulang untuk besok hanya jika pengingat masih aktif.
+        // Reschedule > One-shot alarm repeats tomorrow only while reminders are on.
         DailyReminderScheduler.schedule(context, AppPreferences(context).dailyReminderEnabled)
     }
 }

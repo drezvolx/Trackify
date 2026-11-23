@@ -13,9 +13,10 @@ data class DailyLog(
     val ratePerPackage: Double = 2500.0,
     val bonus: Double = 0.0,
     val expense: Double = 0.0,
-    val notes: String = ""
+    val notes: String = "",
 ) {
     @Ignore val safeCarried: Int = if (isWorkingDay) packagesCarried.coerceAtLeast(0) else 0
+
     @Ignore val safeDelivered: Int = if (isWorkingDay) packagesDelivered.coerceIn(0, safeCarried) else 0
 
     @Ignore val netIncome: Double = if (isWorkingDay) {
@@ -44,7 +45,7 @@ data class DailyLog(
             ratePerPackage = ratePerPackage.coerceAtLeast(0.0),
             bonus = bonus.coerceAtLeast(0.0),
             expense = expense.coerceAtLeast(0.0),
-            notes = notes.trim()
+            notes = notes.trim(),
         )
     }
 }
@@ -55,11 +56,11 @@ data class SavedLocation(
     val customerName: String,
     val landmarkNote: String,
     val latitude: Double,
-    val longitude: Double
+    val longitude: Double,
 ) {
     fun trimmed(): SavedLocation = copy(
         customerName = customerName.trim(),
-        landmarkNote = landmarkNote.trim()
+        landmarkNote = landmarkNote.trim(),
     )
 }
 
@@ -71,20 +72,16 @@ data class CourierNote(
     val isPinned: Boolean = false,
     val updatedAt: String = "",
     val linkedLocationId: Int? = null,
-    val isResolved: Boolean = false
+    val isResolved: Boolean = false,
 ) {
     fun trimmed(fallbackDate: String): CourierNote = copy(
         title = title.trim(),
         content = content.trim(),
-        updatedAt = updatedAt.ifBlank { fallbackDate }
+        updatedAt = updatedAt.ifBlank { fallbackDate },
     )
 }
 
-data class MonthlySummary(
-    val totalWorkingDays: Int = 0,
-    val totalDelivered: Int = 0,
-    val totalNetIncome: Double = 0.0
-)
+data class MonthlySummary(val totalWorkingDays: Int = 0, val totalDelivered: Int = 0, val totalNetIncome: Double = 0.0)
 
 fun List<DailyLog>.toMonthlySummary(): MonthlySummary {
     var workingDays = 0
@@ -101,6 +98,6 @@ fun List<DailyLog>.toMonthlySummary(): MonthlySummary {
     return MonthlySummary(
         totalWorkingDays = workingDays,
         totalDelivered = delivered,
-        totalNetIncome = netIncome
+        totalNetIncome = netIncome,
     )
 }

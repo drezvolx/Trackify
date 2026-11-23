@@ -1,0 +1,23 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+
+[*.{kt,kts}]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# Sumber gaya mengikuti konvensi Android Studio/Kotlin.
+ktlint_code_style = android_studio
+
+# Composables > PascalCase is expected, so function-naming is disabled.
+ktlint_standard_function-naming = disabled
+
+# Compatibility > TrackifyNavigation.kt intentionally holds TrackifyTab.
+ktlint_standard_filename = disabled
+
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true

@@ -2,7 +2,17 @@ package com.blankpages.trackify.data.local
 
 import android.content.Context
 import android.util.Log
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Database
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.Transaction
+import androidx.room.Update
+import androidx.room.Upsert
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.blankpages.trackify.domain.BackupPayload
@@ -97,13 +107,15 @@ private val MIGRATION_5_6 = object : Migration(5, 6) {
                 "`bonus` REAL NOT NULL, " +
                 "`expense` REAL NOT NULL, " +
                 "`notes` TEXT NOT NULL, " +
-                "PRIMARY KEY(`date`))"
+                "PRIMARY KEY(`date`))",
         )
         db.execSQL(
             "INSERT INTO `daily_logs_new` " +
-                "(`date`, `isWorkingDay`, `packagesCarried`, `packagesDelivered`, `ratePerPackage`, `bonus`, `expense`, `notes`) " +
-                "SELECT `date`, `isWorkingDay`, `packagesCarried`, `packagesDelivered`, `ratePerPackage`, `bonus`, `expense`, `notes` " +
-                "FROM `daily_logs`"
+                "(`date`, `isWorkingDay`, `packagesCarried`, `packagesDelivered`, " +
+                "`ratePerPackage`, `bonus`, `expense`, `notes`) " +
+                "SELECT `date`, `isWorkingDay`, `packagesCarried`, `packagesDelivered`, " +
+                "`ratePerPackage`, `bonus`, `expense`, `notes` " +
+                "FROM `daily_logs`",
         )
         db.execSQL("DROP TABLE `daily_logs`")
         db.execSQL("ALTER TABLE `daily_logs_new` RENAME TO `daily_logs`")
@@ -118,19 +130,18 @@ abstract class TrackifyDatabase : RoomDatabase() {
         @Volatile
         private var instance: TrackifyDatabase? = null
 
-        fun get(context: Context): TrackifyDatabase =
-            instance ?: synchronized(this) {
-                instance ?: Room.databaseBuilder(
-                    context.applicationContext,
-                    TrackifyDatabase::class.java,
-                    "trackify_offline_db"
-                )
-                    .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
-                    .addMigrations(MIGRATION_5_6)
-                    .fallbackToDestructiveMigration(true)
-                    .build()
-                    .also { instance = it }
-                    .also { Log.d("TrackifyDatabase", "Database initialized") }
-            }
+        fun get(context: Context): TrackifyDatabase = instance ?: synchronized(this) {
+            instance ?: Room.databaseBuilder(
+                context.applicationContext,
+                TrackifyDatabase::class.java,
+                "trackify_offline_db",
+            )
+                .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
+                .addMigrations(MIGRATION_5_6)
+                .fallbackToDestructiveMigration(true)
+                .build()
+                .also { instance = it }
+                .also { Log.d("TrackifyDatabase", "Database initialized") }
+        }
     }
 }

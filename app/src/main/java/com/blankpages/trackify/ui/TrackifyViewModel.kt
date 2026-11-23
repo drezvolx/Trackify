@@ -1,30 +1,38 @@
 package com.blankpages.trackify.ui
 
-import com.blankpages.trackify.data.TrackifyRepository
-import com.blankpages.trackify.domain.CourierNote
-import com.blankpages.trackify.domain.DailyLog
-import com.blankpages.trackify.domain.MonthlySummary
-import com.blankpages.trackify.domain.SavedLocation
-import com.blankpages.trackify.domain.toMonthlySummary
-import com.blankpages.trackify.data.notification.DailyReminderScheduler
-import com.blankpages.trackify.domain.BackupPayload
-import com.blankpages.trackify.domain.EngineResult
-import com.blankpages.trackify.domain.TrackifyEngine
-
 import android.app.Application
 import android.net.Uri
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.blankpages.trackify.data.TrackifyRepository
+import com.blankpages.trackify.data.notification.DailyReminderScheduler
+import com.blankpages.trackify.domain.BackupPayload
+import com.blankpages.trackify.domain.CourierNote
+import com.blankpages.trackify.domain.DailyLog
+import com.blankpages.trackify.domain.EngineResult
+import com.blankpages.trackify.domain.MonthlySummary
+import com.blankpages.trackify.domain.SavedLocation
+import com.blankpages.trackify.domain.TrackifyEngine
+import com.blankpages.trackify.domain.toMonthlySummary
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Immutable
 data class AppSettings(
@@ -32,7 +40,7 @@ data class AppSettings(
     val themeMode: Int = 0,
     val defaultBonus: Double = 0.0,
     val targetAmount: Double = 3_600_000.0,
-    val dailyReminderEnabled: Boolean = true
+    val dailyReminderEnabled: Boolean = true,
 )
 
 @Immutable
@@ -50,31 +58,29 @@ data class TrackifyUiState(
     val currentMonthSummary: MonthlySummary = MonthlySummary(),
     val locations: List<SavedLocation> = emptyList(),
     val notes: List<CourierNote> = emptyList(),
-    val activeNotesCount: Int = 0
+    val activeNotesCount: Int = 0,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class TrackifyViewModel @Inject constructor(
-    private val repository: TrackifyRepository,
-    app: Application
-) : AndroidViewModel(app) {
+class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepository, app: Application) :
+    AndroidViewModel(app) {
 
     private fun readSettings() = repository.readSettings().let { saved ->
         AppSettings(
             themeMode = saved.themeMode,
             defaultBonus = saved.defaultBonus,
             targetAmount = saved.targetAmount,
-            dailyReminderEnabled = saved.dailyReminderEnabled
+            dailyReminderEnabled = saved.dailyReminderEnabled,
         )
     }
 
-    // Satu snapshot untuk startup: hindari membaca SharedPreferences berulang kali.
+    // Startup > Single prefs snapshot; avoid repeated SharedPreferences reads.
     private val initialSettings = readSettings()
     private val initialDefaultRate = repository.defaultRate
 
     init {
-        // Jadwalkan alarm di worker supaya binder call tidak mem-blok frame pertama.
+        // Alarm > Schedule off-main so binder calls do not block the first frame.
         viewModelScope.launch(Dispatchers.Default) {
             DailyReminderScheduler.schedule(app, initialSettings.dailyReminderEnabled)
         }
@@ -89,24 +95,29 @@ class TrackifyViewModel @Inject constructor(
     private val todayDbLogFlow: Flow<DailyLog> = currentDateFlow
         .flatMapLatest { dateStr ->
             repository.logByDate(dateStr).map { existing ->
-                (existing ?: DailyLog(
-                    date = dateStr,
-                    ratePerPackage = repository.defaultRate,
-                    bonus = repository.readSettings().defaultBonus
-                )).sanitized()
+                (
+                    existing ?: DailyLog(
+                        date = dateStr,
+                        ratePerPackage = repository.defaultRate,
+                        bonus = repository.readSettings().defaultBonus,
+                    )
+                    ).sanitized()
             }
         }
 
     private val activeTodayLogFlow: Flow<DailyLog> = combine(
         todayDbLogFlow,
-        overrideTodayLogFlow
+        overrideTodayLogFlow,
     ) { dbLog, override ->
         when {
             override == null -> dbLog
+
             override.date != dbLog.date -> dbLog
+
             dbLog.isWorkingDay == override.isWorkingDay &&
                 dbLog.packagesCarried == override.packagesCarried &&
                 dbLog.packagesDelivered == override.packagesDelivered -> dbLog
+
             else -> override.sanitized()
         }
     }
@@ -124,19 +135,23 @@ class TrackifyViewModel @Inject constructor(
         repository.allLocations(),
         repository.allNotes(),
         settingsFlow,
-        currentMonthLogsFlow
+        currentMonthLogsFlow,
     ) { args ->
         val rate = args[0] as Double
         val month = args[1] as YearMonth
         val today = args[2] as DailyLog
+
         @Suppress("UNCHECKED_CAST")
         val logs = (args[3] as List<DailyLog>).map { it.sanitized() }
         val sum = logs.toMonthlySummary()
+
         @Suppress("UNCHECKED_CAST")
         val locs = args[4] as List<SavedLocation>
+
         @Suppress("UNCHECKED_CAST")
         val notesList = args[5] as List<CourierNote>
         val settings = args[6] as AppSettings
+
         @Suppress("UNCHECKED_CAST")
         val nowLogs = (args[7] as List<DailyLog>).map { it.sanitized() }
 
@@ -157,18 +172,18 @@ class TrackifyViewModel @Inject constructor(
             currentMonthSummary = nowLogs.toMonthlySummary(),
             locations = locs,
             notes = notesList,
-            activeNotesCount = activeNotes
+            activeNotesCount = activeNotes,
         )
     }.flowOn(Dispatchers.Default).stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = TrackifyUiState(
             defaultRate = initialDefaultRate,
-            settings = initialSettings
-        )
+            settings = initialSettings,
+        ),
     )
 
-    // ---------- tanggal & bulan ----------
+    // Section > Dates & months
 
     fun syncCurrentDate() {
         val nowStr = LocalDate.now().toString()
@@ -182,7 +197,7 @@ class TrackifyViewModel @Inject constructor(
         selectedMonthFlow.value = selectedMonthFlow.value.plusMonths(deltaMonths)
     }
 
-    // ---------- setelan ----------
+    // Section > Settings
 
     fun updateDefaultRate(newRate: Double) {
         val clean = newRate.coerceAtLeast(0.0)
@@ -208,7 +223,7 @@ class TrackifyViewModel @Inject constructor(
         }
     }
 
-    // ---------- log harian ----------
+    // Section > Daily logs
 
     fun upsertLog(log: DailyLog) {
         val clean = log.sanitized()
@@ -217,8 +232,7 @@ class TrackifyViewModel @Inject constructor(
         }
         viewModelScope.launch {
             repository.upsertLog(clean)
-            // Setelah DB meng-emit nilai yang sama, override tidak diperlukan lagi.
-            // Dijaga dengan perbandingan ini supaya update terbaru belum tersimpan tidak tertimpa.
+            // State > Skip equal DB re-emits so pending updates are not overwritten.
             if (overrideTodayLogFlow.value == clean) {
                 overrideTodayLogFlow.value = null
             }
@@ -244,8 +258,8 @@ class TrackifyViewModel @Inject constructor(
         upsertLog(
             current.copy(
                 packagesCarried = nextCarried,
-                packagesDelivered = nextDelivered
-            )
+                packagesDelivered = nextDelivered,
+            ),
         )
     }
 
@@ -256,12 +270,12 @@ class TrackifyViewModel @Inject constructor(
         upsertLog(
             current.copy(
                 isWorkingDay = true,
-                packagesCarried = current.packagesCarried + rem
-            )
+                packagesCarried = current.packagesCarried + rem,
+            ),
         )
     }
 
-    // ---------- lokasi & catatan ----------
+    // Section > Locations & notes
 
     fun saveLocation(location: SavedLocation, isEdit: Boolean) {
         viewModelScope.launch {
@@ -287,7 +301,7 @@ class TrackifyViewModel @Inject constructor(
         }
     }
 
-    // ---------- ekspor, backup, reset ----------
+    // Section > Export, backup & reset
 
     fun exportMonthlyCsv(uri: Uri, onResult: (String) -> Unit) {
         viewModelScope.launch {
@@ -303,12 +317,12 @@ class TrackifyViewModel @Inject constructor(
 
     fun exportBackup(uri: Uri, onResult: (String) -> Unit) {
         viewModelScope.launch {
-            // Backup semua data, bukan hanya bulan yang sedang dibuka.
+            // Backup > Export all data, not only the open month.
             val payload = BackupPayload(
                 logs = repository.dumpLogs(),
                 locations = repository.dumpLocations(),
                 notes = repository.dumpNotes(),
-                settings = repository.readBackupSettings()
+                settings = repository.readBackupSettings(),
             )
             when (val res = TrackifyEngine.encodeBackup(LocalDate.now().toString(), payload)) {
                 is EngineResult.Ok -> {
@@ -319,6 +333,7 @@ class TrackifyViewModel @Inject constructor(
                     }.getOrDefault(false)
                     onResult(if (ok) "Backup JSON berhasil disimpan" else "Gagal menulis file backup")
                 }
+
                 is EngineResult.Err -> onResult(res.message)
             }
         }
@@ -327,7 +342,9 @@ class TrackifyViewModel @Inject constructor(
     fun importBackup(uri: Uri, onResult: (String) -> Unit) {
         viewModelScope.launch {
             val raw = runCatching {
-                getApplication<Application>().contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                getApplication<Application>().contentResolver.openInputStream(uri)?.bufferedReader()?.use {
+                    it.readText()
+                }
             }.getOrNull()
             if (raw.isNullOrBlank()) {
                 onResult("File backup kosong atau tidak terbaca")
@@ -343,11 +360,12 @@ class TrackifyViewModel @Inject constructor(
                     withContext(Dispatchers.Default) {
                         DailyReminderScheduler.schedule(
                             getApplication(),
-                            settingsFlow.value.dailyReminderEnabled
+                            settingsFlow.value.dailyReminderEnabled,
                         )
                     }
                     onResult("Restore JSON berhasil (${decoded.value.logs.size} log)")
                 }
+
                 is EngineResult.Err -> onResult("Restore gagal: ${decoded.message}")
             }
         }
@@ -364,7 +382,7 @@ class TrackifyViewModel @Inject constructor(
                 withContext(Dispatchers.Default) {
                     DailyReminderScheduler.schedule(
                         getApplication(),
-                        settingsFlow.value.dailyReminderEnabled
+                        settingsFlow.value.dailyReminderEnabled,
                     )
                 }
             }.onSuccess {

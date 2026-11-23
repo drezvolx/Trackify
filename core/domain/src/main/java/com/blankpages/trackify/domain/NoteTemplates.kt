@@ -11,7 +11,7 @@ val noteTemplates = listOf(
             "Penerima: \n" +
             "No. HP penerima: \n" +
             "Batas waktu: \n" +
-            "Keterangan: "
+            "Keterangan: ",
     ),
     NoteTemplate(
         title = "Kendala Kirim",
@@ -19,6 +19,6 @@ val noteTemplates = listOf(
             "Lokasi: \n" +
             "Penyebab: \n" +
             "Status: Menunggu konfirmasi\n" +
-            "Tindak lanjut: "
-    )
+            "Tindak lanjut: ",
+    ),
 )

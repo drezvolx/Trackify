@@ -6,13 +6,13 @@ import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.DailyLog
 import com.blankpages.trackify.domain.EngineResult
 import com.blankpages.trackify.domain.SavedLocation
-import com.blankpages.trackify.domain.toMonthlySummary
 import com.blankpages.trackify.domain.TrackifyEngine
+import com.blankpages.trackify.domain.toMonthlySummary
+import java.time.YearMonth
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.time.YearMonth
 
 class TrackifyEngineTest {
 
@@ -23,7 +23,7 @@ class TrackifyEngineTest {
         rate: Double = 2500.0,
         bonus: Double = 0.0,
         expense: Double = 0.0,
-        working: Boolean = true
+        working: Boolean = true,
     ) = DailyLog(
         date = date,
         isWorkingDay = working,
@@ -31,7 +31,7 @@ class TrackifyEngineTest {
         packagesDelivered = delivered,
         ratePerPackage = rate,
         bonus = bonus,
-        expense = expense
+        expense = expense,
     )
 
     private fun <T> EngineResult<T>.unwrap(): T = when (this) {
@@ -60,7 +60,7 @@ class TrackifyEngineTest {
         val summary = listOf(
             log("2026-11-01", 10, 8),
             log("2026-11-02", 10, 5),
-            log("2026-11-03", 10, 10, working = false)
+            log("2026-11-03", 10, 10, working = false),
         ).toMonthlySummary()
 
         assertEquals(2, summary.totalWorkingDays)
@@ -94,7 +94,7 @@ class TrackifyEngineTest {
         val notes = listOf(
             CourierNote(1, "Titipan", "Rumah A", isResolved = false),
             CourierNote(2, "Kendala", "Rumah B", isResolved = true),
-            CourierNote(3, "Titipan", "Rumah C", isResolved = false)
+            CourierNote(3, "Titipan", "Rumah C", isResolved = false),
         )
 
         assertEquals(2, TrackifyEngine.filterNotes(notes, "", 1).size)
@@ -114,9 +114,9 @@ class TrackifyEngineTest {
         val breakdown = TrackifyEngine.computePeriodBreakdown(
             listOf(
                 log("2026-11-05", 10, 10, rate = 2000.0),
-                log("2026-11-20", 10, 5, rate = 2000.0)
+                log("2026-11-20", 10, 5, rate = 2000.0),
             ),
-            workDays = 2
+            workDays = 2,
         )
 
         assertEquals(20_000.0, breakdown.p1NetIncome, 0.0)
@@ -147,15 +147,15 @@ class TrackifyEngineTest {
                     content = "Rumah A",
                     isPinned = true,
                     updatedAt = "2026-11-01",
-                    linkedLocationId = 1
-                )
+                    linkedLocationId = 1,
+                ),
             ),
             settings = BackupSettings(
                 defaultRate = 1800.0,
                 defaultBonus = 0.0,
                 targetAmount = 4_000_000.0,
-                dailyReminderEnabled = false
-            )
+                dailyReminderEnabled = false,
+            ),
         )
 
         val raw = TrackifyEngine.encodeBackup("2026-11-23", payload).unwrap()

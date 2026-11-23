@@ -1,14 +1,4 @@
 package com.blankpages.trackify
-import com.blankpages.trackify.navigation.TrackifyTab
-import com.blankpages.trackify.ui.TrackifyUiState
-import com.blankpages.trackify.ui.TrackifyViewModel
-import com.blankpages.trackify.ui.theme.TrackifyTheme
-import com.blankpages.trackify.ui.home.HomeScreen
-import com.blankpages.trackify.ui.locations.LocationsScreen
-import com.blankpages.trackify.ui.notes.NotesScreen
-import com.blankpages.trackify.ui.spreadsheet.SpreadsheetScreen
-import com.blankpages.trackify.ui.settings.SettingsScreen
-
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -27,10 +17,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -73,6 +63,15 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.blankpages.trackify.navigation.TrackifyTab
+import com.blankpages.trackify.ui.TrackifyUiState
+import com.blankpages.trackify.ui.TrackifyViewModel
+import com.blankpages.trackify.ui.home.HomeScreen
+import com.blankpages.trackify.ui.locations.LocationsScreen
+import com.blankpages.trackify.ui.notes.NotesScreen
+import com.blankpages.trackify.ui.settings.SettingsScreen
+import com.blankpages.trackify.ui.spreadsheet.SpreadsheetScreen
+import com.blankpages.trackify.ui.theme.TrackifyTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.roundToInt
 
@@ -91,9 +90,7 @@ class MainActivity : ComponentActivity() {
                 vm.syncCurrentDate()
             }
 
-            // Tema dan system bar mengikuti perangkat secara otomatis.
-            // enableEdgeToEdge() tanpa argumen memakai SystemBarStyle.auto,
-            // jadi ikon status bar menyesuaikan dark/light sistem.
+            // Theme & System bar > Follow the device via SystemBarStyle.auto.
             TrackifyTheme {
                 val stateHolder = rememberSaveableStateHolder()
                 val scheme = MaterialTheme.colorScheme
@@ -107,18 +104,16 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     containerColor = scheme.background,
-                    // Status bar tetap dihormati di semua layar, termasuk Settings.
-                    // Bottom inset sengaja tidak dipakai supaya konten boleh lewat
-                    // di belakang outline bottom bar saat bottom bar ditampilkan.
+                    // Insets > Honor status bars everywhere; skip bottom inset behind the bar.
                     contentWindowInsets = WindowInsets.statusBars,
                     bottomBar = {
                         if (!inSettings) {
                             ReferenceNotchedBottomBar(
                                 currentTab = currentTab,
-                                onSelectTab = { tabOrdinal = it.ordinal }
+                                onSelectTab = { tabOrdinal = it.ordinal },
                             )
                         }
-                    }
+                    },
                 ) { padding ->
                     Box(
                         modifier = Modifier
@@ -126,8 +121,8 @@ class MainActivity : ComponentActivity() {
                             .padding(
                                 start = padding.calculateStartPadding(LocalLayoutDirection.current),
                                 top = padding.calculateTopPadding(),
-                                end = padding.calculateEndPadding(LocalLayoutDirection.current)
-                            )
+                                end = padding.calculateEndPadding(LocalLayoutDirection.current),
+                            ),
                     ) {
                         if (inSettings) {
                             SettingsScreen(
@@ -147,7 +142,7 @@ class MainActivity : ComponentActivity() {
                                     vm.resetAllData { msg ->
                                         Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
                                     }
-                                }
+                                },
                             )
                         } else {
                             AnimatedContent(
@@ -155,7 +150,7 @@ class MainActivity : ComponentActivity() {
                                 transitionSpec = {
                                     EnterTransition.None togetherWith ExitTransition.None
                                 },
-                                label = "fast_tab_switch"
+                                label = "fast_tab_switch",
                             ) { tab ->
                                 stateHolder.SaveableStateProvider(tab.name) {
                                     TabContent(
@@ -163,7 +158,7 @@ class MainActivity : ComponentActivity() {
                                         state = state,
                                         onOpenSettings = { inSettings = true },
                                         onNavigateTab = { tabOrdinal = it.ordinal },
-                                        vm = vm
+                                        vm = vm,
                                     )
                                 }
                             }
@@ -181,7 +176,7 @@ private fun TabContent(
     state: TrackifyUiState,
     onOpenSettings: () -> Unit,
     onNavigateTab: (TrackifyTab) -> Unit,
-    vm: TrackifyViewModel
+    vm: TrackifyViewModel,
 ) {
     when (tab) {
         TrackifyTab.HOME -> HomeScreen(
@@ -193,8 +188,9 @@ private fun TabContent(
             onOpenSettings = onOpenSettings,
             onOpenRekap = { onNavigateTab(TrackifyTab.REKAP) },
             onOpenLocations = { onNavigateTab(TrackifyTab.LOKASI) },
-            onUpdateTodayLog = vm::upsertLog
+            onUpdateTodayLog = vm::upsertLog,
         )
+
         TrackifyTab.REKAP -> SpreadsheetScreen(
             todayLog = state.todayLog,
             yesterdayRemaining = state.yesterdayRemaining,
@@ -208,29 +204,28 @@ private fun TabContent(
             onCarryoverYesterday = vm::carryoverYesterdayRemaining,
             onExportCsv = vm::exportMonthlyCsv,
             onUpdateLog = vm::upsertLog,
-            onDeleteLog = vm::deleteLog
+            onDeleteLog = vm::deleteLog,
         )
+
         TrackifyTab.LOKASI -> LocationsScreen(
             locations = state.locations,
             onSaveLocation = vm::saveLocation,
             onDeleteLocation = vm::deleteLocation,
             onQuickDelivered = vm::incrementTodayDelivered,
-            onCreateLinkedNote = vm::upsertNote
+            onCreateLinkedNote = vm::upsertNote,
         )
+
         TrackifyTab.CATATAN -> NotesScreen(
             notes = state.notes,
             locations = state.locations,
             onSaveNote = { note, _ -> vm.upsertNote(note) },
-            onDeleteNote = vm::deleteNote
+            onDeleteNote = vm::deleteNote,
         )
     }
 }
 
 @Composable
-private fun ReferenceNotchedBottomBar(
-    currentTab: TrackifyTab,
-    onSelectTab: (TrackifyTab) -> Unit
-) {
+private fun ReferenceNotchedBottomBar(currentTab: TrackifyTab, onSelectTab: (TrackifyTab) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val density = LocalDensity.current
 
@@ -238,9 +233,9 @@ private fun ReferenceNotchedBottomBar(
         targetValue = currentTab.ordinal.toFloat(),
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMedium
+            stiffness = Spring.StiffnessMedium,
         ),
-        label = "notched_tab_index"
+        label = "notched_tab_index",
     )
 
     val barHeight: Dp = 64.dp
@@ -262,8 +257,7 @@ private fun ReferenceNotchedBottomBar(
 
     var barSize by remember { mutableStateOf(IntSize.Zero) }
 
-    // Fill dalam outline: cukup solid untuk memisahkan ikon dari konten,
-    // tapi tidak sepenuhnya hitam seperti container lama.
+    // Bar fill > Solid enough to separate icons from content, not fully black.
     val barColor = scheme.background.copy(alpha = 0.72f)
     val borderColor = scheme.outlineVariant
     val primaryColor = scheme.primary
@@ -288,8 +282,8 @@ private fun ReferenceNotchedBottomBar(
                 baseRectPath.addRoundRect(
                     RoundRect(
                         rect = Rect(0f, topLiftPx, widthPx, totalHeightPx),
-                        cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx)
-                    )
+                        cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx),
+                    ),
                 )
 
                 scoopPath.reset()
@@ -298,14 +292,14 @@ private fun ReferenceNotchedBottomBar(
                         left = centerXPx - notchRadiusPx,
                         top = topLiftPx - notchRadiusPx * 0.72f,
                         right = centerXPx + notchRadiusPx,
-                        bottom = topLiftPx + notchRadiusPx * 1.28f
-                    )
+                        bottom = topLiftPx + notchRadiusPx * 1.28f,
+                    ),
                 )
 
                 notchedBarPath.op(baseRectPath, scoopPath, PathOperation.Difference)
                 drawPath(path = notchedBarPath, color = barColor)
                 drawPath(path = notchedBarPath, color = borderColor, style = strokeSpec)
-            }
+            },
     ) {
         Surface(
             modifier = Modifier
@@ -318,14 +312,14 @@ private fun ReferenceNotchedBottomBar(
                 .size(orbSize),
             shape = CircleShape,
             color = primaryColor,
-            border = BorderStroke(2.dp, outlineColor)
+            border = BorderStroke(2.dp, outlineColor),
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = currentTab.icon,
                     contentDescription = currentTab.label,
                     tint = onPrimaryColor,
-                    modifier = Modifier.size(21.dp)
+                    modifier = Modifier.size(21.dp),
                 )
             }
         }
@@ -335,7 +329,7 @@ private fun ReferenceNotchedBottomBar(
                 .fillMaxWidth()
                 .height(barHeight)
                 .align(Alignment.BottomCenter),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             TrackifyTab.entries.forEach { tab ->
                 val isSelected = tab == currentTab
@@ -347,16 +341,16 @@ private fun ReferenceNotchedBottomBar(
                         .clickable(
                             interactionSource = interactionSource,
                             indication = null,
-                            onClick = { onSelectTab(tab) }
+                            onClick = { onSelectTab(tab) },
                         ),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     if (!isSelected) {
                         Icon(
                             imageVector = tab.icon,
                             contentDescription = tab.label,
                             tint = onSurfaceVariantColor,
-                            modifier = Modifier.size(21.dp)
+                            modifier = Modifier.size(21.dp),
                         )
                     }
                 }

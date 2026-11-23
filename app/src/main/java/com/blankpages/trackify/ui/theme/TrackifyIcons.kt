@@ -12,32 +12,28 @@ object TrackifyIcons {
     private fun vector(
         name: String,
         fillType: PathFillType = PathFillType.NonZero,
-        vararg blocks: PathBuilder.() -> Unit
+        vararg blocks: PathBuilder.() -> Unit,
     ): ImageVector = ImageVector.Builder(
         name = name,
         defaultWidth = 24.dp,
         defaultHeight = 24.dp,
         viewportWidth = 24f,
-        viewportHeight = 24f
+        viewportHeight = 24f,
     ).apply {
         blocks.forEach { block ->
             path(
                 fill = SolidColor(Color.Black),
                 pathFillType = fillType,
-                pathBuilder = block
+                pathBuilder = block,
             )
         }
     }.build()
 
-    private fun solid(
-        name: String,
-        vararg blocks: PathBuilder.() -> Unit
-    ): ImageVector = vector(name, PathFillType.NonZero, *blocks)
+    private fun solid(name: String, vararg blocks: PathBuilder.() -> Unit): ImageVector =
+        vector(name, PathFillType.NonZero, *blocks)
 
-    private fun solidCut(
-        name: String,
-        vararg blocks: PathBuilder.() -> Unit
-    ): ImageVector = vector(name, PathFillType.EvenOdd, *blocks)
+    private fun solidCut(name: String, vararg blocks: PathBuilder.() -> Unit): ImageVector =
+        vector(name, PathFillType.EvenOdd, *blocks)
 
     private fun PathBuilder.circle(cx: Float, cy: Float, r: Float) {
         moveTo(cx, cy - r)
@@ -166,7 +162,7 @@ object TrackifyIcons {
                 rect(4f, 17.2f, 4.2f, 1.6f)
                 circle(10f, 18f, 2.4f)
                 rect(11.8f, 17.2f, 8.2f, 1.6f)
-            }
+            },
         )
     }
 
@@ -217,7 +213,7 @@ object TrackifyIcons {
             },
             {
                 rect(4f, 19.6f, 16f, 1.6f)
-            }
+            },
         )
     }
 
@@ -235,7 +231,7 @@ object TrackifyIcons {
                 lineTo(21.28f, 19.72f)
                 lineTo(19.72f, 21.28f)
                 close()
-            }
+            },
         )
     }
 
@@ -268,7 +264,7 @@ object TrackifyIcons {
                 lineTo(15.97f, 18.69f)
                 lineTo(16.83f, 17.11f)
                 close()
-            }
+            },
         )
     }
 
@@ -289,7 +285,7 @@ object TrackifyIcons {
                 rect(13.2f, 10.2f, 1.2f, 8.8f)
             },
             { rect(4.2f, 5.2f, 15.6f, 1.8f) },
-            { rect(9.2f, 3.2f, 5.6f, 1.6f) }
+            { rect(9.2f, 3.2f, 5.6f, 1.6f) },
         )
     }
 
@@ -314,7 +310,7 @@ object TrackifyIcons {
                 lineTo(3.24f, 19.64f)
                 lineTo(4.36f, 20.76f)
                 close()
-            }
+            },
         )
     }
 
@@ -390,7 +386,7 @@ object TrackifyIcons {
             { rect(11.2f, 1.8f, 1.6f, 3.2f) },
             { rect(11.2f, 19f, 1.6f, 3.2f) },
             { rect(1.8f, 11.2f, 3.2f, 1.6f) },
-            { rect(19f, 11.2f, 3.2f, 1.6f) }
+            { rect(19f, 11.2f, 3.2f, 1.6f) },
         )
     }
 
@@ -409,7 +405,7 @@ object TrackifyIcons {
                 close()
             },
             { circle(12f, 20.2f, 2f) },
-            { circle(12f, 2.2f, 1.2f) }
+            { circle(12f, 2.2f, 1.2f) },
         )
     }
 
@@ -421,7 +417,7 @@ object TrackifyIcons {
                 circle(12f, 12f, 8.8f)
                 circle(12f, 12f, 5.8f)
             },
-            { circle(12f, 12f, 2.8f) }
+            { circle(12f, 12f, 2.8f) },
         )
     }
 
@@ -450,7 +446,7 @@ object TrackifyIcons {
             { rect(4f, 12.5f, 3f, 8.5f) },
             { rect(9.5f, 8.5f, 3f, 12.5f) },
             { rect(15f, 4.5f, 3f, 16.5f) },
-            { rect(3.2f, 20.4f, 17.6f, 1.4f) }
+            { rect(3.2f, 20.4f, 17.6f, 1.4f) },
         )
     }
 
@@ -462,7 +458,7 @@ object TrackifyIcons {
             { rect(11.2f, 5.6f, 1.6f, 5.2f) },
             { rect(11.2f, 5.6f, 8.6f, 1.6f) },
             { circle(5f, 18.6f, 2.6f) },
-            { circle(19f, 6.4f, 2.6f) }
+            { circle(19f, 6.4f, 2.6f) },
         )
     }
 
@@ -495,7 +491,7 @@ object TrackifyIcons {
                 lineTo(19.32f, 12.68f)
                 lineTo(18.68f, 13.32f)
                 close()
-            }
+            },
         )
     }
 
@@ -557,7 +553,7 @@ object TrackifyIcons {
                 lineTo(22.4f, 11.6f)
                 lineTo(18.6f, 15f)
                 close()
-            }
+            },
         )
     }
 
@@ -586,7 +582,7 @@ object TrackifyIcons {
                 lineTo(15.6f, 17.8f)
                 lineTo(12f, 21.8f)
                 close()
-            }
+            },
         )
     }
 
@@ -615,7 +611,7 @@ object TrackifyIcons {
                 lineTo(15.6f, 6.8f)
                 lineTo(12f, 2.4f)
                 close()
-            }
+            },
         )
     }
 

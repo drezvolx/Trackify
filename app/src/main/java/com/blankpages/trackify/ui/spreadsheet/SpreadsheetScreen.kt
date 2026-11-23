@@ -1,13 +1,4 @@
 package com.blankpages.trackify.ui.spreadsheet
-import com.blankpages.trackify.domain.DailyLog
-import com.blankpages.trackify.domain.MonthlySummary
-import com.blankpages.trackify.domain.PeriodBreakdown
-import com.blankpages.trackify.domain.TrackifyEngine
-import com.blankpages.trackify.domain.toRupiah
-import com.blankpages.trackify.ui.theme.ScreenTitle
-import com.blankpages.trackify.ui.theme.TrackifyDialog
-import com.blankpages.trackify.ui.theme.trackifyFieldColors
-import com.blankpages.trackify.ui.theme.TrackifyIcons
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -21,15 +12,49 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +67,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blankpages.trackify.domain.DailyLog
+import com.blankpages.trackify.domain.MonthlySummary
+import com.blankpages.trackify.domain.PeriodBreakdown
+import com.blankpages.trackify.domain.TrackifyEngine
+import com.blankpages.trackify.ui.theme.ScreenTitle
+import com.blankpages.trackify.ui.theme.TrackifyDialog
+import com.blankpages.trackify.ui.theme.TrackifyIcons
+import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -73,7 +106,7 @@ private fun Double.formatCompactK(): String {
         val formatted = if (kVal % 1.0 == 0.0) kVal.toInt().toString() else "%.1f".format(idLocale, kVal)
         "${sign}${formatted}k"
     } else {
-        "${sign}${absVal}"
+        "${sign}$absVal"
     }
 }
 
@@ -92,7 +125,7 @@ fun SpreadsheetScreen(
     onCarryoverYesterday: () -> Unit,
     onExportCsv: (Uri, (String) -> Unit) -> Unit,
     onUpdateLog: (DailyLog) -> Unit,
-    onDeleteLog: (DailyLog) -> Unit
+    onDeleteLog: (DailyLog) -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
@@ -110,7 +143,7 @@ fun SpreadsheetScreen(
     var targetRupiah by remember(targetAmount) { mutableDoubleStateOf(targetAmount) }
 
     val csvExporter = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("text/csv")
+        contract = ActivityResultContracts.CreateDocument("text/csv"),
     ) { uri ->
         if (uri != null) {
             onExportCsv(uri) { msg ->
@@ -171,11 +204,15 @@ fun SpreadsheetScreen(
     val gajian2 = p2Net + (p1Net * 0.5)
     val avgPerWorkDay = if (summary.totalWorkingDays > 0) {
         summary.totalDelivered.toDouble() / summary.totalWorkingDays
-    } else 0.0
+    } else {
+        0.0
+    }
 
     val targetPct = if (targetRupiah > 0.0) {
         ((summary.totalNetIncome / targetRupiah).toFloat()).coerceIn(0f, 1f)
-    } else 0f
+    } else {
+        0f
+    }
 
     val filteredLogs = remember(monthlyLogs, filterMode, sortDesc, searchQuery) {
         val q = searchQuery.trim()
@@ -194,7 +231,9 @@ fun SpreadsheetScreen(
                 val dayLabel = if (dayNum != null && dayNum in 1..selectedMonth.lengthOfMonth()) {
                     val dt = selectedMonth.atDay(dayNum)
                     "${dt.format(shortDayFmt)}, $dayNum ${dt.format(shortMonthFmt)}"
-                } else ""
+                } else {
+                    ""
+                }
                 log.date.contains(q, ignoreCase = true) ||
                     dayLabel.contains(q, ignoreCase = true) ||
                     log.notes.contains(q, ignoreCase = true) ||
@@ -210,17 +249,17 @@ fun SpreadsheetScreen(
             .fillMaxSize()
             .background(scheme.background),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 ScreenTitle(
                     text = "Rekap",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -235,9 +274,9 @@ fun SpreadsheetScreen(
                             }
                             editingLog = logsByDate[defaultDate] ?: DailyLog(
                                 date = defaultDate,
-                                ratePerPackage = defaultRate
+                                ratePerPackage = defaultRate,
                             )
-                        }
+                        },
                     )
                 }
             }
@@ -248,14 +287,14 @@ fun SpreadsheetScreen(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     SheetCircleIconButton(onClick = { onShiftMonth(-1L) }) {
                         Icon(
                             imageVector = TrackifyIcons.ChevronLeft,
                             contentDescription = "Bulan sebelumnya",
                             tint = scheme.onSurface,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
                         )
                     }
 
@@ -266,7 +305,7 @@ fun SpreadsheetScreen(
                         fontWeight = FontWeight.SemiBold,
                         color = scheme.onSurface,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
 
                     SheetCircleIconButton(onClick = { onShiftMonth(1L) }) {
@@ -274,7 +313,7 @@ fun SpreadsheetScreen(
                             imageVector = TrackifyIcons.ChevronRight,
                             contentDescription = "Bulan berikutnya",
                             tint = scheme.onSurface,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
                         )
                     }
                 }
@@ -283,7 +322,7 @@ fun SpreadsheetScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(22.dp)
+                    horizontalArrangement = Arrangement.spacedBy(22.dp),
                 ) {
                     listOf("Ringkasan", "Grafik").forEachIndexed { idx, title ->
                         val active = subTab == idx
@@ -291,7 +330,7 @@ fun SpreadsheetScreen(
                             modifier = Modifier
                                 .clickable { subTab = idx }
                                 .padding(top = 4.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Text(
                                 text = title,
@@ -299,13 +338,13 @@ fun SpreadsheetScreen(
                                 lineHeight = 20.sp,
                                 fontWeight = if (active) FontWeight.SemiBold else FontWeight.Medium,
                                 color = if (active) scheme.onSurface else scheme.onSurfaceVariant,
-                                modifier = Modifier.padding(bottom = 8.dp)
+                                modifier = Modifier.padding(bottom = 8.dp),
                             )
                             Box(
                                 modifier = Modifier
                                     .width(56.dp)
                                     .height(2.dp)
-                                    .background(if (active) scheme.onSurface else Color.Transparent)
+                                    .background(if (active) scheme.onSurface else Color.Transparent),
                             )
                         }
                     }
@@ -323,20 +362,32 @@ fun SpreadsheetScreen(
                         lineHeight = 22.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = scheme.onBackground,
-                        modifier = Modifier.padding(horizontal = 2.dp)
+                        modifier = Modifier.padding(horizontal = 2.dp),
                     )
 
                     SheetCard {
                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             Row(modifier = Modifier.fillMaxWidth()) {
-                                SheetStatItem("${summary.totalWorkingDays}", "Hari kerja", modifier = Modifier.weight(1f))
+                                SheetStatItem(
+                                    "${summary.totalWorkingDays}",
+                                    "Hari kerja",
+                                    modifier = Modifier.weight(1f),
+                                )
                                 SheetStatItem("${summary.totalDelivered}", "Terkirim", modifier = Modifier.weight(1f))
-                                SheetStatItem("%.1f".format(idLocale, avgPerWorkDay), "Rata-rata/hari", modifier = Modifier.weight(1f))
+                                SheetStatItem(
+                                    "%.1f".format(idLocale, avgPerWorkDay),
+                                    "Rata-rata/hari",
+                                    modifier = Modifier.weight(1f),
+                                )
                             }
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 SheetStatItem(grossTotal.formatIdr(), "Kotor", modifier = Modifier.weight(1f))
                                 SheetStatItem(expenseTotal.formatIdr(), "Potongan", modifier = Modifier.weight(1f))
-                                SheetStatItem(summary.totalNetIncome.formatIdr(), "Bersih", modifier = Modifier.weight(1f))
+                                SheetStatItem(
+                                    summary.totalNetIncome.formatIdr(),
+                                    "Bersih",
+                                    modifier = Modifier.weight(1f),
+                                )
                             }
                         }
                     }
@@ -350,20 +401,20 @@ fun SpreadsheetScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 2.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             text = "Estimasi",
                             fontSize = 17.sp,
                             lineHeight = 22.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = scheme.onBackground
+                            color = scheme.onBackground,
                         )
                         Text(
                             text = "Total ${summary.totalNetIncome.formatIdr()}",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = scheme.onSurfaceVariant
+                            color = scheme.onSurfaceVariant,
                         )
                     }
 
@@ -377,7 +428,7 @@ fun SpreadsheetScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(34.dp)
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(12.dp)),
                             ) {
                                 Box(
                                     modifier = Modifier
@@ -385,9 +436,15 @@ fun SpreadsheetScreen(
                                         .fillMaxHeight()
                                         .background(scheme.onSurface)
                                         .padding(horizontal = 12.dp),
-                                    contentAlignment = Alignment.CenterStart
+                                    contentAlignment = Alignment.CenterStart,
                                 ) {
-                                    Text("Periode 1", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = scheme.surface, maxLines = 1)
+                                    Text(
+                                        "Periode 1",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = scheme.surface,
+                                        maxLines = 1,
+                                    )
                                 }
                                 Box(
                                     modifier = Modifier
@@ -395,27 +452,33 @@ fun SpreadsheetScreen(
                                         .fillMaxHeight()
                                         .background(scheme.surfaceVariant)
                                         .padding(horizontal = 12.dp),
-                                    contentAlignment = Alignment.CenterStart
+                                    contentAlignment = Alignment.CenterStart,
                                 ) {
-                                    Text("Periode 2", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = scheme.onSurface, maxLines = 1)
+                                    Text(
+                                        "Periode 2",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = scheme.onSurface,
+                                        maxLines = 1,
+                                    )
                                 }
                             }
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
                                 SheetStatItem(
                                     value = gajian1.formatIdr(),
                                     label = "Tanggal 15 (${breakdown.p1Delivered} pkt)",
                                     large = true,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
                                 )
                                 SheetStatItem(
                                     value = gajian2.formatIdr(),
                                     label = "Akhir Bulan (${breakdown.p2Delivered} pkt)",
                                     large = true,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
                                 )
                             }
                         }
@@ -430,14 +493,14 @@ fun SpreadsheetScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 2.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             text = "Target",
                             fontSize = 17.sp,
                             lineHeight = 22.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = scheme.onBackground
+                            color = scheme.onBackground,
                         )
                         SheetPillAction(text = "Atur", onClick = { showTargetSheet = true })
                     }
@@ -447,18 +510,18 @@ fun SpreadsheetScreen(
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Text(
                                     text = summary.totalNetIncome.formatIdr(),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = scheme.onSurface
+                                    color = scheme.onSurface,
                                 )
                                 Text(
                                     text = "dari ${targetRupiah.formatIdr()}",
                                     fontSize = 12.sp,
-                                    color = scheme.onSurfaceVariant
+                                    color = scheme.onSurfaceVariant,
                                 )
                             }
 
@@ -473,7 +536,7 @@ fun SpreadsheetScreen(
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Text("$pctInt% tercapai", fontSize = 12.sp, color = scheme.onSurfaceVariant)
                                 if (showProj) {
@@ -493,7 +556,7 @@ fun SpreadsheetScreen(
                         lineHeight = 22.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = scheme.onBackground,
-                        modifier = Modifier.padding(horizontal = 2.dp)
+                        modifier = Modifier.padding(horizontal = 2.dp),
                     )
 
                     SheetCard {
@@ -503,9 +566,13 @@ fun SpreadsheetScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 20.dp),
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
                             ) {
-                                Text("Grafik muncul setelah ada log hari kerja.", fontSize = 13.sp, color = scheme.onSurfaceVariant)
+                                Text(
+                                    "Grafik muncul setelah ada log hari kerja.",
+                                    fontSize = 13.sp,
+                                    color = scheme.onSurfaceVariant,
+                                )
                             }
                         } else {
                             val maxDelivered = workingDays.maxOf { it.safeDelivered }.coerceAtLeast(1)
@@ -518,7 +585,7 @@ fun SpreadsheetScreen(
                                         .fillMaxWidth()
                                         .height(92.dp),
                                     horizontalArrangement = Arrangement.spacedBy(3.dp),
-                                    verticalAlignment = Alignment.Bottom
+                                    verticalAlignment = Alignment.Bottom,
                                 ) {
                                     for (d in 1..daysCount) {
                                         val dateStr = selectedMonth.atDay(d).toString()
@@ -531,14 +598,24 @@ fun SpreadsheetScreen(
                                             modifier = Modifier
                                                 .weight(1f)
                                                 .fillMaxHeight(),
-                                            contentAlignment = Alignment.BottomCenter
+                                            contentAlignment = Alignment.BottomCenter,
                                         ) {
                                             Box(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .fillMaxHeight(if (sentVal > 0) ratio.coerceAtLeast(0.06f) else 0.02f)
+                                                    .fillMaxHeight(
+                                                        if (sentVal >
+                                                            0
+                                                        ) {
+                                                            ratio.coerceAtLeast(0.06f)
+                                                        } else {
+                                                            0.02f
+                                                        },
+                                                    )
                                                     .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
-                                                    .background(if (isPeak) scheme.onSurface else scheme.surfaceVariant)
+                                                    .background(
+                                                        if (isPeak) scheme.onSurface else scheme.surfaceVariant,
+                                                    ),
                                             )
                                         }
                                     }
@@ -546,21 +623,25 @@ fun SpreadsheetScreen(
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 ) {
                                     SheetStatItem(
                                         value = "%.1f paket".format(idLocale, avgPerWorkDay),
                                         label = "Rata-rata per hari",
                                         large = true,
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
                                     )
                                     SheetStatItem(
                                         value = if (peakDay != null) {
-                                            "tgl ${peakDay.dateStr.takeLast(2).toIntOrNull() ?: 1} · ${peakDay.delivered}"
-                                        } else "-",
+                                            "tgl ${peakDay.dateStr.takeLast(
+                                                2,
+                                            ).toIntOrNull() ?: 1} · ${peakDay.delivered}"
+                                        } else {
+                                            "-"
+                                        },
                                         label = "Hari Puncak",
                                         large = true,
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
                                     )
                                 }
                             }
@@ -574,7 +655,9 @@ fun SpreadsheetScreen(
             item {
                 val activeToday = todayLog.sanitized()
                 val dateObj = runCatching { LocalDate.parse(activeToday.date) }.getOrElse { LocalDate.now() }
-                val dayHeader = "${dateObj.format(shortDayFmt).replaceFirstChar { it.titlecase(idLocale) }}, ${dateObj.dayOfMonth} ${dateObj.format(shortMonthFmt)}"
+                val dayHeader = "${dateObj.format(shortDayFmt).replaceFirstChar {
+                    it.titlecase(idLocale)
+                }}, ${dateObj.dayOfMonth} ${dateObj.format(shortMonthFmt)}"
 
                 var carriedText by remember(activeToday.date, activeToday.safeCarried) {
                     mutableStateOf(activeToday.safeCarried.toString())
@@ -590,7 +673,7 @@ fun SpreadsheetScreen(
                         lineHeight = 22.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = scheme.onBackground,
-                        modifier = Modifier.padding(horizontal = 2.dp)
+                        modifier = Modifier.padding(horizontal = 2.dp),
                     )
 
                     SheetCard {
@@ -598,15 +681,20 @@ fun SpreadsheetScreen(
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text(dayHeader, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = scheme.onSurface)
+                                Text(
+                                    dayHeader,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = scheme.onSurface,
+                                )
 
                                 Row(
                                     modifier = Modifier
                                         .clip(CircleShape)
                                         .background(scheme.surfaceVariant)
-                                        .padding(2.dp)
+                                        .padding(2.dp),
                                 ) {
                                     listOf(true to "Masuk", false to "Libur").forEach { (stateVal, labelTxt) ->
                                         val sel = activeToday.isWorkingDay == stateVal
@@ -622,18 +710,18 @@ fun SpreadsheetScreen(
                                                             isWorkingDay = false,
                                                             packagesCarried = 0,
                                                             packagesDelivered = 0,
-                                                            expense = 0.0
+                                                            expense = 0.0,
                                                         )
                                                     }.sanitized()
                                                     onUpdateLog(next)
                                                 }
-                                                .padding(horizontal = 12.dp, vertical = 5.dp)
+                                                .padding(horizontal = 12.dp, vertical = 5.dp),
                                         ) {
                                             Text(
                                                 text = labelTxt,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = if (sel) scheme.surface else scheme.onSurfaceVariant
+                                                color = if (sel) scheme.surface else scheme.onSurfaceVariant,
                                             )
                                         }
                                     }
@@ -645,9 +733,13 @@ fun SpreadsheetScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 12.dp),
-                                    contentAlignment = Alignment.Center
+                                    contentAlignment = Alignment.Center,
                                 ) {
-                                    Text("Libur hari ini. Paket tidak dihitung.", fontSize = 13.sp, color = scheme.onSurfaceVariant)
+                                    Text(
+                                        "Libur hari ini. Paket tidak dihitung.",
+                                        fontSize = 13.sp,
+                                        color = scheme.onSurfaceVariant,
+                                    )
                                 }
                             } else {
                                 if (yesterdayRemaining > 0 && activeToday.safeCarried == 0) {
@@ -658,29 +750,34 @@ fun SpreadsheetScreen(
                                             .background(scheme.surfaceVariant)
                                             .clickable { onCarryoverYesterday() }
                                             .padding(vertical = 10.dp, horizontal = 12.dp),
-                                        contentAlignment = Alignment.Center
+                                        contentAlignment = Alignment.Center,
                                     ) {
                                         Text(
                                             text = "Bawa sisa kemarin ($yesterdayRemaining paket)",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = scheme.onSurface
+                                            color = scheme.onSurface,
                                         )
                                     }
                                 }
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
                                     Column(
                                         modifier = Modifier
                                             .weight(1f)
                                             .clip(RoundedCornerShape(14.dp))
                                             .background(scheme.surfaceVariant)
-                                            .padding(horizontal = 12.dp, vertical = 10.dp)
+                                            .padding(horizontal = 12.dp, vertical = 10.dp),
                                     ) {
-                                        Text("Dibawa", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = scheme.onSurfaceVariant)
+                                        Text(
+                                            "Dibawa",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = scheme.onSurfaceVariant,
+                                        )
                                         SheetBigNumberInput(
                                             value = carriedText,
                                             onValueChange = { raw ->
@@ -692,10 +789,10 @@ fun SpreadsheetScreen(
                                                     activeToday.copy(
                                                         isWorkingDay = true,
                                                         packagesCarried = nextC,
-                                                        packagesDelivered = nextS
-                                                    ).sanitized()
+                                                        packagesDelivered = nextS,
+                                                    ).sanitized(),
                                                 )
-                                            }
+                                            },
                                         )
                                     }
 
@@ -704,9 +801,14 @@ fun SpreadsheetScreen(
                                             .weight(1f)
                                             .clip(RoundedCornerShape(14.dp))
                                             .background(scheme.surfaceVariant)
-                                            .padding(horizontal = 12.dp, vertical = 10.dp)
+                                            .padding(horizontal = 12.dp, vertical = 10.dp),
                                     ) {
-                                        Text("Terkirim", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = scheme.onSurfaceVariant)
+                                        Text(
+                                            "Terkirim",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = scheme.onSurfaceVariant,
+                                        )
                                         SheetBigNumberInput(
                                             value = deliveredText,
                                             onValueChange = { raw ->
@@ -718,17 +820,17 @@ fun SpreadsheetScreen(
                                                     activeToday.copy(
                                                         isWorkingDay = true,
                                                         packagesCarried = nextC,
-                                                        packagesDelivered = parsedS
-                                                    ).sanitized()
+                                                        packagesDelivered = parsedS,
+                                                    ).sanitized(),
                                                 )
-                                            }
+                                            },
                                         )
                                     }
                                 }
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 ) {
                                     listOf("-1", "+1", "+5", "+10", "0").forEach { btnLabel ->
                                         Box(
@@ -740,7 +842,8 @@ fun SpreadsheetScreen(
                                                     val nextS = if (btnLabel == "0") {
                                                         0
                                                     } else {
-                                                        (activeToday.safeDelivered + (btnLabel.toIntOrNull() ?: 0)).coerceAtLeast(0)
+                                                        val delta = btnLabel.toIntOrNull() ?: 0
+                                                        (activeToday.safeDelivered + delta).coerceAtLeast(0)
                                                     }
                                                     val nextC = if (btnLabel == "0") {
                                                         activeToday.safeCarried
@@ -751,14 +854,19 @@ fun SpreadsheetScreen(
                                                         activeToday.copy(
                                                             isWorkingDay = true,
                                                             packagesCarried = nextC,
-                                                            packagesDelivered = nextS
-                                                        ).sanitized()
+                                                            packagesDelivered = nextS,
+                                                        ).sanitized(),
                                                     )
                                                 }
                                                 .padding(vertical = 9.dp),
-                                            contentAlignment = Alignment.Center
+                                            contentAlignment = Alignment.Center,
                                         ) {
-                                            Text(btnLabel, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = scheme.onSurface)
+                                            Text(
+                                                btnLabel,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = scheme.onSurface,
+                                            )
                                         }
                                     }
                                 }
@@ -768,7 +876,7 @@ fun SpreadsheetScreen(
                                         .fillMaxWidth()
                                         .padding(top = 2.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     SheetStatItem("${activeToday.remainingPackages}", "Sisa hari ini", large = true)
                                     SheetPillAction(text = "Edit", onClick = { editingLog = activeToday })
@@ -795,7 +903,7 @@ fun SpreadsheetScreen(
                     lineHeight = 22.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = scheme.onBackground,
-                    modifier = Modifier.padding(horizontal = 2.dp)
+                    modifier = Modifier.padding(horizontal = 2.dp),
                 )
 
                 SheetCard {
@@ -804,7 +912,7 @@ fun SpreadsheetScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 2.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
                             listOf("Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min").forEach { dow ->
                                 Text(
@@ -813,7 +921,7 @@ fun SpreadsheetScreen(
                                     fontWeight = FontWeight.Medium,
                                     color = scheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
                                 )
                             }
                         }
@@ -821,7 +929,7 @@ fun SpreadsheetScreen(
                         for (r in 0 until rowsCount) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
                             ) {
                                 for (c in 0 until 7) {
                                     val idx = r * 7 + c
@@ -840,7 +948,13 @@ fun SpreadsheetScreen(
                                             else -> scheme.surfaceVariant
                                         }
                                         val cellFg = if (isToday) scheme.surface else scheme.onSurface
-                                        val subFg = if (isToday) scheme.surface.copy(alpha = 0.72f) else scheme.onSurfaceVariant
+                                        val subFg = if (isToday) {
+                                            scheme.surface.copy(
+                                                alpha = 0.72f,
+                                            )
+                                        } else {
+                                            scheme.onSurfaceVariant
+                                        }
 
                                         Box(
                                             modifier = Modifier
@@ -850,16 +964,30 @@ fun SpreadsheetScreen(
                                                 .background(cellBg)
                                                 .then(
                                                     if (isOffDay && !isToday) {
-                                                        Modifier.border(1.dp, scheme.outlineVariant, RoundedCornerShape(11.dp))
-                                                    } else Modifier
+                                                        Modifier.border(
+                                                            1.dp,
+                                                            scheme.outlineVariant,
+                                                            RoundedCornerShape(11.dp),
+                                                        )
+                                                    } else {
+                                                        Modifier
+                                                    },
                                                 )
                                                 .clickable {
-                                                    editingLog = logItem ?: DailyLog(date = dateStr, ratePerPackage = defaultRate)
+                                                    editingLog =
+                                                        logItem
+                                                            ?: DailyLog(date = dateStr, ratePerPackage = defaultRate)
                                                 },
-                                            contentAlignment = Alignment.Center
+                                            contentAlignment = Alignment.Center,
                                         ) {
                                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                Text(dayNum.toString(), fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold, color = cellFg)
+                                                Text(
+                                                    dayNum.toString(),
+                                                    fontSize = 13.sp,
+                                                    lineHeight = 16.sp,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = cellFg,
+                                                )
                                                 Text(
                                                     text = when {
                                                         logItem == null -> " "
@@ -870,7 +998,7 @@ fun SpreadsheetScreen(
                                                     lineHeight = 12.sp,
                                                     fontWeight = FontWeight.SemiBold,
                                                     color = subFg,
-                                                    maxLines = 1
+                                                    maxLines = 1,
                                                 )
                                             }
                                         }
@@ -890,9 +1018,15 @@ fun SpreadsheetScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 2.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("Riwayat", fontSize = 17.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold, color = scheme.onBackground)
+                    Text(
+                        "Riwayat",
+                        fontSize = 17.sp,
+                        lineHeight = 22.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = scheme.onBackground,
+                    )
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         SheetPillAction(
                             text = "Salin",
@@ -901,14 +1035,14 @@ fun SpreadsheetScreen(
                                     monthLabel = monthLabel,
                                     logs = monthlyLogs,
                                     summary = summary,
-                                    breakdown = breakdown
+                                    breakdown = breakdown,
                                 )
                                 val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 cm.setPrimaryClip(ClipData.newPlainText("Rekap Trackify", report))
                                 Toast.makeText(context, "Laporan disalin", Toast.LENGTH_SHORT).show()
-                            }
+                            },
                         )
-                        SheetPillAction(text = "CSV", onClick = { csvExporter.launch("Trackify_${selectedMonth}.csv") })
+                        SheetPillAction(text = "CSV", onClick = { csvExporter.launch("Trackify_$selectedMonth.csv") })
                     }
                 }
 
@@ -917,14 +1051,14 @@ fun SpreadsheetScreen(
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Row(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(CircleShape)
                                     .background(scheme.surfaceVariant)
-                                    .padding(2.dp)
+                                    .padding(2.dp),
                             ) {
                                 listOf(0 to "Kartu", 1 to "Grid").forEach { (idx, lbl) ->
                                     val sel = viewMode == idx
@@ -935,14 +1069,22 @@ fun SpreadsheetScreen(
                                             .background(if (sel) scheme.onSurface else Color.Transparent)
                                             .clickable { viewMode = idx }
                                             .padding(vertical = 6.dp),
-                                        contentAlignment = Alignment.Center
+                                        contentAlignment = Alignment.Center,
                                     ) {
-                                        Text(lbl, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = if (sel) scheme.surface else scheme.onSurfaceVariant)
+                                        Text(
+                                            lbl,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = if (sel) scheme.surface else scheme.onSurfaceVariant,
+                                        )
                                     }
                                 }
                             }
 
-                            SheetPillAction(text = if (sortDesc) "Terbaru" else "Terlama", onClick = { sortDesc = !sortDesc })
+                            SheetPillAction(text = if (sortDesc) "Terbaru" else "Terlama", onClick = {
+                                sortDesc =
+                                    !sortDesc
+                            })
 
                             Box(
                                 modifier = Modifier
@@ -953,13 +1095,13 @@ fun SpreadsheetScreen(
                                         showSearch = !showSearch
                                         if (!showSearch) searchQuery = ""
                                     },
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
                                     imageVector = TrackifyIcons.Search,
                                     contentDescription = "Cari",
                                     tint = if (showSearch) scheme.surface else scheme.onSurface,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(16.dp),
                                 )
                             }
                         }
@@ -968,11 +1110,17 @@ fun SpreadsheetScreen(
                             OutlinedTextField(
                                 value = searchQuery,
                                 onValueChange = { searchQuery = it },
-                                placeholder = { Text("Cari tanggal, misal 12 Nov", fontSize = 13.sp, color = scheme.onSurfaceVariant) },
+                                placeholder = {
+                                    Text(
+                                        "Cari tanggal, misal 12 Nov",
+                                        fontSize = 13.sp,
+                                        color = scheme.onSurfaceVariant,
+                                    )
+                                },
                                 singleLine = true,
                                 shape = RoundedCornerShape(12.dp),
                                 colors = trackifyFieldColors(),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
                             )
                         }
 
@@ -980,7 +1128,7 @@ fun SpreadsheetScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                         ) {
                             listOf("Semua", "Masuk", "Libur", "Sisa").forEachIndexed { idx, chipLabel ->
                                 val active = filterMode == idx
@@ -989,9 +1137,14 @@ fun SpreadsheetScreen(
                                         .clip(CircleShape)
                                         .background(if (active) scheme.onSurface else scheme.surfaceVariant)
                                         .clickable { filterMode = idx }
-                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                        .padding(horizontal = 12.dp, vertical = 6.dp),
                                 ) {
-                                    Text(chipLabel, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = if (active) scheme.surface else scheme.onSurfaceVariant)
+                                    Text(
+                                        chipLabel,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (active) scheme.surface else scheme.onSurfaceVariant,
+                                    )
                                 }
                             }
                         }
@@ -1004,13 +1157,14 @@ fun SpreadsheetScreen(
                                     .fillMaxWidth()
                                     .padding(vertical = 14.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
                             ) {
                                 Text(
-                                    text = "Belum ada log di $monthLabel. Mulai dari tanggal 1 atau pilih tanggal di kalender.",
+                                    text = "Belum ada log di $monthLabel. Mulai dari tanggal 1 atau pilih " +
+                                        "tanggal di kalender.",
                                     fontSize = 13.sp,
                                     color = scheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center
+                                    textAlign = TextAlign.Center,
                                 )
                                 Button(
                                     onClick = {
@@ -1018,7 +1172,10 @@ fun SpreadsheetScreen(
                                         editingLog = logsByDate[d1] ?: DailyLog(date = d1, ratePerPackage = defaultRate)
                                     },
                                     shape = RoundedCornerShape(12.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = scheme.onSurface, contentColor = scheme.surface)
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = scheme.onSurface,
+                                        contentColor = scheme.surface,
+                                    ),
                                 ) {
                                     Text("Tambah log", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                                 }
@@ -1029,15 +1186,19 @@ fun SpreadsheetScreen(
                                     .fillMaxWidth()
                                     .padding(vertical = 14.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
                             ) {
-                                Text("Tidak ada log yang cocok dengan filter.", fontSize = 13.sp, color = scheme.onSurfaceVariant)
+                                Text(
+                                    "Tidak ada log yang cocok dengan filter.",
+                                    fontSize = 13.sp,
+                                    color = scheme.onSurfaceVariant,
+                                )
                                 SheetPillAction(
                                     text = "Reset filter",
                                     onClick = {
                                         filterMode = 0
                                         searchQuery = ""
-                                    }
+                                    },
                                 )
                             }
                         } else if (viewMode == 0) {
@@ -1046,7 +1207,9 @@ fun SpreadsheetScreen(
                                     if (idx > 0) HorizontalDivider(thickness = 1.dp, color = scheme.outlineVariant)
                                     val dayNum = item.date.takeLast(2).toIntOrNull() ?: 1
                                     val dt = selectedMonth.atDay(dayNum.coerceIn(1, selectedMonth.lengthOfMonth()))
-                                    val rowTitle = "${dt.format(shortDayFmt).replaceFirstChar { it.titlecase(idLocale) }}, ${dt.dayOfMonth} ${dt.format(shortMonthFmt)}"
+                                    val rowTitle = "${dt.format(shortDayFmt).replaceFirstChar {
+                                        it.titlecase(idLocale)
+                                    }}, ${dt.dayOfMonth} ${dt.format(shortMonthFmt)}"
 
                                     Row(
                                         modifier = Modifier
@@ -1054,42 +1217,79 @@ fun SpreadsheetScreen(
                                             .clickable { editingLog = item }
                                             .padding(vertical = 12.dp),
                                         horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalAlignment = Alignment.CenterVertically,
                                     ) {
-                                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                                Text(rowTitle, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = scheme.onSurface)
+                                        Column(
+                                            modifier = Modifier.weight(1f),
+                                            verticalArrangement = Arrangement.spacedBy(2.dp),
+                                        ) {
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                            ) {
+                                                Text(
+                                                    rowTitle,
+                                                    fontSize = 15.sp,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = scheme.onSurface,
+                                                )
                                                 Box(
                                                     modifier = Modifier
                                                         .clip(CircleShape)
-                                                        .background(if (item.isWorkingDay) scheme.onSurface else Color.Transparent)
-                                                        .then(
-                                                            if (!item.isWorkingDay) Modifier.border(1.dp, scheme.outline, CircleShape) else Modifier
+                                                        .background(
+                                                            if (item.isWorkingDay) {
+                                                                scheme.onSurface
+                                                            } else {
+                                                                Color.Transparent
+                                                            },
                                                         )
-                                                        .padding(horizontal = 9.dp, vertical = 2.dp)
+                                                        .then(
+                                                            if (!item.isWorkingDay) {
+                                                                Modifier.border(
+                                                                    1.dp,
+                                                                    scheme.outline,
+                                                                    CircleShape,
+                                                                )
+                                                            } else {
+                                                                Modifier
+                                                            },
+                                                        )
+                                                        .padding(horizontal = 9.dp, vertical = 2.dp),
                                                 ) {
                                                     Text(
                                                         text = if (item.isWorkingDay) "Masuk" else "Libur",
                                                         fontSize = 11.sp,
                                                         fontWeight = FontWeight.SemiBold,
-                                                        color = if (item.isWorkingDay) scheme.surface else scheme.onSurfaceVariant
+                                                        color = if (item.isWorkingDay) {
+                                                            scheme.surface
+                                                        } else {
+                                                            scheme.onSurfaceVariant
+                                                        },
                                                     )
                                                 }
                                             }
                                             Text(
                                                 text = if (item.isWorkingDay) {
-                                                    val remPart = if (item.remainingPackages > 0) " · sisa ${item.remainingPackages}" else ""
+                                                    val remPart = if (item.remainingPackages >
+                                                        0
+                                                    ) {
+                                                        " · sisa ${item.remainingPackages}"
+                                                    } else {
+                                                        ""
+                                                    }
                                                     "${item.safeDelivered} dari ${item.safeCarried} paket$remPart"
-                                                } else "Tidak ada paket",
+                                                } else {
+                                                    "Tidak ada paket"
+                                                },
                                                 fontSize = 13.sp,
-                                                color = scheme.onSurfaceVariant
+                                                color = scheme.onSurfaceVariant,
                                             )
                                         }
                                         Text(
                                             text = if (item.isWorkingDay) item.netIncome.formatIdr() else "Rp0",
                                             fontSize = 15.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = scheme.onSurface
+                                            color = scheme.onSurface,
                                         )
                                     }
                                 }
@@ -1103,12 +1303,47 @@ fun SpreadsheetScreen(
 
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Row(modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
-                                    Text("Tgl", fontSize = 12.sp, color = scheme.onSurfaceVariant, modifier = Modifier.weight(0.9f))
-                                    Text("Bawa", fontSize = 12.sp, color = scheme.onSurfaceVariant, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                                    Text("Kirim", fontSize = 12.sp, color = scheme.onSurfaceVariant, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                                    Text("Sisa", fontSize = 12.sp, color = scheme.onSurfaceVariant, textAlign = TextAlign.End, modifier = Modifier.weight(0.9f))
-                                    Text("Pot.", fontSize = 12.sp, color = scheme.onSurfaceVariant, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                                    Text("Bersih", fontSize = 12.sp, color = scheme.onSurfaceVariant, textAlign = TextAlign.End, modifier = Modifier.weight(1.1f))
+                                    Text(
+                                        "Tgl",
+                                        fontSize = 12.sp,
+                                        color = scheme.onSurfaceVariant,
+                                        modifier = Modifier.weight(0.9f),
+                                    )
+                                    Text(
+                                        "Bawa",
+                                        fontSize = 12.sp,
+                                        color = scheme.onSurfaceVariant,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    Text(
+                                        "Kirim",
+                                        fontSize = 12.sp,
+                                        color = scheme.onSurfaceVariant,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    Text(
+                                        "Sisa",
+                                        fontSize = 12.sp,
+                                        color = scheme.onSurfaceVariant,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.weight(0.9f),
+                                    )
+                                    Text(
+                                        "Pot.",
+                                        fontSize = 12.sp,
+                                        color = scheme.onSurfaceVariant,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    Text(
+                                        "Bersih",
+                                        fontSize = 12.sp,
+                                        color = scheme.onSurfaceVariant,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.weight(1.1f),
+                                    )
                                 }
 
                                 filteredLogs.forEach { item ->
@@ -1118,25 +1353,101 @@ fun SpreadsheetScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable { editingLog = item }
-                                            .padding(vertical = 9.dp)
+                                            .padding(vertical = 9.dp),
                                     ) {
-                                        Text("$dNum", fontSize = 12.sp, color = scheme.onSurface, modifier = Modifier.weight(0.9f))
-                                        Text("${item.safeCarried}", fontSize = 12.sp, color = scheme.onSurface, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                                        Text("${item.safeDelivered}", fontSize = 12.sp, color = scheme.onSurface, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                                        Text("${item.remainingPackages}", fontSize = 12.sp, color = scheme.onSurface, textAlign = TextAlign.End, modifier = Modifier.weight(0.9f))
-                                        Text(item.expense.formatCompactK(), fontSize = 12.sp, color = scheme.onSurface, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                                        Text(item.netIncome.formatCompactK(), fontSize = 12.sp, color = scheme.onSurface, textAlign = TextAlign.End, modifier = Modifier.weight(1.1f))
+                                        Text(
+                                            "$dNum",
+                                            fontSize = 12.sp,
+                                            color = scheme.onSurface,
+                                            modifier = Modifier.weight(0.9f),
+                                        )
+                                        Text(
+                                            "${item.safeCarried}",
+                                            fontSize = 12.sp,
+                                            color = scheme.onSurface,
+                                            textAlign = TextAlign.End,
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                        Text(
+                                            "${item.safeDelivered}",
+                                            fontSize = 12.sp,
+                                            color = scheme.onSurface,
+                                            textAlign = TextAlign.End,
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                        Text(
+                                            "${item.remainingPackages}",
+                                            fontSize = 12.sp,
+                                            color = scheme.onSurface,
+                                            textAlign = TextAlign.End,
+                                            modifier = Modifier.weight(0.9f),
+                                        )
+                                        Text(
+                                            item.expense.formatCompactK(),
+                                            fontSize = 12.sp,
+                                            color = scheme.onSurface,
+                                            textAlign = TextAlign.End,
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                        Text(
+                                            item.netIncome.formatCompactK(),
+                                            fontSize = 12.sp,
+                                            color = scheme.onSurface,
+                                            textAlign = TextAlign.End,
+                                            modifier = Modifier.weight(1.1f),
+                                        )
                                     }
                                 }
 
                                 HorizontalDivider(thickness = 2.dp, color = scheme.onSurface)
                                 Row(modifier = Modifier.fillMaxWidth().padding(top = 9.dp)) {
-                                    Text("TOTAL", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = scheme.onSurface, modifier = Modifier.weight(0.9f))
-                                    Text("$totC", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = scheme.onSurface, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                                    Text("$totS", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = scheme.onSurface, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                                    Text("$totR", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = scheme.onSurface, textAlign = TextAlign.End, modifier = Modifier.weight(0.9f))
-                                    Text(totE.formatCompactK(), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = scheme.onSurface, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                                    Text(totN.formatCompactK(), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = scheme.onSurface, textAlign = TextAlign.End, modifier = Modifier.weight(1.1f))
+                                    Text(
+                                        "TOTAL",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = scheme.onSurface,
+                                        modifier = Modifier.weight(0.9f),
+                                    )
+                                    Text(
+                                        "$totC",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = scheme.onSurface,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    Text(
+                                        "$totS",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = scheme.onSurface,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    Text(
+                                        "$totR",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = scheme.onSurface,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.weight(0.9f),
+                                    )
+                                    Text(
+                                        totE.formatCompactK(),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = scheme.onSurface,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    Text(
+                                        totN.formatCompactK(),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = scheme.onSurface,
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.weight(1.1f),
+                                    )
                                 }
                             }
                         }
@@ -1155,14 +1466,16 @@ fun SpreadsheetScreen(
                     onClick = {
                         val millis = datePickerState.selectedDateMillis
                         if (millis != null) {
-                            val dateStr = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                            val dateStr = Instant.ofEpochMilli(
+                                millis,
+                            ).atZone(ZoneId.systemDefault()).toLocalDate().toString()
                             editingLog = logsByDate[dateStr] ?: DailyLog(date = dateStr, ratePerPackage = defaultRate)
                         }
                         showDatePicker = false
-                    }
+                    },
                 ) { Text("Pilih") }
             },
-            dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text("Batal") } }
+            dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text("Batal") } },
         ) { DatePicker(state = datePickerState) }
     }
 
@@ -1175,10 +1488,13 @@ fun SpreadsheetScreen(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text("Target bersih", fontSize = 14.sp)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         SheetPillAction("−") { draftTarget = (draftTarget - 100_000.0).coerceAtLeast(0.0) }
                         Text(draftTarget.formatIdr(), fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         SheetPillAction("+") { draftTarget += 100_000.0 }
@@ -1192,10 +1508,13 @@ fun SpreadsheetScreen(
                         onUpdateTarget(draftTarget)
                         showTargetSheet = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = scheme.onSurface, contentColor = scheme.surface)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = scheme.onSurface,
+                        contentColor = scheme.surface,
+                    ),
                 ) { Text("Simpan target") }
             },
-            dismissButton = { TextButton(onClick = { showTargetSheet = false }) { Text("Batal") } }
+            dismissButton = { TextButton(onClick = { showTargetSheet = false }) { Text("Batal") } },
         )
     }
 
@@ -1211,7 +1530,7 @@ fun SpreadsheetScreen(
             onDelete = { target ->
                 onDeleteLog(target)
                 editingLog = null
-            }
+            },
         )
     }
 }
@@ -1223,7 +1542,7 @@ private fun SheetCard(content: @Composable ColumnScope.() -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         color = scheme.surface,
-        border = BorderStroke(1.dp, scheme.outlineVariant)
+        border = BorderStroke(1.dp, scheme.outlineVariant),
     ) {
         Column(modifier = Modifier.padding(16.dp), content = content)
     }
@@ -1240,7 +1559,7 @@ private fun SheetStatItem(value: String, label: String, large: Boolean = false, 
             fontWeight = FontWeight.SemiBold,
             color = scheme.onSurface,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
         Text(
             text = label,
@@ -1249,7 +1568,7 @@ private fun SheetStatItem(value: String, label: String, large: Boolean = false, 
             fontWeight = FontWeight.Medium,
             color = scheme.onSurfaceVariant,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -1263,9 +1582,16 @@ private fun SheetPillAction(text: String, onClick: () -> Unit) {
             .background(scheme.surfaceVariant)
             .clickable(onClick = onClick)
             .padding(horizontal = 13.dp, vertical = 7.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
-        Text(text = text, fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold, color = scheme.onSurface, maxLines = 1)
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = scheme.onSurface,
+            maxLines = 1,
+        )
     }
 }
 
@@ -1279,7 +1605,7 @@ private fun SheetCircleIconButton(onClick: () -> Unit, content: @Composable () -
             .background(scheme.surface)
             .border(1.dp, scheme.outlineVariant, CircleShape)
             .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) { content() }
 }
 
@@ -1292,7 +1618,7 @@ private fun SheetProgressBar(progress: Float, gradient: Boolean) {
             .fillMaxWidth()
             .height(10.dp)
             .clip(CircleShape)
-            .background(scheme.surfaceVariant)
+            .background(scheme.surfaceVariant),
     ) {
         if (clamped > 0f) {
             Box(
@@ -1301,9 +1627,12 @@ private fun SheetProgressBar(progress: Float, gradient: Boolean) {
                     .fillMaxHeight()
                     .clip(CircleShape)
                     .background(
-                        if (gradient) Brush.horizontalGradient(listOf(scheme.outline, scheme.onSurface))
-                        else Brush.horizontalGradient(listOf(scheme.onSurface, scheme.onSurface))
-                    )
+                        if (gradient) {
+                            Brush.horizontalGradient(listOf(scheme.outline, scheme.onSurface))
+                        } else {
+                            Brush.horizontalGradient(listOf(scheme.onSurface, scheme.onSurface))
+                        },
+                    ),
             )
         }
     }
@@ -1320,12 +1649,12 @@ private fun SheetBigNumberInput(value: String, onValueChange: (String) -> Unit) 
             fontSize = 26.sp,
             lineHeight = 30.sp,
             fontWeight = FontWeight.SemiBold,
-            color = scheme.onSurface
+            color = scheme.onSurface,
         ),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 2.dp)
+            .padding(top = 2.dp),
     )
 }
 
@@ -1335,7 +1664,7 @@ private fun SheetLogEditorDialog(
     defaultRate: Double,
     onDismiss: () -> Unit,
     onSave: (DailyLog) -> Unit,
-    onDelete: (DailyLog) -> Unit
+    onDelete: (DailyLog) -> Unit,
 ) {
     val clean = remember(log) { log.sanitized() }
     var isWorking by remember(clean) { mutableStateOf(clean.isWorkingDay) }
@@ -1354,13 +1683,24 @@ private fun SheetLogEditorDialog(
         title = { Text("Log ${clean.date}", fontSize = 18.sp, fontWeight = FontWeight.SemiBold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Text("Status Masuk", fontSize = 14.sp)
                     Switch(checked = isWorking, onCheckedChange = { isWorking = it })
                 }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Text("Dibawa", fontSize = 14.sp)
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         SheetPillAction("−") {
                             carried = (carried - 1).coerceAtLeast(0)
                             delivered = delivered.coerceAtMost(carried)
@@ -1369,9 +1709,16 @@ private fun SheetLogEditorDialog(
                         SheetPillAction("+") { carried += 1 }
                     }
                 }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Text("Terkirim", fontSize = 14.sp)
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         SheetPillAction("−") { delivered = (delivered - 1).coerceAtLeast(0) }
                         Text("$delivered", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                         SheetPillAction("+") {
@@ -1380,10 +1727,62 @@ private fun SheetLogEditorDialog(
                         }
                     }
                 }
-                OutlinedTextField(value = rateText, onValueChange = { rateText = it.filter { ch -> ch.isDigit() } }, label = { Text("Tarif / Paket (Rp)") }, singleLine = true, shape = RoundedCornerShape(12.dp), colors = trackifyFieldColors(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                OutlinedTextField(value = bonusText, onValueChange = { bonusText = it.filter { ch -> ch.isDigit() } }, label = { Text("Bonus (Rp)") }, singleLine = true, shape = RoundedCornerShape(12.dp), colors = trackifyFieldColors(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                OutlinedTextField(value = expenseText, onValueChange = { expenseText = it.filter { ch -> ch.isDigit() } }, label = { Text("Potongan (Rp)") }, singleLine = true, shape = RoundedCornerShape(12.dp), colors = trackifyFieldColors(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                OutlinedTextField(value = noteText, onValueChange = { noteText = it }, label = { Text("Catatan") }, singleLine = true, shape = RoundedCornerShape(12.dp), colors = trackifyFieldColors())
+                OutlinedTextField(
+                    value = rateText,
+                    onValueChange = {
+                        rateText = it.filter { ch -> ch.isDigit() }
+                    },
+                    label = {
+                        Text("Tarif / Paket (Rp)")
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(
+                        12.dp,
+                    ),
+                    colors = trackifyFieldColors(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                    ),
+                )
+                OutlinedTextField(
+                    value = bonusText,
+                    onValueChange = {
+                        bonusText = it.filter { ch -> ch.isDigit() }
+                    },
+                    label = {
+                        Text("Bonus (Rp)")
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(
+                        12.dp,
+                    ),
+                    colors = trackifyFieldColors(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                    ),
+                )
+                OutlinedTextField(
+                    value = expenseText,
+                    onValueChange = {
+                        expenseText = it.filter { ch -> ch.isDigit() }
+                    },
+                    label = {
+                        Text("Potongan (Rp)")
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(
+                        12.dp,
+                    ),
+                    colors = trackifyFieldColors(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                    ),
+                )
+                OutlinedTextField(value = noteText, onValueChange = {
+                    noteText = it
+                }, label = {
+                    Text("Catatan")
+                }, singleLine = true, shape = RoundedCornerShape(12.dp), colors = trackifyFieldColors())
             }
         },
         confirmButton = {
@@ -1396,10 +1795,10 @@ private fun SheetLogEditorDialog(
                         ratePerPackage = rateText.toDoubleOrNull() ?: defaultRate,
                         bonus = bonusText.toDoubleOrNull() ?: 0.0,
                         expense = expenseText.toDoubleOrNull() ?: 0.0,
-                        notes = noteText.trim()
+                        notes = noteText.trim(),
                     ).sanitized()
                     onSave(updated)
-                }
+                },
             ) { Text("Simpan log") }
         },
         dismissButton = {
@@ -1407,6 +1806,6 @@ private fun SheetLogEditorDialog(
                 TextButton(onClick = { onDelete(clean) }) { Text("Hapus") }
                 TextButton(onClick = onDismiss) { Text("Batal") }
             }
-        }
+        },
     )
 }

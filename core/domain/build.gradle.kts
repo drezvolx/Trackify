@@ -15,6 +15,6 @@ android {
 }
 
 dependencies {
-    // Hanya anotasi model (@Entity/@PrimaryKey/@Ignore), bukan implementasi Room.
+    // Room annotations > Model annotations only, not the Room implementation.
     implementation("androidx.room:room-common:2.7.1")
 }

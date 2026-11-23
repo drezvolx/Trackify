@@ -10,14 +10,11 @@ import androidx.compose.ui.unit.sp
 
 /** Tema tunggal app: Dark premium / White premium (monokrom solid) + Geist. */
 @Composable
-fun TrackifyTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
+fun TrackifyTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = if (darkTheme) MockupDarkColorScheme else MockupLightColorScheme,
         typography = MockupTypography,
-        content = content
+        content = content,
     )
 }
 
@@ -28,10 +25,7 @@ fun TrackifyTheme(
  * supaya ukuran, weight, letter spacing, dan warna tidak bisa beda-beda.
  */
 @Composable
-fun ScreenTitle(
-    text: String,
-    modifier: Modifier = Modifier
-) {
+fun ScreenTitle(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         modifier = modifier,
@@ -39,6 +33,6 @@ fun ScreenTitle(
         lineHeight = 32.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = (-0.6).sp,
-        color = MaterialTheme.colorScheme.onBackground
+        color = MaterialTheme.colorScheme.onBackground,
     )
 }

@@ -40,7 +40,7 @@ fun TrackifyCard(
     borderColor: Color = MaterialTheme.colorScheme.outlineVariant,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     val cardModifier = modifier.fillMaxWidth()
@@ -50,7 +50,7 @@ fun TrackifyCard(
             modifier = Modifier.padding(contentPadding),
             verticalArrangement = verticalArrangement,
             horizontalAlignment = horizontalAlignment,
-            content = content
+            content = content,
         )
     }
 
@@ -61,7 +61,7 @@ fun TrackifyCard(
             color = scheme.surface,
             border = BorderStroke(TrackifyCardBorder, borderColor),
             modifier = cardModifier,
-            content = cardContent
+            content = cardContent,
         )
     } else {
         Surface(
@@ -69,7 +69,7 @@ fun TrackifyCard(
             color = scheme.surface,
             border = BorderStroke(TrackifyCardBorder, borderColor),
             modifier = cardModifier,
-            content = cardContent
+            content = cardContent,
         )
     }
 }
@@ -89,7 +89,7 @@ fun TrackifyDialog(
     confirmButton: @Composable () -> Unit,
     dismissButton: (@Composable () -> Unit)? = null,
     shape: Shape = RoundedCornerShape(TrackifyCardCorner),
-    properties: DialogProperties = DialogProperties()
+    properties: DialogProperties = DialogProperties(),
 ) {
     val scheme = MaterialTheme.colorScheme
     AlertDialog(
@@ -103,7 +103,7 @@ fun TrackifyDialog(
         titleContentColor = scheme.onSurface,
         textContentColor = scheme.onSurfaceVariant,
         tonalElevation = 0.dp,
-        properties = properties
+        properties = properties,
     )
 }
 
@@ -118,6 +118,6 @@ fun trackifyFieldColors(): TextFieldColors {
     val scheme = MaterialTheme.colorScheme
     return OutlinedTextFieldDefaults.colors(
         focusedBorderColor = scheme.outlineVariant,
-        unfocusedBorderColor = scheme.outlineVariant
+        unfocusedBorderColor = scheme.outlineVariant,
     )
 }

@@ -4,12 +4,16 @@ import com.blankpages.trackify.domain.DailyLog
 import com.blankpages.trackify.domain.MonthlySummary
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.toMonthlySummary
-
-import org.json.JSONArray
-import org.json.JSONObject
 import java.time.LocalDate
 import java.time.YearMonth
-import kotlin.math.*
+import kotlin.math.asin
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.math.sin
+import kotlin.math.sqrt
+import org.json.JSONArray
+import org.json.JSONObject
 
 sealed interface EngineResult<out T> {
     data class Ok<T>(val value: T) : EngineResult<T>
@@ -21,14 +25,14 @@ data class BackupSettings(
     val defaultRate: Double = 2500.0,
     val defaultBonus: Double = 0.0,
     val targetAmount: Double = 3_600_000.0,
-    val dailyReminderEnabled: Boolean = true
+    val dailyReminderEnabled: Boolean = true,
 )
 
 data class BackupPayload(
     val logs: List<DailyLog>,
     val locations: List<SavedLocation>,
     val notes: List<CourierNote>,
-    val settings: BackupSettings = BackupSettings()
+    val settings: BackupSettings = BackupSettings(),
 )
 
 data class PeriodBreakdown(
@@ -47,7 +51,7 @@ data class PeriodBreakdown(
     val p2TotalPayout: Double = 0.0,
     val avgDeliveredPerWorkDay: Double = 0.0,
     val deliveryEfficiencyPct: Int = 0,
-    val periodDiffPackages: Int = 0
+    val periodDiffPackages: Int = 0,
 )
 
 data class TieredBonusSummary(
@@ -59,7 +63,7 @@ data class TieredBonusSummary(
     val tier2Bonus: Double = 0.0,
     val tier2Reached: Boolean = false,
     val tier2Remaining: Int = 3000,
-    val earnedBonus: Double = 0.0
+    val earnedBonus: Double = 0.0,
 )
 
 data class DailyChartBar(
@@ -70,14 +74,14 @@ data class DailyChartBar(
     val expense: Double,
     val netIncome: Double,
     val isWorkingDay: Boolean,
-    val hasLog: Boolean
+    val hasLog: Boolean,
 )
 
 data class MonthlyChartSummary(
     val bars: List<DailyChartBar> = emptyList(),
     val maxDelivered: Int = 0,
     val bestDay: DailyChartBar? = null,
-    val avgDelivered: Double = 0.0
+    val avgDelivered: Double = 0.0,
 )
 
 object TrackifyEngine {
@@ -110,7 +114,7 @@ object TrackifyEngine {
                     expense = log.expense,
                     netIncome = log.netIncome,
                     isWorkingDay = log.isWorkingDay,
-                    hasLog = true
+                    hasLog = true,
                 )
             } else {
                 DailyChartBar(
@@ -121,7 +125,7 @@ object TrackifyEngine {
                     expense = 0.0,
                     netIncome = 0.0,
                     isWorkingDay = false,
-                    hasLog = false
+                    hasLog = false,
                 )
             }
             bars.add(bar)
@@ -140,7 +144,7 @@ object TrackifyEngine {
             bars = bars,
             maxDelivered = maxDlv,
             bestDay = best,
-            avgDelivered = avg
+            avgDelivered = avg,
         )
     }
 
@@ -215,7 +219,7 @@ object TrackifyEngine {
             p2TotalPayout = p2Payout,
             avgDeliveredPerWorkDay = avgPerDay,
             deliveryEfficiencyPct = effPct,
-            periodDiffPackages = p2Dlv - p1Dlv
+            periodDiffPackages = p2Dlv - p1Dlv,
         )
     }
 
@@ -224,7 +228,7 @@ object TrackifyEngine {
         logs: List<DailyLog>,
         summary: MonthlySummary,
         breakdown: PeriodBreakdown,
-        tieredBonus: TieredBonusSummary = TieredBonusSummary()
+        tieredBonus: TieredBonusSummary = TieredBonusSummary(),
     ): String = buildString(448) {
         val totalGross = breakdown.p1GrossIncome + breakdown.p2GrossIncome
         val totalExpense = breakdown.p1Expense + breakdown.p2Expense
@@ -233,9 +237,17 @@ object TrackifyEngine {
         appendLine("*REKAP BULANAN KURIR - TRACKIFY*")
         appendLine("Bulan      : $monthLabel")
         appendLine("Hari Kerja : ${summary.totalWorkingDays} hari")
-        appendLine("Terkirim   : ${summary.totalDelivered} paket (Avg ${"%.1f".format(breakdown.avgDeliveredPerWorkDay)}/hr • ${breakdown.deliveryEfficiencyPct}%)")
-        appendLine("Gajian 1 (1-15 ÷ 2) : ${breakdown.p1HalfPayout.toRupiah()} (Full 1-15: ${breakdown.p1NetIncome.toRupiah()})")
-        appendLine("Gajian 2 (16-Akh)   : ${p2WithBonus.toRupiah()} (Sisa P1: ${breakdown.p1HalfCarryover.toRupiah()} + P2: ${breakdown.p2NetIncome.toRupiah()})")
+        appendLine(
+            "Terkirim   : ${summary.totalDelivered} paket (Avg ${"%.1f".format(
+                breakdown.avgDeliveredPerWorkDay,
+            )}/hr • ${breakdown.deliveryEfficiencyPct}%)",
+        )
+        appendLine(
+            "Gajian 1 (1-15 ÷ 2) : ${breakdown.p1HalfPayout.toRupiah()} (Full 1-15: ${breakdown.p1NetIncome.toRupiah()})",
+        )
+        appendLine(
+            "Gajian 2 (16-Akh)   : ${p2WithBonus.toRupiah()} (Sisa P1: ${breakdown.p1HalfCarryover.toRupiah()} + P2: ${breakdown.p2NetIncome.toRupiah()})",
+        )
         if (tieredBonus.earnedBonus > 0.0) {
             appendLine("Bonus Tier : +${tieredBonus.earnedBonus.toRupiah()}")
         }
@@ -245,7 +257,9 @@ object TrackifyEngine {
     }
 
     fun encodeMonthlyCsv(logs: List<DailyLog>): String = buildString(logs.size * 96 + 192) {
-        appendLine("Tanggal,Status,Paket_Dibawa,Paket_Terkirim,Sisa_Paket,Tarif_Satuan,Bonus,Pendapatan_Kotor,Potongan,Pendapatan_Bersih,Catatan")
+        appendLine(
+            "Tanggal,Status,Paket_Dibawa,Paket_Terkirim,Sisa_Paket,Tarif_Satuan,Bonus,Pendapatan_Kotor,Potongan,Pendapatan_Bersih,Catatan",
+        )
         var sumCarried = 0
         var sumDelivered = 0
         var sumRemaining = 0
@@ -265,9 +279,13 @@ object TrackifyEngine {
             sumGross += gross.toInt()
             sumExpense += l.expense.toInt()
             sumNet += l.netIncome.toInt()
-            appendLine("${l.date},$status,${l.safeCarried},${l.safeDelivered},${l.remainingPackages},${l.ratePerPackage.toInt()},${l.bonus.toInt()},${gross.toInt()},${l.expense.toInt()},${l.netIncome.toInt()},\"$cleanNotes\"")
+            appendLine(
+                "${l.date},$status,${l.safeCarried},${l.safeDelivered},${l.remainingPackages},${l.ratePerPackage.toInt()},${l.bonus.toInt()},${gross.toInt()},${l.expense.toInt()},${l.netIncome.toInt()},\"$cleanNotes\"",
+            )
         }
-        appendLine("TOTAL_BULAN,-,$sumCarried,$sumDelivered,$sumRemaining,-,$sumBonus,$sumGross,$sumExpense,$sumNet,\"\"")
+        appendLine(
+            "TOTAL_BULAN,-,$sumCarried,$sumDelivered,$sumRemaining,-,$sumBonus,$sumGross,$sumExpense,$sumNet,\"\"",
+        )
     }
 
     fun distanceMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
@@ -285,7 +303,7 @@ object TrackifyEngine {
         items: List<SavedLocation>,
         query: String,
         currentLat: Double?,
-        currentLon: Double?
+        currentLon: Double?,
     ): List<Pair<SavedLocation, Double?>> {
         if (items.isEmpty()) return emptyList()
         val q = query.trim()
@@ -295,7 +313,9 @@ object TrackifyEngine {
             if (q.isNotEmpty() &&
                 !loc.customerName.contains(q, ignoreCase = true) &&
                 !loc.landmarkNote.contains(q, ignoreCase = true)
-            ) continue
+            ) {
+                continue
+            }
             val dist = if (hasCoords) distanceMeters(currentLat!!, currentLon!!, loc.latitude, loc.longitude) else null
             result.add(loc to dist)
         }
@@ -319,7 +339,9 @@ object TrackifyEngine {
             if (q.isNotEmpty() &&
                 !note.title.contains(q, ignoreCase = true) &&
                 !note.content.contains(q, ignoreCase = true)
-            ) continue
+            ) {
+                continue
+            }
             result.add(note)
         }
         return result
@@ -330,55 +352,73 @@ object TrackifyEngine {
             put("app", "Trackify")
             put("schema", 6)
             put("exportedAt", today)
-            put("settings", JSONObject().apply {
-                put("defaultRate", payload.settings.defaultRate)
-                put("defaultBonus", payload.settings.defaultBonus)
-                put("targetAmount", payload.settings.targetAmount)
-                put("dailyReminderEnabled", payload.settings.dailyReminderEnabled)
-            })
-            put("daily_logs", JSONArray().apply {
-                payload.logs.forEach { rawLog ->
-                    val l = rawLog.sanitized()
-                    put(JSONObject().apply {
-                        put("date", l.date)
-                        put("isWorkingDay", l.isWorkingDay)
-                        put("packagesCarried", l.packagesCarried)
-                        put("packagesDelivered", l.packagesDelivered)
-                        put("ratePerPackage", l.ratePerPackage)
-                        put("bonus", l.bonus)
-                        put("expense", l.expense)
-                        put("notes", l.notes)
-                    })
-                }
-            })
-            put("saved_locations", JSONArray().apply {
-                payload.locations.forEach { loc ->
-                    put(JSONObject().apply {
-                        put("id", loc.id)
-                        put("customerName", loc.customerName)
-                        put("landmarkNote", loc.landmarkNote)
-                        put("latitude", loc.latitude)
-                        put("longitude", loc.longitude)
-                    })
-                }
-            })
-            put("courier_notes", JSONArray().apply {
-                payload.notes.forEach { n ->
-                    put(JSONObject().apply {
-                        put("id", n.id)
-                        put("title", n.title)
-                        put("content", n.content)
-                        put("isPinned", n.isPinned)
-                        put("updatedAt", n.updatedAt)
-                        put("linkedLocationId", n.linkedLocationId ?: JSONObject.NULL)
-                        put("isResolved", n.isResolved)
-                    })
-                }
-            })
+            put(
+                "settings",
+                JSONObject().apply {
+                    put("defaultRate", payload.settings.defaultRate)
+                    put("defaultBonus", payload.settings.defaultBonus)
+                    put("targetAmount", payload.settings.targetAmount)
+                    put("dailyReminderEnabled", payload.settings.dailyReminderEnabled)
+                },
+            )
+            put(
+                "daily_logs",
+                JSONArray().apply {
+                    payload.logs.forEach { rawLog ->
+                        val l = rawLog.sanitized()
+                        put(
+                            JSONObject().apply {
+                                put("date", l.date)
+                                put("isWorkingDay", l.isWorkingDay)
+                                put("packagesCarried", l.packagesCarried)
+                                put("packagesDelivered", l.packagesDelivered)
+                                put("ratePerPackage", l.ratePerPackage)
+                                put("bonus", l.bonus)
+                                put("expense", l.expense)
+                                put("notes", l.notes)
+                            },
+                        )
+                    }
+                },
+            )
+            put(
+                "saved_locations",
+                JSONArray().apply {
+                    payload.locations.forEach { loc ->
+                        put(
+                            JSONObject().apply {
+                                put("id", loc.id)
+                                put("customerName", loc.customerName)
+                                put("landmarkNote", loc.landmarkNote)
+                                put("latitude", loc.latitude)
+                                put("longitude", loc.longitude)
+                            },
+                        )
+                    }
+                },
+            )
+            put(
+                "courier_notes",
+                JSONArray().apply {
+                    payload.notes.forEach { n ->
+                        put(
+                            JSONObject().apply {
+                                put("id", n.id)
+                                put("title", n.title)
+                                put("content", n.content)
+                                put("isPinned", n.isPinned)
+                                put("updatedAt", n.updatedAt)
+                                put("linkedLocationId", n.linkedLocationId ?: JSONObject.NULL)
+                                put("isResolved", n.isResolved)
+                            },
+                        )
+                    }
+                },
+            )
         }.toString(2)
     }.fold(
         onSuccess = { EngineResult.Ok(it) },
-        onFailure = { EngineResult.Err("Encode gagal: ${it.localizedMessage}") }
+        onFailure = { EngineResult.Err("Encode gagal: ${it.localizedMessage}") },
     )
 
     fun decodeBackup(raw: String, fallbackDate: String): EngineResult<BackupPayload> = runCatching {
@@ -396,7 +436,7 @@ object TrackifyEngine {
                 ratePerPackage = o.optDouble("ratePerPackage", 2500.0).coerceAtLeast(0.0),
                 bonus = o.optDouble("bonus").coerceAtLeast(0.0),
                 expense = o.optDouble("expense").coerceAtLeast(0.0),
-                notes = o.optString("notes")
+                notes = o.optString("notes"),
             ).sanitized()
         }
         val locs = root.optJSONArray("saved_locations").mapObjects { o ->
@@ -405,7 +445,7 @@ object TrackifyEngine {
                 customerName = o.getString("customerName").trim(),
                 landmarkNote = o.optString("landmarkNote").trim(),
                 latitude = o.getDouble("latitude"),
-                longitude = o.getDouble("longitude")
+                longitude = o.getDouble("longitude"),
             )
         }
         val notes = root.optJSONArray("courier_notes").mapObjects { o ->
@@ -416,21 +456,25 @@ object TrackifyEngine {
                 isPinned = o.optBoolean("isPinned"),
                 updatedAt = o.optString("updatedAt", fallbackDate),
                 linkedLocationId = if (o.isNull("linkedLocationId")) null else o.optInt("linkedLocationId"),
-                isResolved = o.optBoolean("isResolved", false)
+                isResolved = o.optBoolean("isResolved", false),
             )
         }
-        // Backup lama (schema 5) tidak punya "settings"; pakai default agar tetap bisa dipulihkan.
+        // Legacy backup > Schema 5 has no settings; fall back to defaults.
         val settingsObj = root.optJSONObject("settings")
-        val settings = if (settingsObj == null) BackupSettings() else BackupSettings(
-            defaultRate = settingsObj.optDouble("defaultRate", 2500.0).coerceAtLeast(0.0),
-            defaultBonus = settingsObj.optDouble("defaultBonus", 0.0).coerceAtLeast(0.0),
-            targetAmount = settingsObj.optDouble("targetAmount", 3_600_000.0).coerceAtLeast(0.0),
-            dailyReminderEnabled = settingsObj.optBoolean("dailyReminderEnabled", true)
-        )
+        val settings = if (settingsObj == null) {
+            BackupSettings()
+        } else {
+            BackupSettings(
+                defaultRate = settingsObj.optDouble("defaultRate", 2500.0).coerceAtLeast(0.0),
+                defaultBonus = settingsObj.optDouble("defaultBonus", 0.0).coerceAtLeast(0.0),
+                targetAmount = settingsObj.optDouble("targetAmount", 3_600_000.0).coerceAtLeast(0.0),
+                dailyReminderEnabled = settingsObj.optBoolean("dailyReminderEnabled", true),
+            )
+        }
         BackupPayload(logs, locs, notes, settings)
     }.fold(
         onSuccess = { EngineResult.Ok(it) },
-        onFailure = { EngineResult.Err(it.localizedMessage ?: "Format JSON rusak") }
+        onFailure = { EngineResult.Err(it.localizedMessage ?: "Format JSON rusak") },
     )
 
     private inline fun <T> JSONArray?.mapObjects(transform: (JSONObject) -> T): List<T> =

@@ -1,21 +1,21 @@
 package com.blankpages.trackify.data
 
 import com.blankpages.trackify.data.local.AppPreferences
-import com.blankpages.trackify.domain.CourierNote
-import com.blankpages.trackify.domain.DailyLog
-import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.data.local.TrackifyDao
 import com.blankpages.trackify.domain.BackupPayload
 import com.blankpages.trackify.domain.BackupSettings
-import kotlinx.coroutines.flow.Flow
+import com.blankpages.trackify.domain.CourierNote
+import com.blankpages.trackify.domain.DailyLog
+import com.blankpages.trackify.domain.SavedLocation
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 
 data class TrackifySettings(
     val themeMode: Int = 0,
     val defaultBonus: Double = 0.0,
     val targetAmount: Double = 3_600_000.0,
-    val dailyReminderEnabled: Boolean = true
+    val dailyReminderEnabled: Boolean = true,
 )
 
 /**
@@ -23,10 +23,7 @@ data class TrackifySettings(
  * langsung ke DAO maupun SharedPreferences.
  */
 @Singleton
-class TrackifyRepository @Inject constructor(
-    private val dao: TrackifyDao,
-    private val prefs: AppPreferences
-) {
+class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, private val prefs: AppPreferences) {
     fun logByDate(date: String): Flow<DailyLog?> = dao.getLogByDate(date)
     fun logsByMonth(yearMonth: String): Flow<List<DailyLog>> = dao.getLogsByMonth(yearMonth)
     fun allLocations(): Flow<List<SavedLocation>> = dao.getAllLocations()
@@ -38,7 +35,7 @@ class TrackifyRepository @Inject constructor(
         themeMode = prefs.themeMode,
         defaultBonus = prefs.defaultBonusAmount,
         targetAmount = prefs.monthlyTargetAmount,
-        dailyReminderEnabled = prefs.dailyReminderEnabled
+        dailyReminderEnabled = prefs.dailyReminderEnabled,
     )
 
     fun setDefaultRate(value: Double) {
@@ -62,7 +59,7 @@ class TrackifyRepository @Inject constructor(
         defaultRate = defaultRate,
         defaultBonus = prefs.defaultBonusAmount,
         targetAmount = prefs.monthlyTargetAmount,
-        dailyReminderEnabled = prefs.dailyReminderEnabled
+        dailyReminderEnabled = prefs.dailyReminderEnabled,
     )
 
     /** Dipakai VM saat memulihkan backup JSON. */

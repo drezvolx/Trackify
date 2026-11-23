@@ -9,8 +9,7 @@ class TrackifyApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // Simpan handler bawaan sistem supaya crash tetap ditangani normal
-        // (dialog Force Close / pelaporan dari OS), bukan cuma dicetak ke log.
+        // Crash handler > Delegate to the previous handler so the OS still reports it.
         val previousHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             Log.e("TrackifyCrash", "FATAL EXCEPTION in thread ${thread.name}", throwable)

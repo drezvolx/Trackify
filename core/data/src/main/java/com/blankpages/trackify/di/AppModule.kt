@@ -17,8 +17,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): TrackifyDatabase =
-        TrackifyDatabase.get(context)
+    fun provideDatabase(@ApplicationContext context: Context): TrackifyDatabase = TrackifyDatabase.get(context)
 
     @Provides
     @Singleton
@@ -26,6 +25,5 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providePreferences(@ApplicationContext context: Context): AppPreferences =
-        AppPreferences(context)
+    fun providePreferences(@ApplicationContext context: Context): AppPreferences = AppPreferences(context)
 }

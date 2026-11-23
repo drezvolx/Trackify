@@ -4,6 +4,50 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Gaya kode idiomatik & konvensi komentar
+
+### Diubah
+
+- Delapan file yang sebelumnya memakai wildcard import kini memakai import eksplisit: `TrackifyViewModel`, `TrackifyComponents`, `TrackifyEngineTest`, `HomeScreen`, `SettingsScreen`, `NotesScreen`, `LocationsScreen`, dan `SpreadsheetScreen`.
+- Wildcard import sisa di `TrackifyEngine`, `ExampleInstrumentedTest`, dan `TrackifyDatabase` juga diganti import eksplisit supaya seluruh source aktif konsisten.
+- `.editorconfig` ditambahkan: ktlint `android_studio`, maksimal 120 kolom, trailing comma, `function-naming` dimatikan untuk Composable PascalCase, dan `filename` dimatikan agar `TrackifyNavigation.kt` tetap memuat `TrackifyTab`.
+- `ktlint --format` diterapkan ke seluruh source aktif dan build file, sehingga import ordering, trailing comma, wrapping, dan final newline konsisten tanpa mengubah perilaku atau string.
+- Seluruh komentar `//` di source aktif dan build file diseragamkan ke `// Topic > ...` dalam bahasa Inggris, misalnya `// Theme & System bar > Follow the device via SystemBarStyle.auto.`.
+- Import/local yang tidak dipakai dibersihkan, termasuk `headerDate` dan formatter terkait di `HomeScreen`.
+
+### Diperbaiki
+
+- Build gagal setelah refactor karena `androidx.compose.foundation.layout.weight` (internal) dan `androidx.compose.runtime.rememberDatePickerState` salah import. Import di `LocationsScreen` dan `SpreadsheetScreen` diperbaiki.
+- `JournalMode` ternyata enum bersarang di `RoomDatabase`, bukan kelas paket `androidx.room`. Referensi di `TrackifyDatabase` dipakai sebagai `RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING`.
+
+### Verifikasi
+
+- `ktlint` check exit 0 untuk seluruh source aktif dan build file.
+- `:app:assembleDebug` dan `:app:testDebugUnitTest` `BUILD SUCCESSFUL`; 14/14 tes lulus, 0 failure, 0 warning compiler.
+
+---
+
+## 23 Nov 2026 — Baseline profile
+
+### Ditambahkan
+
+- Modul `:baselineprofile` dengan `BaselineProfileRule.collect(...)` untuk cold start: `pressHome()` lalu `startActivityAndWait()`.
+- `androidx.profileinstaller` di `:app` supaya profil langsung dipakai pada instalasi lokal (tanpa Play Store).
+- Varian `nonMinifiedRelease` dibuat eksplisit: AGP 9 mewariskan `optimization` dari `release` lewat `initWith`, jadi R8 harus dimatikan di varian penghasil profil.
+- Profil hasil generate di `app/src/release/generated/baselineProfiles/` (`baseline-prof.txt` dan `startup-prof.txt`), sementara output build modul `:baselineprofile` diabaikan lewat `.gitignore`.
+
+### Diubah
+
+- `settings.gradle.kts`, version catalog, dan root build script mendaftarkan plugin `com.android.test` dan `androidx.baselineprofile` `1.5.0`.
+
+### Verifikasi
+
+- `:app:generateReleaseBaselineProfile` sukses di perangkat API 34; `baseline.prof` ikut terkemas di APK release (2,01 MB).
+- Setelah dexopt stabil, cold start release 10 kali: **340–394 ms** (median ~353 ms), lebih cepat dari ~418 ms sebelum profil. Beberapa kali pertama setelah install lebih lambat karena ProfileInstaller masih mengompilasi profil.
+- UI release tetap normal: Home, bottom nav, dan PID aktif.
+
+---
+
 ## 23 Nov 2026 — Lisensi MIT
 
 ### Ditambahkan
