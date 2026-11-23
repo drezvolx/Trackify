@@ -288,26 +288,6 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         }
     }
 
-    fun incrementTodayDelivered(delta: Int = 1): Boolean {
-        val step = delta.coerceAtLeast(1)
-        val current = uiState.value.todayLog
-        if (!current.isWorkingDay) return false
-        val nextDelivered = if (current.packagesCarried > 0) {
-            (current.packagesDelivered + step).coerceAtMost(current.packagesCarried)
-        } else {
-            current.packagesDelivered + step
-        }
-        val nextCarried = current.packagesCarried.coerceAtLeast(nextDelivered)
-        if (nextDelivered == current.packagesDelivered && nextCarried == current.packagesCarried) return false
-        upsertLog(
-            current.copy(
-                packagesCarried = nextCarried,
-                packagesDelivered = nextDelivered,
-            ),
-        )
-        return true
-    }
-
     fun carryoverYesterdayRemaining() {
         val rem = uiState.value.yesterdayRemaining
         if (rem <= 0) return

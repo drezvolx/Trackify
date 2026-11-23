@@ -4,6 +4,29 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 13: Lokasi murni + bagikan foto & teks
+
+### Ditambahkan
+
+- `core:domain`: `LocationShareText.build` menghasilkan teks final: `FOTO`, `-------`, `Nama Penerima : …`, `Detail/Patokan : …`, `Maps : …`, baris kosong, `by Trackify.`
+- `ui/locations/LocationSharing`: `ACTION_SEND` dengan foto dari `filesDir/location_photos` lewat `FileProvider` (`EXTRA_STREAM` + `FLAG_GRANT_READ_URI_PERMISSION`) dan teks di `EXTRA_TEXT`; tanpa foto, pakai `ACTION_SEND` teks biasa.
+- Manifest mendeklarasikan `androidx.core.content.FileProvider` dengan authority `com.blankpages.trackify.fileprovider` dan `res/xml/file_paths.xml` untuk `location_photos/`.
+- Tombol **Bagikan** juga tersedia di detail lokasi.
+
+### Diubah
+
+- Kartu Nearby tidak lagi menampilkan **+1 Pkt** dan **Catat**; helper `createLinkedNote`, callback `onQuickDelivered`/`onCreateLinkedNote`, dan VM `incrementTodayDelivered` dihapus. `upsertNote` tetap dipakai tab Catatan.
+- `LocationShareTextTest` (2 tes) mengecek susunan teks persis dan baris kosong. Total tes **28/28**.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **28/28** tes, 0 failure.
+- Smoke perangkat: tab Lokasi tidak lagi memuat tombol `+1 Pkt`/`Catat`; mengetuk **Bagikan** di kartu maupun di detail membuka chooser dengan teks `FOTO / ------- / Nama Penerima : Gerai / Detail/Patokan : / Maps : … / (kosong) / by Trackify.`
+- Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`, `OLD_LOCATION_ACTIONS=0`.
+- CI `validate`: _menunggu run_.
+
+---
+
 ## 24 Nov 2026 — Fase 12: jam notifikasi bisa diatur user
 
 ### Ditambahkan
@@ -24,7 +47,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **26/26** tes, 0 failure.
 - Smoke perangkat: membuka **Atur jam** → memilih `07.05` → label berubah menjadi `Notifikasi pukul 07.05`; setelah force-stop + peluncuran ulang nilai tetap `07.05`; `dumpsys alarm` menunjukkan alarm `DailyReminderReceiver` aktif. Jam dikembalikan ke `20.00` dan alarm terjadwal ulang; tanggal gajian uji dikembalikan ke `25`.
 - Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`.
-- CI `validate`: _menunggu run_.
+- CI `validate` hijau: run `45242683391` (`50ee254`).
 
 ---
 

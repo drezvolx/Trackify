@@ -229,8 +229,6 @@ private fun TabContent(
             locations = state.locations,
             onSaveLocation = vm::saveLocation,
             onDeleteLocation = vm::deleteLocation,
-            onQuickDelivered = vm::incrementTodayDelivered,
-            onCreateLinkedNote = vm::upsertNote,
         )
 
         TrackifyTab.CATATAN -> NotesScreen(

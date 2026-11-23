@@ -74,7 +74,6 @@ import androidx.core.app.ActivityCompat
 import com.blankpages.trackify.data.location.DeviceLocationSource
 import com.blankpages.trackify.data.location.MapLinkResolver
 import com.blankpages.trackify.data.performance.DevicePerformance
-import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.MapUrlParser
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.TrackifyEngine
@@ -83,7 +82,6 @@ import com.blankpages.trackify.ui.theme.TrackifyCard
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
-import java.time.LocalDate
 import java.util.Locale
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
@@ -101,8 +99,6 @@ fun LocationsScreen(
     locations: List<SavedLocation>,
     onSaveLocation: (SavedLocation, Boolean) -> Unit,
     onDeleteLocation: (SavedLocation) -> Unit,
-    onQuickDelivered: (Int) -> Boolean = { true },
-    onCreateLinkedNote: (CourierNote) -> Unit = {},
 ) {
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
@@ -212,18 +208,6 @@ fun LocationsScreen(
         detailEntry = null
         editingTarget = target
         showEditor = true
-    }
-
-    fun createLinkedNote(loc: SavedLocation) {
-        onCreateLinkedNote(
-            CourierNote(
-                title = loc.customerName,
-                content = loc.landmarkNote,
-                updatedAt = LocalDate.now().toString(),
-                linkedLocationId = loc.id,
-            ),
-        )
-        Toast.makeText(context, "Catatan dibuat", Toast.LENGTH_SHORT).show()
     }
 
     LazyColumn(
@@ -440,27 +424,7 @@ fun LocationsScreen(
                                     entry = entry,
                                     onNavigate = { openMapNavigation(context, entry.first) },
                                     onDetail = { detailEntry = entry },
-                                    onDelivered = {
-                                        val changed = onQuickDelivered(1)
-                                        Toast.makeText(
-                                            context,
-                                            if (changed) "+1 Terkirim" else "Paket sudah mencapai batas",
-                                            Toast.LENGTH_SHORT,
-                                        ).show()
-                                    },
-                                    onNote = { createLinkedNote(entry.first) },
-                                    onShare = {
-                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                            type = "text/plain"
-                                            putExtra(
-                                                Intent.EXTRA_TEXT,
-                                                "${entry.first.displayTitle()} (${entry.first.landmarkNote}) - " +
-                                                    "https://maps.google.com/?q=${entry.first.latitude}," +
-                                                    "${entry.first.longitude}",
-                                            )
-                                        }
-                                        context.startActivity(Intent.createChooser(shareIntent, "Bagikan Lokasi"))
-                                    },
+                                    onShare = { LocationSharing.share(context, entry.first) },
                                 )
                             }
                         }
@@ -640,6 +604,7 @@ fun LocationsScreen(
                                 Toast.makeText(context, "Koordinat disalin", Toast.LENGTH_SHORT).show()
                             },
                         ) { Text("Salin") }
+                        TextButton(onClick = { LocationSharing.share(context, target) }) { Text("Bagikan") }
                         TextButton(onClick = { openEditor(target) }) { Text("Edit") }
                         TextButton(
                             onClick = {
@@ -748,8 +713,6 @@ private fun LocationNearbyCard(
     entry: Pair<SavedLocation, Double?>,
     onNavigate: () -> Unit,
     onDetail: () -> Unit,
-    onDelivered: () -> Unit,
-    onNote: () -> Unit,
     onShare: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -870,27 +833,6 @@ private fun LocationNearbyCard(
                             tint = scheme.onSurfaceVariant,
                             modifier = Modifier.size(15.dp),
                         )
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TextButton(
-                        onClick = onDelivered,
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                        modifier = Modifier.defaultMinSize(minWidth = 36.dp, minHeight = 30.dp),
-                    ) {
-                        Text("+1 Pkt", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold)
-                    }
-                    TextButton(
-                        onClick = onNote,
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                        modifier = Modifier.defaultMinSize(minWidth = 36.dp, minHeight = 30.dp),
-                    ) {
-                        Text("Catat", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Medium)
                     }
                 }
             }

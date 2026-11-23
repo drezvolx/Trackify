@@ -115,7 +115,7 @@
 | 10 | Engine performa & device profile untuk perangkat low-end | Selesai |
 | 11 | Flow gajian & periode yang bisa diatur user | Selesai |
 | 12 | Jam notifikasi bisa diatur user | Selesai |
-| 13 | Lokasi murni + bagikan foto & teks | Rencana |
+| 13 | Lokasi murni + bagikan foto & teks | Selesai |
 | 14 | Template Notion opsional + multi-foto catatan, DB v8 | Rencana |
 | 15 | Tema gradien monokrom: Royal Charcoal / Pure Charcoal | Rencana |
 | 16 | Typography tebal di judul + gaya khas tiap layout | Rencana |
@@ -156,9 +156,11 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
   `DailyReminderScheduler` membaca prefs setiap dijadwalkan, jadi alarm langsung diperbarui tanpa
   install ulang. Backup JSON ikut menyimpan `reminderHour` / `reminderMinute`; backup lama memakai
   default `20.00`. Tidak ada izin baru dan tidak ada notifikasi tambahan.
-- **Fase 13 — Lokasi & bagikan:** aksi **+1 Pkt** dan **Catat** dihapus dari kartu/detail. Tombol **Bagikan**
-  mengirim foto lewat `FileProvider` plus teks:
-  `FOTO / ------- / Nama Penerima / Detail/Patokan / Maps / by Trackify.`
+- **Fase 13 — Lokasi & bagikan (selesai):** aksi **+1 Pkt** dan **Catat** dihapus dari kartu Nearby beserta
+  callback dan VM `incrementTodayDelivered`. Tombol **Bagikan** (kartu dan detail) mengirim foto dari
+  `filesDir/location_photos` lewat `FileProvider` plus teks persis:
+  `FOTO / ------- / Nama Penerima : … / Detail/Patokan : … / Maps : … / (baris kosong) / by Trackify.`
+  Tidak ada kolom DB, izin, atau field `SavedLocation` baru.
 - **Fase 14 — Catatan:** template Notion bersifat opsional (user boleh memilih `Kosong`). Foto catatan
   didukung hingga 5 foto lewat tabel `note_photos` dan migrasi DB v8; backup schema `8` mengekspor array `photos`,
   import schema `7` tetap diterima.

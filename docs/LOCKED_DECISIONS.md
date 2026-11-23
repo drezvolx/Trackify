@@ -833,3 +833,19 @@ User meminta jam notifikasi tidak hardcode `20.00`. Keputusan:
   itu dibaca dengan default `20.00`.
 - Pengaturan lain tidak berubah: bottom nav, header `ScreenTitle`, gradien monokrom, orientasi portrait,
   dan token `TrackifyCard`/`TrackifyDialog`.
+
+### 24 Nov 2026 — Fase 13: lokasi murni, berbagi foto + teks
+
+User meminta tab Lokasi fokus ke lokasi. Keputusan:
+
+- **+1 Pkt** dan **Catat** dihapus total dari kartu Nearby, termasuk callback `onQuickDelivered` /
+  `onCreateLinkedNote`, helper `createLinkedNote`, dan VM `incrementTodayDelivered`. `upsertNote` tetap
+  dipakai tab Catatan.
+- Tombol **Bagikan** tersedia di kartu dan detail. Memakai `Intent.ACTION_SEND`, `EXTRA_TEXT`, dan
+  `EXTRA_STREAM` bila foto ada. Foto diambil dari `filesDir/location_photos` dan dibagikan lewat
+  `FileProvider` authority `com.blankpages.trackify.fileprovider` (`file_paths.xml`) dengan
+  `FLAG_GRANT_READ_URI_PERMISSION`. Tanpa foto, berbagi tetap jalan dengan teks saja.
+- Teks final (diformat di `:core:domain` `LocationShareText`, bisa diuji tanpa Android):
+  `FOTO` / `-------` / `Nama Penerima : …` / `Detail/Patokan : …` / `Maps : …` / baris kosong / `by Trackify.`
+- Field `SavedLocation` final tetap `id, customerName, landmarkNote, latitude, longitude, photoPath`.
+  Tidak ada migrasi DB, tidak ada izin baru, tidak ada perubahan bottom nav/header/tema/token UI.
