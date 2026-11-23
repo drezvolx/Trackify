@@ -117,7 +117,7 @@
 | 12 | Jam notifikasi bisa diatur user | Selesai |
 | 13 | Lokasi murni + bagikan foto & teks | Selesai |
 | 14 | Template Notion opsional + multi-foto catatan, DB v8 | Selesai |
-| 15 | Tema gradien monokrom: Royal Charcoal / Pure Charcoal | Rencana |
+| 15 | Tema gradien monokrom: Royal Charcoal / Pure Charcoal | Selesai |
 | 16 | Typography tebal di judul + gaya khas tiap layout | Rencana |
 | 17 | Tombol outline + spacing/typography konsisten | Rencana |
 | 18 | Tombol update, kredit, folder manajemen, README/docs | Rencana |
@@ -166,9 +166,11 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
   `MIGRATION_7_8` (DB versi **8**). Foto disalin ke `filesDir/note_photos` dengan awalan `note_` dan dihapus
   bersama catatan. Backup schema `8` mengekspor array `photos` per catatan; import schema `7` tanpa kunci
   itu tetap diterima. Tidak ada perubahan pada `courier_notes`, blok `NoteBlocks`, bottom nav, header, atau tema.
-- **Fase 15 — Tema:** dark **Royal Charcoal** (`#25262a → #1e1f22 → #17181a`, hero `#4c4e51 → #1e2023`)
-  dan light **Pure Charcoal** (`#fafafa → #f1f1f1 → #e8e8e8`, hero `#3a3a3c → #161617`). Gradien dipasang
-  di container tiap screen; `Scaffold` tetap hanya di `MainActivity`, dan tidak ada toggle tema manual.
+- **Fase 15 — Tema (selesai):** dark **Royal Charcoal** (`#25262a → #1e1f22 → #17181a`, hero
+  `#4c4e51 → #2c2d31 → #1e2023`) dan light **Pure Charcoal** (`#fafafa → #f1f1f1 → #e8e8e8`, hero
+  `#3a3a3c → #232324 → #161617`). `TrackifyGradients` dipakai di root kelima layar; hero Home memakai
+  gradien hero dengan teks putih. `LocalTrackifyDarkTheme` meneruskan `isSystemInDarkTheme()` tanpa preferensi
+  baru. `Scaffold` tetap hanya di `MainActivity`, dan tidak ada toggle tema manual.
 - **Fase 16 — Typography:** judul `ExtraBold`, angka Home `tnum`, koordinat Lokasi monospaced, judul blok
   Catatan lebih berat dari paragraf. `ScreenTitle` tetap tanpa subtext.
 - **Fase 17 — Tombol:** komponen tombol dengan outline `1.dp outlineVariant` di kedua tema, skala spacing

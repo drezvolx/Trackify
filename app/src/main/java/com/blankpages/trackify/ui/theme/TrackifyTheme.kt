@@ -4,18 +4,25 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-/** Tema tunggal app: Dark premium / White premium (monokrom solid) + Geist. */
+/** Meneruskan pilihan sistem ke token gradien tanpa menyimpan preferensi tema. */
+val LocalTrackifyDarkTheme = compositionLocalOf { false }
+
+/** Tema tunggal app: Royal Charcoal / Pure Charcoal (monokrom gradien) + Geist. */
 @Composable
 fun TrackifyTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = if (darkTheme) MockupDarkColorScheme else MockupLightColorScheme,
-        typography = MockupTypography,
-        content = content,
-    )
+    CompositionLocalProvider(LocalTrackifyDarkTheme provides darkTheme) {
+        MaterialTheme(
+            colorScheme = if (darkTheme) MockupDarkColorScheme else MockupLightColorScheme,
+            typography = MockupTypography,
+            content = content,
+        )
+    }
 }
 
 /**

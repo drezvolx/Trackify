@@ -4,6 +4,38 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 15: tema gradien monokrom
+
+### Ditambahkan
+
+- `ui/theme/TrackifyGradients`: satu-satunya sumber warna gradien. Dark **Royal Charcoal** — latar
+  `#25262a → #1e1f22 → #17181a`, hero `#4c4e51 → #2c2d31 → #1e2023`; light **Pure Charcoal** — latar
+  `#fafafa → #f1f1f1 → #e8e8e8`, hero `#3a3a3c → #232324 → #161617`.
+- `LocalTrackifyDarkTheme` di `TrackifyTheme.kt` meneruskan hasil `isSystemInDarkTheme()` ke token gradien.
+  `TrackifyTheme { ... }` tetap dipanggil tanpa argumen di `MainActivity`; tidak ada preferensi tema baru.
+
+### Diubah
+
+- Root `LazyColumn` Home, Rekap (`SpreadsheetScreen`), Lokasi, Catatan, dan Setelan memakai
+  `Modifier.background(TrackifyGradients.background())`. `Scaffold` tetap satu dan hanya di `MainActivity`.
+- Hero "Terkirim hari ini" di Home memakai `TrackifyGradients.hero()` dengan teks putih
+  (`HeroInk` / `HeroMute`) supaya kontras di kedua tema. Kartu lain tetap memakai token `scheme.surface`
+  dan border `outlineVariant`.
+- Palet solid pendamping (`TrackifyMockupPalette`) dan `res/values/colors.xml` diselaraskan dengan stop gradien.
+  Tidak ada perubahan pada `ScreenTitle`, bottom nav, `TrackifyCard`/`TrackifyDialog`, atau alur data.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **30/30** tes, 0 failure.
+- Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`;
+  `Scaffold(` hanya di `MainActivity.kt`; kelima layar memakai `TrackifyGradients.background()`.
+- Smoke perangkat: screenshot dianalisis per piksel. Mode dark: latar `#202124 → #1a1b1d`, hero
+  `#4a4c4f → #1e2023`. Setelah `cmd uimode night no` + restart: latar `#f3f3f3 → #ececec`, hero
+  `#39393a → #161617`. Mode perangkat dikembalikan ke `night yes`; aplikasi tidak crash.
+- CI `validate`: _menunggu run_.
+
+---
+
 ## 24 Nov 2026 — Fase 14: template opsional + multi-foto catatan, DB v8
 
 ### Ditambahkan
@@ -26,7 +58,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **30/30** tes, 0 failure.
 - Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`, `OLD_LOCATION_ACTIONS=0`; DB versi 8 dan `MIGRATION_7_8` aktif.
 - Smoke perangkat: install di atas data Fase 13 tidak crash dan lokasi lama ("Gerai") tetap ada (migrasi v7→v8); chip **Kosong** membuka editor blank; galeri menambah foto sampai `5/5`; **Hapus** per foto menurunkan ke `4/5`; menyimpan catatan menampilkan 4 thumbnail di kartu dan 4 file `note_*.jpg` di `filesDir/note_photos`; menghapus catatan mengosongkan folder dan tabel.
-- CI `validate`: _menunggu run_.
+- CI `validate` hijau: run `45249537846` (`f602e21`).
 
 ---
 

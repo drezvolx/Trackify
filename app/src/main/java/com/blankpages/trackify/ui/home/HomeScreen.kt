@@ -56,6 +56,7 @@ import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyDialog
+import com.blankpages.trackify.ui.theme.TrackifyGradients
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.text.NumberFormat
@@ -175,7 +176,7 @@ fun HomeScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(scheme.background),
+            .background(TrackifyGradients.background()),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(22.dp),
     ) {
@@ -215,11 +216,20 @@ fun HomeScreen(
 
         // Hero > Today card
         item {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                color = scheme.surface,
-                border = BorderStroke(1.dp, scheme.outlineVariant),
+            // Hero memakai gradien khusus; teksnya selalu putih di kedua tema.
+            val hero = scheme.copy(
+                onSurface = TrackifyGradients.HeroInk,
+                onSurfaceVariant = TrackifyGradients.HeroMute,
+                surface = TrackifyGradients.HeroChipInk,
+                surfaceVariant = TrackifyGradients.HeroTrack,
+                outline = TrackifyGradients.HeroLine,
+                outlineVariant = TrackifyGradients.HeroLine,
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(TrackifyGradients.hero(), RoundedCornerShape(20.dp))
+                    .border(1.dp, TrackifyGradients.HeroLine, RoundedCornerShape(20.dp)),
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -234,16 +244,16 @@ fun HomeScreen(
                             text = "Terkirim hari ini",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = scheme.onSurfaceVariant,
+                            color = hero.onSurfaceVariant,
                         )
 
                         Box(
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .background(if (activeToday.isWorkingDay) scheme.onSurface else Color.Transparent)
+                                .background(if (activeToday.isWorkingDay) hero.onSurface else Color.Transparent)
                                 .then(
                                     if (!activeToday.isWorkingDay) {
-                                        Modifier.border(1.dp, scheme.outline, CircleShape)
+                                        Modifier.border(1.dp, hero.outline, CircleShape)
                                     } else {
                                         Modifier
                                     },
@@ -261,7 +271,7 @@ fun HomeScreen(
                                 text = if (activeToday.isWorkingDay) "Masuk" else "Libur",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (activeToday.isWorkingDay) scheme.surface else scheme.onSurfaceVariant,
+                                color = if (activeToday.isWorkingDay) hero.surface else hero.onSurfaceVariant,
                             )
                         }
                     }
@@ -277,12 +287,12 @@ fun HomeScreen(
                                 lineHeight = 56.sp,
                                 fontWeight = FontWeight.Medium,
                                 letterSpacing = (-1.8).sp,
-                                color = scheme.onSurface,
+                                color = hero.onSurface,
                             )
                             Text(
                                 text = "dari ${activeToday.safeCarried} paket",
                                 fontSize = 13.sp,
-                                color = scheme.onSurfaceVariant,
+                                color = hero.onSurfaceVariant,
                                 modifier = Modifier.padding(bottom = 8.dp),
                             )
                         }
@@ -292,7 +302,7 @@ fun HomeScreen(
                                 .fillMaxWidth()
                                 .height(10.dp)
                                 .clip(CircleShape)
-                                .background(scheme.surfaceVariant),
+                                .background(hero.surfaceVariant),
                         ) {
                             val frac = (sentPct / 100f).coerceIn(0f, 1f)
                             if (frac > 0f) {
@@ -303,7 +313,7 @@ fun HomeScreen(
                                         .clip(CircleShape)
                                         .background(
                                             Brush.horizontalGradient(
-                                                listOf(scheme.outline, scheme.onSurface),
+                                                listOf(hero.outline, hero.onSurface),
                                             ),
                                         ),
                                 )
@@ -317,12 +327,12 @@ fun HomeScreen(
                             Text(
                                 text = "$sentPct% terkirim",
                                 fontSize = 12.sp,
-                                color = scheme.onSurfaceVariant,
+                                color = hero.onSurfaceVariant,
                             )
                             Text(
                                 text = "Sisa ${activeToday.remainingPackages} paket",
                                 fontSize = 12.sp,
-                                color = scheme.onSurfaceVariant,
+                                color = hero.onSurfaceVariant,
                             )
                         }
                     } else {
@@ -332,16 +342,16 @@ fun HomeScreen(
                             lineHeight = 56.sp,
                             fontWeight = FontWeight.Medium,
                             letterSpacing = (-1.8).sp,
-                            color = scheme.onSurface,
+                            color = hero.onSurface,
                         )
                         Text(
                             text = "Paket tidak dihitung hari ini.",
                             fontSize = 13.sp,
-                            color = scheme.onSurfaceVariant,
+                            color = hero.onSurfaceVariant,
                         )
                     }
 
-                    HorizontalDivider(thickness = 1.dp, color = scheme.outlineVariant)
+                    HorizontalDivider(thickness = 1.dp, color = hero.outlineVariant)
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
@@ -349,14 +359,14 @@ fun HomeScreen(
                                 text = WageCalculator.netIncomeOf(activeToday, wageMode, flatDailyAmount).homeIdr(),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = scheme.onSurface,
+                                color = hero.onSurface,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
                             Text(
                                 text = "Bersih hari ini",
                                 fontSize = 12.sp,
-                                color = scheme.onSurfaceVariant,
+                                color = hero.onSurfaceVariant,
                             )
                         }
                         Column(
@@ -368,12 +378,12 @@ fun HomeScreen(
                                 text = "${activeToday.remainingPackages}",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = scheme.onSurface,
+                                color = hero.onSurface,
                             )
                             Text(
                                 text = "Sisa paket",
                                 fontSize = 12.sp,
-                                color = scheme.onSurfaceVariant,
+                                color = hero.onSurfaceVariant,
                             )
                         }
                         Column(
@@ -385,12 +395,12 @@ fun HomeScreen(
                                 text = "%.1f".format(homeIdLocale, avgPerDay),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = scheme.onSurface,
+                                color = hero.onSurface,
                             )
                             Text(
                                 text = "Rata-rata/hari",
                                 fontSize = 12.sp,
-                                color = scheme.onSurfaceVariant,
+                                color = hero.onSurfaceVariant,
                             )
                         }
                     }
@@ -441,7 +451,7 @@ fun HomeScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(11.dp))
-                                        .background(scheme.surfaceVariant)
+                                        .background(hero.surfaceVariant)
                                         .clickable { pendingDelta = delta }
                                         .padding(vertical = 10.dp),
                                     contentAlignment = Alignment.Center,
@@ -450,7 +460,7 @@ fun HomeScreen(
                                         text = deltaStr,
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = scheme.onSurface,
+                                        color = hero.onSurface,
                                     )
                                 }
                             }
@@ -460,7 +470,7 @@ fun HomeScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(11.dp))
-                                .background(scheme.onSurface)
+                                .background(hero.onSurface)
                                 .clickable {
                                     onUpdateTodayLog(activeToday.copy(isWorkingDay = true).sanitized())
                                 }
@@ -471,7 +481,7 @@ fun HomeScreen(
                                 text = "Mulai kerja hari ini",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = scheme.surface,
+                                color = hero.surface,
                             )
                         }
                     }

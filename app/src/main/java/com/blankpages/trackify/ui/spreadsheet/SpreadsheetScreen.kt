@@ -77,6 +77,7 @@ import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyDialog
+import com.blankpages.trackify.ui.theme.TrackifyGradients
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.text.NumberFormat
@@ -261,7 +262,7 @@ fun SpreadsheetScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(scheme.background),
+            .background(TrackifyGradients.background()),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {

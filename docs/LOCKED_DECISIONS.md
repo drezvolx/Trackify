@@ -504,7 +504,8 @@ Keputusan final user: **tema mengikuti perangkat**, dan **tidak ada menu pilihan
 Aturan:
 
 - `MainActivity` memanggil `TrackifyTheme { ... }` **tanpa argumen**.
-- `TrackifyTheme` memakai default `isSystemInDarkTheme()` dari Compose.
+- `TrackifyTheme` memakai default `isSystemInDarkTheme()` dari Compose dan meneruskannya lewat
+  `LocalTrackifyDarkTheme`; `TrackifyGradients.background()` / `.hero()` membaca local itu (Fase 15).
 - `enableEdgeToEdge()` dipanggil **satu kali**, tanpa argumen, sehingga `SystemBarStyle.auto` mengikuti night mode sistem.
 - **Dilarang** mengembalikan:
   - menu **Tampilan** / toggle **Dark**–**White** di Settings;
@@ -514,8 +515,8 @@ Aturan:
   - pemakaian `state.settings.themeMode` untuk menentukan tema.
 - `themeMode` di `AppSettings` / `TrackifySettings` / `AppPreferences` hanya **legacy untuk kompatibilitas backup**. Jangan dipakai untuk UI.
 - Window background XML mengikuti sistem:
-  - `res/values/themes.xml` → parent `android:Theme.Material.Light.NoActionBar`, background `#FFF5F5F5`.
-  - `res/values-night/themes.xml` → parent `android:Theme.Material.NoActionBar`, background `#FF0B0B0B`.
+  - `res/values/themes.xml` → parent `android:Theme.Material.Light.NoActionBar`, background `#FFF1F1F1`.
+  - `res/values-night/themes.xml` → parent `android:Theme.Material.NoActionBar`, background `#FF1E1F22`.
 - Activity tidak perlu override `@style/Theme.Trackify`; cukup di level application.
 - Rotasi otomatis dimatikan lewat `android:screenOrientation="portrait"` pada `MainActivity` di `AndroidManifest.xml`.
 - `tools:ignore="LockedOrientationActivity"` dipakai agar lint tidak menganggap portrait sebagai masalah.
@@ -715,7 +716,8 @@ adb shell am force-stop com.blankpages.trackify
 adb shell monkey -p com.blankpages.trackify -c android.intent.category.LAUNCHER 1
 ```
 
-Expected: light `#F5F5F5`/`#FFFFFF`, dark `#0B0B0B`/`#141414`.
+Expected (Fase 15): light background `#FAFAFA → #F1F1F1 → #E8E8E8`, hero `#3A3A3C → #232324 → #161617`;
+dark background `#25262A → #1E1F22 → #17181A`, hero `#4C4E51 → #2C2D31 → #1E2023`. Tema mengikuti perangkat.
 
 Install & cek visual:
 
@@ -875,3 +877,21 @@ User meminta templat tidak memaksa dan catatan bisa membawa beberapa foto. Keput
   3 argumen `(CourierNote, Boolean, List<String>)`; callback lama 2 argumen dilarang.
 - Tidak ada perubahan pada bottom nav, `ScreenTitle`, tema otomatis, orientasi portrait, `DailyLog`,
   `SavedLocation`, atau token `TrackifyCard`/`TrackifyDialog`. Izin tidak bertambah.
+
+### 24 Nov 2026 — Fase 15: gradien Royal Charcoal / Pure Charcoal
+
+User menyetujui pergantian palet solid menjadi gradien monokrom. Keputusan:
+
+- `TrackifyGradients.kt` adalah **satu-satunya** sumber warna gradien:
+  - dark latar `#25262A → #1E1F22 → #17181A`; dark hero `#4C4E51 → #2C2D31 → #1E2023`;
+  - light latar `#FAFAFA → #F1F1F1 → #E8E8E8`; light hero `#3A3A3C → #232324 → #161617`.
+- `TrackifyTheme` tetap dipanggil tanpa argumen dan memakai `isSystemInDarkTheme()`. Nilainya diteruskan
+  lewat `LocalTrackifyDarkTheme` (CompositionLocal) ke `TrackifyGradients`. **Dilarang** menyimpan preferensi
+  tema, menambah toggle, atau membaca `themeMode` untuk UI.
+- Gradien latar dipasang di root `LazyColumn` kelima layar: Home, `SpreadsheetScreen` (Rekap), Lokasi,
+  Catatan, Setelan. `Scaffold.containerColor` tetap `scheme.background`; satu `Scaffold` hanya di `MainActivity`.
+- Hero "Terkirim hari ini" di Home memakai gradien hero dan teks `HeroInk` / `HeroMute` (putih) agar kontras
+  di kedua tema. Ini satu-satunya kartu yang boleh keluar dari token `scheme.surface`; kartu lain tetap
+  `scheme.surface` + border `outlineVariant`.
+- `TrackifyMockupPalette`, `res/values/colors.xml`, dan window background XML diselaraskan ke stop tengah
+  gradien. `ScreenTitle`, bottom nav, orientasi portrait, dan token dialog tidak berubah.

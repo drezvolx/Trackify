@@ -11,23 +11,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.blankpages.trackify.R
 
-/** Palet monokrom solid dari mockup v2. */
+/** Token solid pendamping gradien Fase 15: semua nilai masih monokrom. */
 object TrackifyMockupPalette {
-    val DarkBg = Color(0xFF0B0B0B)
-    val DarkSurface = Color(0xFF141414)
-    val DarkRaised = Color(0xFF1D1D1D)
-    val DarkLine = Color(0xFF272727)
+    val DarkBg = Color(0xFF1E1F22)
+    val DarkSurface = Color(0xFF25262A)
+    val DarkRaised = Color(0xFF2C2D31)
+    val DarkLine = Color(0xFF3A3B3F)
     val DarkInk = Color(0xFFF5F5F5)
-    val DarkMute = Color(0xFF8E8E8E)
-    val DarkSeg = Color(0xFF3A3A3A)
+    val DarkMute = Color(0xFFA0A0A4)
+    val DarkSeg = Color(0xFF4C4E51)
 
-    val LightBg = Color(0xFFF5F5F5)
-    val LightSurface = Color(0xFFFFFFFF)
-    val LightRaised = Color(0xFFEFEFEF)
-    val LightLine = Color(0xFFE0E0E0)
-    val LightInk = Color(0xFF0A0A0A)
+    val LightBg = Color(0xFFF1F1F1)
+    val LightSurface = Color(0xFFFAFAFA)
+    val LightRaised = Color(0xFFE8E8E8)
+    val LightLine = Color(0xFFD6D6D6)
+    val LightInk = Color(0xFF161617)
     val LightMute = Color(0xFF6A6A6A)
-    val LightSeg = Color(0xFFD4D4D4)
+    val LightSeg = Color(0xFFC9C9C9)
 }
 
 val MockupDarkColorScheme: ColorScheme = darkColorScheme(

@@ -80,6 +80,7 @@ import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyCard
 import com.blankpages.trackify.ui.theme.TrackifyDialog
+import com.blankpages.trackify.ui.theme.TrackifyGradients
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.util.Locale
@@ -213,7 +214,7 @@ fun LocationsScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(scheme.background),
+            .background(TrackifyGradients.background()),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="trackify_background_light">#FFF5F5F5</color>
-    <color name="trackify_background_dark">#FF0B0B0B</color>
+    <!-- Token gradien Fase 15; sumber kebenaran ada di TrackifyGradients.kt. -->
+    <color name="trackify_background_light">#FFF1F1F1</color>
+    <color name="trackify_background_dark">#FF1E1F22</color>
+    <color name="trackify_hero_light_start">#FF3A3A3C</color>
+    <color name="trackify_hero_light_end">#FF161617</color>
+    <color name="trackify_hero_dark_start">#FF4C4E51</color>
+    <color name="trackify_hero_dark_end">#FF1E2023</color>
 </resources>
