@@ -4,6 +4,23 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Fase 6: foto lampiran lokasi
+
+### Ditambahkan
+
+- Editor Lokasi: tombol **Ambil foto** (izin kamera → `MediaStore`, foto masuk galeri) dan **Dari galeri**. Salinan stabil disimpan di `filesDir/location_photos` supaya tetap bisa dibuka.
+- Preview foto tampil di editor, dialog detail, dan kartu **Terdekat**; tombol **Hapus foto** menghapus salinan aplikasi.
+- `SavedLocation.photoPath`, `MIGRATION_6_7`, dan backup schema `7` (backup lama schema 5/6 tetap bisa dibaca).
+- Izin `CAMERA` dan `INTERNET` ditambahkan; `WRITE_EXTERNAL_STORAGE` hanya untuk Android ≤ 9.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan 14/14 tes.
+- Kontrak diperbarui di `docs/LOCKED_DECISIONS.md` §3, §4.3, §4.4, dan §9 sesuai keputusan user.
+- Smoke test perangkat: install di atas DB lama sukses, lokasi **Gerai** tetap ada; **Dari galeri** berhasil memilih gambar, preview tampil, file tersalin, dan tetap tampil setelah force-stop/restart (kartu + dialog detail); menghapus lokasi ikut menghapus file fotonya. Tombol **Ambil foto** berhasil membuka kamera, tetapi aplikasi kamera bawaan perangkat uji force-stop sebelum capture, jadi jalur kamera belum terverifikasi sampai hasil foto. Data uji dihapus dan galeri uji dibersihkan.
+
+---
+
 ## 23 Nov 2026 — Fase 5: konfirmasi Home & pengurutan catatan
 
 ### Ditambahkan

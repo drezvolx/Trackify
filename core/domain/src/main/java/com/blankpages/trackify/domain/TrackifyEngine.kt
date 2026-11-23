@@ -360,7 +360,7 @@ object TrackifyEngine {
     fun encodeBackup(today: String, payload: BackupPayload): EngineResult<String> = runCatching {
         JSONObject().apply {
             put("app", "Trackify")
-            put("schema", 6)
+            put("schema", 7)
             put("exportedAt", today)
             put(
                 "settings",
@@ -402,6 +402,7 @@ object TrackifyEngine {
                                 put("landmarkNote", loc.landmarkNote)
                                 put("latitude", loc.latitude)
                                 put("longitude", loc.longitude)
+                                put("photoPath", loc.photoPath)
                             },
                         )
                     }
@@ -456,6 +457,7 @@ object TrackifyEngine {
                 landmarkNote = o.optString("landmarkNote").trim(),
                 latitude = o.getDouble("latitude"),
                 longitude = o.getDouble("longitude"),
+                photoPath = o.optString("photoPath"),
             )
         }
         val notes = root.optJSONArray("courier_notes").mapObjects { o ->

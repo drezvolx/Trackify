@@ -64,6 +64,7 @@
 **Usulan (lanjutan)**
 - `rememberSaveable` untuk query dan tag terpilih (selesai di Fase 2).
 - Tag tetap berbasis `landmarkNote` sampai ada keputusan eksplisit untuk migrasi DB ke versi 7.
+- Foto lokasi (ambil dari kamera ke galeri + pilih dari galeri) selesai di Fase 6; DB naik ke versi 7.
 
 **Batasan:** dilarang `FusedLocationProviderClient`; DB tetap versi 6.
 
@@ -107,10 +108,12 @@
 | 3 | Home (pintasan Catatan), Rekap (DatePicker/desimal/laporan), Catatan (templat/waktu), Setelan (konfirmasi restore/subtitle) | Selesai |
 | 4 | Grafik interaktif, pencarian lokasi, aksi massal, pemilih bulan CSV, info gajian | Selesai |
 | 5 | Konfirmasi aksi cepat & toggle Libur di Home, pengurutan catatan | Selesai |
+| 6 | Foto lokasi (kamera → galeri + unggah galeri), DB v7 | Selesai |
 
-Setelah Fase 5 tidak ada usulan terbuka. Konfirmasi memakai `TrackifyDialog`; tombol aksi cepat dan
-toggle **Masuk/Libur** tidak diubah bentuknya, jadi layout kartu Home tetap stabil. Pengurutan catatan
-memakai chip dengan state `rememberSaveable` dan tidak mengubah header `ScreenTitle`.
+Fase 6 menambah `photoPath` pada `saved_locations` lewat `MIGRATION_6_7`. Foto kamera masuk galeri,
+lalu salinan stabil disimpan di `filesDir/location_photos`; preview tampil di editor, detail, dan kartu
+terdekat. Konfirmasi Fase 5 tetap memakai `TrackifyDialog`; tombol aksi cepat dan toggle
+**Masuk/Libur** tidak diubah bentuknya. Pengurutan catatan memakai chip dengan state `rememberSaveable`.
 
 Tiap fase wajib: backup sebelum edit → ktlint exit 0 → `:app:assembleDebug :app:testDebugUnitTest` hijau
 → 14 tes lulus → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.

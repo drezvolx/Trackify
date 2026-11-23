@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -55,11 +56,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -80,6 +83,7 @@ import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.time.LocalDate
 import java.util.Locale
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 private fun SavedLocation.displayTitle(): String = customerName.trim().ifBlank { "Pelanggan #${id.coerceAtLeast(1)}" }
 
@@ -615,6 +619,7 @@ fun LocationsScreen(
     detailEntry?.let { entry ->
         val target = entry.first
         val coordStr = String.format(Locale.US, "%.6f, %.6f", target.latitude, target.longitude)
+        val detailPhoto = remember(target.photoPath) { LocationPhotoStore.load(target.photoPath) }
         TrackifyDialog(
             onDismissRequest = { detailEntry = null },
             title = {
@@ -626,6 +631,17 @@ fun LocationsScreen(
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (detailPhoto != null) {
+                        Image(
+                            bitmap = detailPhoto,
+                            contentDescription = "Foto lokasi",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
                     Text(
                         text = "Koordinat: $coordStr",
                         style = MaterialTheme.typography.bodySmall,
@@ -723,6 +739,7 @@ fun LocationsScreen(
             confirmButton = {
                 Button(
                     onClick = {
+                        LocationPhotoStore.delete(target.photoPath)
                         onDeleteLocation(target)
                         pendingDelete = null
                     },
@@ -771,6 +788,7 @@ private fun LocationNearbyCard(
     val scheme = MaterialTheme.colorScheme
     val loc = entry.first
     val coordText = String.format(Locale.US, "%.6f, %.6f", loc.latitude, loc.longitude)
+    val nearPhoto = remember(loc.photoPath) { LocationPhotoStore.load(loc.photoPath) }
 
     Surface(
         modifier = Modifier.width(310.dp),
@@ -785,6 +803,14 @@ private fun LocationNearbyCard(
                     .height(112.dp)
                     .background(scheme.surfaceVariant),
             ) {
+                if (nearPhoto != null) {
+                    Image(
+                        bitmap = nearPhoto,
+                        contentDescription = "Foto lokasi",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
                 Row(
                     modifier = Modifier.padding(10.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -937,6 +963,53 @@ private fun LocationEditorDialog(
     var category by remember(initial.id, isNew) {
         mutableStateOf(initial.inferTag().takeIf { it != "Biasa" } ?: "Biasa")
     }
+    var photoPath by remember(initial.id, isNew) { mutableStateOf(initial.photoPath) }
+    var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
+    val scope = rememberCoroutineScope()
+    val photoBitmap = remember(photoPath) { LocationPhotoStore.load(photoPath) }
+
+    val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            LocationPhotoStore.finalizeGalleryImage(context, pendingCameraUri)
+            pendingCameraUri?.let { uri ->
+                scope.launch {
+                    val saved = LocationPhotoStore.persist(context, uri)
+                    if (saved != null) {
+                        photoPath = saved
+                    } else {
+                        Toast.makeText(context, "Gagal menyimpan foto", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            val uri = LocationPhotoStore.createGalleryImageUri(context)
+            pendingCameraUri = uri
+            if (uri != null) {
+                takePictureLauncher.launch(uri)
+            } else {
+                Toast.makeText(context, "Gagal menyiapkan kamera", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, "Izin kamera diperlukan untuk ambil foto", Toast.LENGTH_SHORT).show()
+        }
+    }
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val saved = LocationPhotoStore.persist(context, uri)
+                if (saved != null) {
+                    photoPath = saved
+                } else {
+                    Toast.makeText(context, "Gagal membaca gambar", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 
     TrackifyDialog(
         onDismissRequest = onDismiss,
@@ -988,6 +1061,38 @@ private fun LocationEditorDialog(
                     colors = trackifyFieldColors(),
                     modifier = Modifier.fillMaxWidth(),
                 )
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = "Foto lokasi",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scheme.onSurfaceVariant,
+                    )
+                    if (photoBitmap != null) {
+                        Image(
+                            bitmap = photoBitmap,
+                            contentDescription = "Foto lokasi",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(140.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        TextButton(
+                            onClick = { cameraPermissionLauncher.launch(Manifest.permission.CAMERA) },
+                        ) { Text("Ambil foto") }
+                        TextButton(onClick = { galleryLauncher.launch("image/*") }) { Text("Dari galeri") }
+                        if (photoPath.isNotBlank()) {
+                            TextButton(
+                                onClick = {
+                                    LocationPhotoStore.delete(photoPath)
+                                    photoPath = ""
+                                },
+                            ) { Text("Hapus foto") }
+                        }
+                    }
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = latStr,
@@ -1066,6 +1171,7 @@ private fun LocationEditorDialog(
                             landmarkNote = mergedNote,
                             latitude = latStr.trim().toDoubleOrNull() ?: initial.latitude,
                             longitude = lonStr.trim().toDoubleOrNull() ?: initial.longitude,
+                            photoPath = photoPath,
                         ),
                     )
                 },

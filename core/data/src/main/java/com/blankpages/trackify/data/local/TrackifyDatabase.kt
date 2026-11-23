@@ -125,7 +125,13 @@ private val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
-@Database(entities = [DailyLog::class, SavedLocation::class, CourierNote::class], version = 6, exportSchema = false)
+private val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `saved_locations` ADD COLUMN `photoPath` TEXT NOT NULL DEFAULT ''")
+    }
+}
+
+@Database(entities = [DailyLog::class, SavedLocation::class, CourierNote::class], version = 7, exportSchema = false)
 abstract class TrackifyDatabase : RoomDatabase() {
     abstract fun dao(): TrackifyDao
 
@@ -140,7 +146,7 @@ abstract class TrackifyDatabase : RoomDatabase() {
                 "trackify_offline_db",
             )
                 .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
-                .addMigrations(MIGRATION_5_6)
+                .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
                 .fallbackToDestructiveMigration(true)
                 .build()
                 .also { instance = it }

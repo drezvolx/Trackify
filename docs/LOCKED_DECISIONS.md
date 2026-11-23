@@ -357,13 +357,17 @@ Jangan kembali ke `viewModels()` manual dengan DAO langsung.
 ### 3.1 Database
 
 - Nama: `trackify_offline_db`.
-- Versi: **`6`**.
-- Migrasi aktif: **`MIGRATION_5_6`**.
+- Versi: **`7`** (disetujui 23 Nov 2026 untuk lampiran foto lokasi).
+- Migrasi aktif: **`MIGRATION_5_6`** dan **`MIGRATION_6_7`**.
 - `exportSchema = false`.
 - Mode WAL aktif: `setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)`.
 - `fallbackToDestructiveMigration(true)` tetap dipakai untuk ketahanan, tapi **bukan alasan untuk menaikkan versi sembarangan**.
 
 `MIGRATION_5_6` menghapus kolom pembayaran tunai dari `daily_logs`. **Jangan menambahkan kolom itu lagi.**
+
+`MIGRATION_6_7` menambah kolom `photoPath` (`TEXT NOT NULL DEFAULT ''`) ke `saved_locations`.
+Foto hasil kamera masuk galeri lewat `MediaStore`, lalu salinan stabilnya disimpan di `filesDir/location_photos`
+dan path-nya menjadi lampiran lokasi. Hapus lokasi ikut menghapus salinan tersebut.
 
 ### 3.2 Entity / Model
 
@@ -380,6 +384,14 @@ ratePerPackage, bonus, expense, notes
 ```
 
 Tidak ada field pembayaran tunai.
+
+Field `SavedLocation` final:
+
+```
+id, customerName, landmarkNote, latitude, longitude, photoPath
+```
+
+`photoPath` boleh kosong dan tidak mengubah cara `Rute`/perhitungan jarak memakai `latitude`/`longitude`.
 
 ### 3.3 Aturan Domain
 
@@ -451,11 +463,13 @@ Hasil harus **kosong**.
 - **Jangan** pakai `FusedLocationProviderClient`.
 - Wajib cek: izin, GPS aktif, akurasi, umur fix.
 - Rationale izin permanen harus tetap ada.
+- Izin `CAMERA` dipakai untuk **Ambil foto**; hasilnya masuk galeri lewat `MediaStore` dan disalin ke storage aplikasi.
+- Izin `INTERNET` dipakai hanya untuk mengikuti redirect short link Google Maps; tidak ada fitur online lain.
 
 ### 4.4 Backup / Reset
 
 - Export backup memakai `repository.readBackupSettings()` untuk menyertakan tarif, bonus, target, dan flag pengingat. `themeMode` sengaja tidak diekspor karena tema selalu mengikuti sistem.
-- Schema backup naik ke `6`. Backup schema `5` tetap bisa dibaca; bagian `settings` memakai default jika tidak ada.
+- Schema backup naik ke `7`. Backup schema `5` dan `6` tetap bisa dibaca; `photoPath` memakai `""` jika tidak ada, dan bagian `settings` memakai default jika tidak ada.
 - Import backup memakai `repository.restoreSnapshot(decoded.value)` lalu `repository.restoreBackupSettings(decoded.value.settings)`.
 - `restoreSnapshot` **mengganti penuh** isi tabel (clear dulu, baru isi), bukan menambah.
 - Setelah restore, VM menyegarkan `overrideTodayLogFlow`, `defaultRateFlow`, `settingsFlow`, dan jadwal pengingat.
@@ -735,3 +749,10 @@ Kalau user menyetujui perubahan desain/arsitektur baru:
 5. Jalankan ulang §7.
 
 **Tanpa langkah di atas, perubahan dianggap tidak sah.**
+
+### 23 Nov 2026 — Fase 6: lampiran foto lokasi
+
+User menyetujui perluasan DB ke versi `7`, kolom `photoPath`, izin `CAMERA`, dan `INTERNET`
+(untuk short link Maps di fase berikutnya). Alasan: lokasi perlu bukti foto yang bisa diambil langsung
+dari kamera maupun dipilih dari galeri, dan tetap tersimpan per lokasi. Bottom navigation, header,
+tema, orientasi, dan daftar tab tidak berubah.

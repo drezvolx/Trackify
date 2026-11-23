@@ -57,10 +57,12 @@ data class SavedLocation(
     val landmarkNote: String,
     val latitude: Double,
     val longitude: Double,
+    val photoPath: String = "",
 ) {
     fun trimmed(): SavedLocation = copy(
         customerName = customerName.trim(),
         landmarkNote = landmarkNote.trim(),
+        photoPath = photoPath.trim(),
     )
 }
 
