@@ -4,6 +4,22 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Rilis v1.1.0
+
+### Diubah
+
+- `app/build.gradle.kts`: `versionCode = 2`, `versionName = "1.1"` (sebelumnya `1` / `"1.0"`).
+- Rilis GitHub `v1.1.0` dibuat dari commit versi ini. Tag dan rilis `v1.0.0` tetap dipertahankan sebagai baseline.
+
+### Verifikasi
+
+- Gate ulang setelah bump: ktlint exit 0, `:app:assembleDebug :app:testDebugUnitTest` hijau, **36/36** tes.
+- Smoke cepat: Home menampilkan `Versi terpasang: 1.1` saat bel ditekan, dan Setelan → Dukungan menampilkan
+  `Versi aplikasi: 1.1`.
+- CI `validate` untuk commit bump: _menunggu run_.
+
+---
+
 ## 24 Nov 2026 — Fase 18: pengecek rilis & kredit
 
 ### Ditambahkan
@@ -38,7 +54,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
   `Versi terbaru sudah terpasang (v1.0.0)` (GET GitHub berhasil di perangkat); **Buka GitHub** dan **Tutup** tampil;
   tutup kembali ke Home. Setelan → **Dukung** menampilkan `Kredit & versi`, Drezvolx, kedua URL, dan versi `1.0`;
   tombol **Kembali** berhasil. Tidak ada `FATAL`/`AndroidRuntime` di logcat.
-- CI `validate`: _menunggu run_.
+- CI `validate` hijau: run `45258866368` (`3b12289`).
 
 ---
 
