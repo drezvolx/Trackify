@@ -20,6 +20,8 @@ import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.domain.toWageSummary
+import com.blankpages.trackify.update.ReleaseInfo
+import com.blankpages.trackify.update.ReleaseUpdateChecker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import java.time.YearMonth
@@ -71,6 +73,9 @@ data class TrackifyUiState(
     /** Path foto per id catatan, sudah diurutkan. */
     val notePhotos: Map<Int, List<String>> = emptyMap(),
     val activeNotesCount: Int = 0,
+    /** Rilis GitHub terbaru; `null` berarti belum dicek atau gagal. */
+    val latestRelease: ReleaseInfo? = null,
+    val checkingRelease: Boolean = false,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -108,6 +113,8 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
     private val defaultRateFlow = MutableStateFlow(initialDefaultRate)
     private val settingsFlow = MutableStateFlow(initialSettings)
     private val overrideTodayLogFlow = MutableStateFlow<DailyLog?>(null)
+    private val latestReleaseFlow = MutableStateFlow<ReleaseInfo?>(null)
+    private val checkingReleaseFlow = MutableStateFlow(false)
 
     private val todayDbLogFlow: Flow<DailyLog> = currentDateFlow
         .flatMapLatest { dateStr ->
@@ -154,6 +161,8 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         settingsFlow,
         currentMonthLogsFlow,
         repository.allNotePhotos(),
+        latestReleaseFlow,
+        checkingReleaseFlow,
     ) { args ->
         val rate = args[0] as Double
         val month = args[1] as YearMonth
@@ -177,6 +186,8 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         @Suppress("UNCHECKED_CAST")
         val photos = (args[8] as List<NotePhoto>).groupBy({ it.noteId }, { it.path })
             .mapValues { entry -> entry.value.take(MAX_PHOTOS_PER_NOTE) }
+        val latestRelease = args[9] as ReleaseInfo?
+        val checkingRelease = args[10] as Boolean
 
         val yesterdayStr = LocalDate.parse(today.date).minusDays(1).toString()
         val yLog = nowLogs.find { it.date == yesterdayStr } ?: logs.find { it.date == yesterdayStr }
@@ -197,6 +208,8 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
             notes = notesList,
             notePhotos = photos,
             activeNotesCount = activeNotes,
+            latestRelease = latestRelease,
+            checkingRelease = checkingRelease,
         )
     }.flowOn(Dispatchers.Default).stateIn(
         scope = viewModelScope,
@@ -214,6 +227,19 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         if (currentDateFlow.value != nowStr) {
             overrideTodayLogFlow.value = null
             currentDateFlow.value = nowStr
+        }
+    }
+
+    // Section > Update checker
+
+    /** Dipanggil bel Home. Satu permintaan per tekan; hasilnya dibaca dialog di UI. */
+    fun checkForUpdate() {
+        if (checkingReleaseFlow.value) return
+        viewModelScope.launch {
+            checkingReleaseFlow.value = true
+            val release = withContext(Dispatchers.IO) { ReleaseUpdateChecker.fetchLatest() }
+            latestReleaseFlow.value = release
+            checkingReleaseFlow.value = false
         }
     }
 

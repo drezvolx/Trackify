@@ -79,6 +79,14 @@ import kotlin.math.roundToInt
 class MainActivity : ComponentActivity() {
     private val vm: TrackifyViewModel by viewModels()
 
+    /** Versi aplikasi dibaca dari manifest; BuildConfig sengaja tidak diaktifkan. */
+    private val appVersion: String by lazy {
+        runCatching {
+            @Suppress("DEPRECATION")
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "-"
+        }.getOrDefault("-")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -135,6 +143,7 @@ class MainActivity : ComponentActivity() {
                                 wagePeriod = state.settings.wagePeriod,
                                 paydayDate = state.settings.paydayDate,
                                 reminderTime = state.settings.reminderTime,
+                                appVersion = appVersion,
                                 onBack = { inSettings = false },
                                 onUpdateRate = vm::updateDefaultRate,
                                 onUpdateBonus = vm::updateDefaultBonus,
@@ -169,6 +178,7 @@ class MainActivity : ComponentActivity() {
                                         onOpenSettings = { inSettings = true },
                                         onNavigateTab = { tabOrdinal = it.ordinal },
                                         vm = vm,
+                                        appVersion = appVersion,
                                     )
                                 }
                             }
@@ -187,6 +197,7 @@ private fun TabContent(
     onOpenSettings: () -> Unit,
     onNavigateTab: (TrackifyTab) -> Unit,
     vm: TrackifyViewModel,
+    appVersion: String,
 ) {
     when (tab) {
         TrackifyTab.HOME -> HomeScreen(
@@ -199,6 +210,10 @@ private fun TabContent(
             flatDailyAmount = state.settings.flatDailyAmount,
             wagePeriod = state.settings.wagePeriod,
             paydayDate = state.settings.paydayDate,
+            appVersion = appVersion,
+            latestRelease = state.latestRelease,
+            checkingRelease = state.checkingRelease,
+            onCheckUpdate = vm::checkForUpdate,
             onOpenSettings = onOpenSettings,
             onOpenRekap = { onNavigateTab(TrackifyTab.REKAP) },
             onOpenLocations = { onNavigateTab(TrackifyTab.LOKASI) },

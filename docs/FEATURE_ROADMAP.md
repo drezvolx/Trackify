@@ -120,7 +120,7 @@
 | 15 | Tema gradien monokrom: Royal Charcoal / Pure Charcoal | Selesai |
 | 16 | Typography tebal di judul + gaya khas tiap layout | Selesai |
 | 17 | Tombol outline + spacing/typography konsisten | Selesai |
-| 18 | Tombol update, kredit, folder manajemen, README/docs | Rencana |
+| 18 | Tombol update, kredit, folder manajemen, README/docs | Selesai |
 
 Fase 6 menambah `photoPath` pada `saved_locations` lewat `MIGRATION_6_7`. Foto kamera masuk galeri,
 lalu salinan stabil disimpan di `filesDir/location_photos`; preview tampil di editor, detail, dan kartu
@@ -184,11 +184,14 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
   untuk padding dan `spacedBy`; `96.dp` clearance bottom nav dan `1.dp` border/divider tetap dikecualikan.
   Tidak ada nilai `box-shadow` CSS di dokumen/source, jadi elevation sengaja tetap `0.dp` (`tonalElevation = 0.dp`
   pada `TrackifyDialog`) — desain flat. Label, aksi, state terpilih, dan `96.dp` tidak berubah.
-- **Fase 18 — Update & kredit:** bel di header Home mengecek `GET /repos/drezvolx/Trackify/releases/latest`,
-  menampilkan dialog versi + tombol unduh/buka GitHub (alur flexible, tanpa auto-install). Blok Dukungan
-  menampilkan versi aplikasi, **Drezvolx**, <https://github.com/drezvolx>, dan
-  <https://discord.com/users/1182612195419369562>. `credits.md`, struktur folder nested, dan README profesional
-  menyusul di fase ini.
+- **Fase 18 — Update & kredit (selesai):** bel di header Home memanggil `vm.checkForUpdate()` lalu menampilkan
+  `TrackifyDialog` berisi versi terpasang, versi rilis, dan aksi **Buka GitHub** / **Unduh APK** bila aset `.apk`
+  tersedia. Tidak ada auto-install. Pengecekan memakai `HttpURLConnection` di `ReleaseUpdateChecker`, parser
+  `ReleaseInfoParser` + perbandingan `ReleaseVersion` diuji murni di JVM (6 tes baru; total 36). Blok Dukungan di
+  Setelan menampilkan versi aplikasi, **Drezvolx**, <https://github.com/drezvolx>, dan
+  <https://discord.com/users/1182612195419369562>. Dokumentasi: `docs/credits.md`, struktur nested
+  `docs/management/{README.md,processes/,templates/}`, dan README profesional. Izin `INTERNET` di kontrak §4.3
+  diperluas untuk GET rilis ini; data aplikasi tidak dikirim.
 
 Tiap fase wajib: backup sebelum edit → ktlint exit 0 → `:app:assembleDebug :app:testDebugUnitTest` hijau
 → semua tes lulus (baseline 30) → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.

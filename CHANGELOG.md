@@ -4,6 +4,44 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 18: pengecek rilis & kredit
+
+### Ditambahkan
+
+- Bel `TrackifyIcons.Bell` di header Home membuka `TrackifyDialog` **Pembaruan Trackify**. Isinya versi terpasang
+  (dibaca dari `PackageManager`), versi rilis, dan aksi **Buka GitHub**; **Unduh APK** muncul hanya bila aset `.apk`
+  tersedia. **Tutup** selalu tersedia. Tidak ada unduh/pasang otomatis.
+- `app/src/main/java/com/blankpages/trackify/update/`: `ReleaseVersion` (parsing numerik `v1.0.0`/`1.1`/`-beta`),
+  `ReleaseInfo` + `ReleaseInfoParser` (payload GitHub releases), `ReleaseUpdateChecker` (`HttpURLConnection`,
+  timeout 8 detik, `User-Agent`, tanpa library jaringan baru), dan `openExternalUrl`.
+- `TrackifyViewModel.checkForUpdate()` menyimpan hasil ke `TrackifyUiState.latestRelease` / `checkingRelease`;
+  satu permintaan per tekan. `MainActivity` meneruskan `appVersion` dan state ke Home serta Setelan.
+- Blok Dukungan Setelan menambah **Kredit & versi**: Drezvolx, `https://github.com/drezvolx`,
+  `https://discord.com/users/1182612195419369562`, dan versi aplikasi.
+- Dokumentasi: `docs/credits.md`, `docs/management/README.md`, `docs/management/processes/{phase-gate,release-process}.md`,
+  `docs/management/templates/release-notes.md`, dan README profesional.
+
+### Diubah
+
+- `docs/LOCKED_DECISIONS.md §4.3` diamandemen: `INTERNET` kini mencakup GET publik ke
+  `releases/latest` selain redirect Maps. Tidak ada data aplikasi yang dikirim; fitur inti tetap offline.
+- `docs/FEATURE_ROADMAP.md`: Fase 18 `Selesai` dengan rincian kontrak pengecek rilis.
+- `TrackifyCard`, `TrackifyDialog`, `Scaffold` tunggal, bottom nav, `ScreenTitle`, tema otomatis, dan orientasi
+  portrait tidak berubah. `versionCode`/`versionName` belum di-bump; itu dilakukan setelah Fase 18 hijau.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **36/36** tes (6 tes baru
+  `ReleaseUpdateTest`), 0 failure.
+- Grep kontrak: token lama 0, `AlertDialog(` langsung 0, `DIRECT_BUTTONS=0`, `SCAFFOLD_FILES` hanya `MainActivity.kt`.
+- Smoke perangkat: bel Home membuka dialog **Pembaruan Trackify** dengan `Versi terpasang: 1.0` dan
+  `Versi terbaru sudah terpasang (v1.0.0)` (GET GitHub berhasil di perangkat); **Buka GitHub** dan **Tutup** tampil;
+  tutup kembali ke Home. Setelan → **Dukung** menampilkan `Kredit & versi`, Drezvolx, kedua URL, dan versi `1.0`;
+  tombol **Kembali** berhasil. Tidak ada `FATAL`/`AndroidRuntime` di logcat.
+- CI `validate`: _menunggu run_.
+
+---
+
 ## 24 Nov 2026 — Fase 17: tombol outline & spacing konsisten
 
 ### Ditambahkan
@@ -35,7 +73,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
   `FATAL`/`AndroidRuntime` di logcat.
 - Tentang shadow: tidak ada nilai `box-shadow` CSS yang terdokumentasi di repo, jadi elevation tetap `0.dp`
   sesuai desain flat; tidak ada `shadow(...)` yang ditambahkan.
-- CI `validate`: _menunggu run_.
+- CI `validate` hijau: run `45256244308` (`164394a`).
 
 ---
 

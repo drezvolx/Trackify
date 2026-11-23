@@ -68,6 +68,7 @@ import com.blankpages.trackify.ui.theme.TrackifyIconButton
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 import com.blankpages.trackify.ui.theme.TrackifyTextButton
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
+import com.blankpages.trackify.update.openExternalUrl
 import java.text.NumberFormat
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -94,6 +95,7 @@ fun SettingsScreen(
     wagePeriod: WagePeriod = WagePeriod.MONTHLY,
     paydayDate: Int = 25,
     reminderTime: ReminderTime = ReminderTime.DEFAULT,
+    appVersion: String = "-",
     onBack: () -> Unit,
     onUpdateRate: (Double) -> Unit,
     onUpdateBonus: (Double) -> Unit = {},
@@ -639,6 +641,35 @@ fun SettingsScreen(
                             )
                         }
                         Text("›", fontSize = 20.sp, color = scheme.onSurfaceVariant)
+                    }
+                }
+                TrackifyCard {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            "Kredit & versi",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = scheme.onSurface,
+                        )
+                        Text("Drezvolx", fontSize = 14.sp, color = scheme.onSurface)
+                        Text("Versi aplikasi: $appVersion", fontSize = 12.sp, color = scheme.onSurfaceVariant)
+                        Text("https://github.com/drezvolx", fontSize = 12.sp, color = scheme.onSurfaceVariant)
+                        TrackifyTextButton(onClick = { openExternalUrl(context, "https://github.com/drezvolx") }) {
+                            Text("Buka GitHub")
+                        }
+                        Text(
+                            "https://discord.com/users/1182612195419369562",
+                            fontSize = 12.sp,
+                            color = scheme.onSurfaceVariant,
+                        )
+                        TrackifyTextButton(
+                            onClick = {
+                                openExternalUrl(context, "https://discord.com/users/1182612195419369562")
+                            },
+                        ) { Text("Buka Discord") }
                     }
                 }
             }

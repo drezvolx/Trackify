@@ -62,6 +62,8 @@ import com.blankpages.trackify.ui.theme.TrackifyIconButton
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 import com.blankpages.trackify.ui.theme.TrackifyTextButton
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
+import com.blankpages.trackify.update.ReleaseInfo
+import com.blankpages.trackify.update.openExternalUrl
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -90,6 +92,10 @@ fun HomeScreen(
     flatDailyAmount: Double = 2_500.0,
     wagePeriod: WagePeriod = WagePeriod.MONTHLY,
     paydayDate: Int = 25,
+    appVersion: String = "-",
+    latestRelease: ReleaseInfo? = null,
+    checkingRelease: Boolean = false,
+    onCheckUpdate: () -> Unit = {},
     onOpenSettings: () -> Unit,
     onOpenRekap: () -> Unit,
     onOpenLocations: () -> Unit,
@@ -158,6 +164,7 @@ fun HomeScreen(
     var pendingPause by remember { mutableStateOf(false) }
     var carriedText by remember { mutableStateOf(activeToday.safeCarried.toString()) }
     var deliveredText by remember { mutableStateOf(activeToday.safeDelivered.toString()) }
+    var showUpdateDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(activeToday.safeCarried, activeToday.safeDelivered) {
         carriedText = activeToday.safeCarried.toString()
@@ -198,21 +205,38 @@ fun HomeScreen(
                     ScreenTitle(text = "Trackify")
                 }
 
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape)
-                        .background(scheme.surface)
-                        .border(1.dp, scheme.outlineVariant, CircleShape)
-                        .clickable(onClick = onOpenSettings),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = TrackifyIcons.Settings,
-                        contentDescription = "Setelan",
-                        tint = scheme.onSurface,
-                        modifier = Modifier.size(18.dp),
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TrackifyIconButton(
+                        onClick = {
+                            showUpdateDialog = true
+                            onCheckUpdate()
+                        },
+                        modifier = Modifier.size(38.dp),
+                    ) {
+                        Icon(
+                            imageVector = TrackifyIcons.Bell,
+                            contentDescription = "Cek pembaruan",
+                            tint = scheme.onSurface,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(CircleShape)
+                            .background(scheme.surface)
+                            .border(1.dp, scheme.outlineVariant, CircleShape)
+                            .clickable(onClick = onOpenSettings),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = TrackifyIcons.Settings,
+                            contentDescription = "Setelan",
+                            tint = scheme.onSurface,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
                 }
             }
         }
@@ -979,6 +1003,52 @@ fun HomeScreen(
             },
             dismissButton = {
                 TrackifyTextButton(onClick = { pendingPause = false }) { Text("Batal") }
+            },
+        )
+    }
+
+    if (showUpdateDialog) {
+        val release = latestRelease
+        val downloadUrl = release?.downloadUrl
+        val hasNewer = release?.isNewerThan(appVersion) == true
+        TrackifyDialog(
+            onDismissRequest = { showUpdateDialog = false },
+            title = { Text("Pembaruan Trackify") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Versi terpasang: $appVersion")
+                    when {
+                        checkingRelease -> Text("Memeriksa rilis terbaru…")
+
+                        release == null -> Text("Tidak dapat memeriksa pembaruan. Periksa koneksi internet.")
+
+                        else -> {
+                            Text(
+                                if (hasNewer) {
+                                    "Rilis terbaru: ${release.name} (${release.tag})"
+                                } else {
+                                    "Versi terbaru sudah terpasang (${release.tag})."
+                                },
+                            )
+                            Text("Pembaruan tidak dipasang otomatis.")
+                            TrackifyTextButton(onClick = { openExternalUrl(context, release.url) }) {
+                                Text("Buka GitHub")
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TrackifyTextButton(onClick = { showUpdateDialog = false }) { Text("Tutup") }
+            },
+            dismissButton = if (hasNewer && downloadUrl != null) {
+                {
+                    TrackifyTextButton(onClick = { openExternalUrl(context, downloadUrl) }) {
+                        Text("Unduh APK")
+                    }
+                }
+            } else {
+                null
             },
         )
     }

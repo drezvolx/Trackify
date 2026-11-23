@@ -484,7 +484,9 @@ Hasil harus **kosong**.
 - Wajib cek: izin, GPS aktif, akurasi, umur fix.
 - Rationale izin permanen harus tetap ada.
 - Izin `CAMERA` dipakai untuk **Ambil foto**; hasilnya masuk galeri lewat `MediaStore` dan disalin ke storage aplikasi.
-- Izin `INTERNET` dipakai hanya untuk mengikuti redirect short link Google Maps; tidak ada fitur online lain.
+- Izin `INTERNET` dipakai untuk dua hal: mengikuti redirect short link Google Maps dan GET publik
+  `https://api.github.com/repos/drezvolx/Trackify/releases/latest` untuk pengecekan versi (Fase 18). Tidak ada data
+  aplikasi yang dikirim, tidak ada auto-install, dan semua fitur inti tetap offline.
 
 ### 4.4 Backup / Reset
 
@@ -930,3 +932,23 @@ User menyetujui seragamnya tombol dan spacing. Keputusan:
 - Catatan Fase 6 ("tombol aksi cepat dan toggle **Masuk/Libur** tidak diubah bentuknya") kini dibaca sebagai
   **label, aksi, dan state** yang tidak berubah; styling outline diatur Fase 17. `TrackifyCard`,
   `TrackifyDialog`, `Scaffold` tunggal, `ScreenTitle`, gradien, dan bottom nav tidak berubah.
+
+### 24 Nov 2026 — Fase 18: pengecek rilis, kredit, dan dokumentasi rilis
+
+User menyetujui penambahan pengecek pembaruan dan kredit. Keputusan:
+
+- Bel memakai `TrackifyIcons.Bell` di header Home, ditemani tombol Setelan. Bukan `SmallTopAppBar`, bukan judul
+  baru, dan `ScreenTitle` tetap satu-satunya gaya header tanpa subtext.
+- Satu tekan bel = satu GET ke `https://api.github.com/repos/drezvolx/Trackify/releases/latest`. Implementasi
+  `ReleaseUpdateChecker` memakai `HttpURLConnection` dengan timeout 8 detik dan `runCatching`, bukan library jaringan
+  baru. Parsing JSON dan perbandingan versi murni JVM (`ReleaseInfoParser`, `ReleaseVersion`) dan diuji di
+  `app/src/test`.
+- Dialog wajib `TrackifyDialog`. Isinya versi terpasang (dari `PackageManager`, karena BuildConfig tidak aktif),
+  versi rilis, dan aksi **Buka GitHub**; **Unduh APK** hanya muncul bila aset `.apk` tersedia. **Tutup** selalu ada.
+  Dilarang mengunduh otomatis, memasang otomatis, atau mengubah data aplikasi saat mengecek rilis.
+- Blok Dukungan di Setelan menampilkan versi aplikasi, **Drezvolx**, <https://github.com/drezvolx>, dan
+  <https://discord.com/users/1182612195419369562>. QRIS dan fungsi backup tidak diubah.
+- Kontrak §4.3 diamandemen: `INTERNET` kini juga dipakai untuk GET rilis publik di atas. Fitur inti tetap offline.
+- Dokumentasi baru: `docs/credits.md`, `docs/management/README.md`, `docs/management/processes/*.md`,
+  `docs/management/templates/release-notes.md`, dan README profesional. Tag `v1.0.0` adalah baseline dan tidak
+  boleh diubah saat rilis berikutnya diterbitkan.
