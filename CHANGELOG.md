@@ -4,6 +4,39 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Startup & konsistensi field (`593e64e`)
+
+### Diubah
+
+- `TrackifyViewModel` mengambil satu snapshot `SharedPreferences` saat startup, lalu menjadwalkan alarm pengingat di `Dispatchers.Default` supaya tidak mem-blok frame pertama.
+- Pipeline `uiState` memakai `flowOn(Dispatchers.Default)` untuk sanitasi dan agregasi bulanan.
+- Jadwal alarm saat restore/reset juga dijalankan di worker, dengan flag pengingat dari state terbaru (bukan baca prefs ulang).
+- Semua `OutlinedTextField` memakai helper `trackifyFieldColors()` dengan border `outlineVariant` dan radius `12.dp`, termasuk field editor Rekap yang sebelumnya memakai default Material3.
+- Sisa ikon Material (`Settings`, `LocationOn`, `KeyboardArrowLeft/Right`, `Search`) diganti `TrackifyIcons`.
+- Dependency lifecycle Compose disamakan ke `2.11.0`.
+
+### Dihilangkan
+
+- `androidx.compose.material:material-icons-extended` — tidak dipakai lagi setelah semua ikon bersumber dari `TrackifyIcons`.
+
+### Ditambahkan
+
+- 4 unit test backup/restore di domain: roundtrip data + pengaturan, penolakan header asing, fallback schema lama, dan clamp `packagesDelivered <= packagesCarried`.
+- `org.json:json:20240303` sebagai dependensi test JVM.
+
+### Diperbaiki
+
+- Build release gagal langsung tutup tanpa log crash. Penyebabnya `packageScope` pada konfigurasi R8 AGP 9. R8 default dipakai dan terverifikasi normal.
+
+### Verifikasi
+
+- `BUILD SUCCESSFUL` untuk `:app:assembleDebug`, `:app:testDebugUnitTest`, dan `:app:assembleRelease`; 0 warning compiler.
+- 14/14 unit test lulus, 0 failure.
+- Cold start release (signed, 6 kali): **383–433 ms** TotalTime, median ~418 ms; APK 1,93 MB.
+- Debug tetap normal; UI dan PID aktif setelah force-stop + launch.
+
+---
+
 ## 23 Nov 2026 — Icon pack solid (`9e9cd0e`)
 
 ### Ditambahkan

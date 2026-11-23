@@ -25,7 +25,9 @@ android {
         release {
             optimization {
                 enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                // Jangan pakai `packageScope`: R8 dengan scope terbatas menghasilkan APK
+                // yang langsung tutup saat diluncurkan (manifest/DEX valid, tanpa log crash).
+                // R8 default sudah terverifikasi normal dengan cold start ~0,4 s.
             }
         }
     }
