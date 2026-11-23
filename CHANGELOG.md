@@ -4,6 +4,21 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Perbaikan CI
+
+### Diperbaiki
+
+- Run CI pertama gagal di langkah `Set up Android SDK` karena `android-actions/setup-android@v3` masih mencoba memasang paket `tools` yang sudah tidak disediakan Google.
+- Workflow naik ke `actions/checkout@v5`, `actions/setup-java@v5`, dan `android-actions/setup-android@v4`.
+- Komponen SDK `platforms;android-37` dan `build-tools;37.0.0` sekarang dipasang eksplisit sebelum build.
+- Tag `v1.0.0` akan dipindahkan ke commit dengan CI yang sudah hijau.
+
+### Verifikasi
+
+- Perintah ktlint dengan glob yang dipakai CI sudah dijalankan lokal dan keluar dengan exit 0.
+
+---
+
 ## 23 Nov 2026 — CI & rilis v1.0.0
 
 ### Ditambahkan
