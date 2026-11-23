@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -583,15 +582,9 @@ fun SettingsScreen(
                         painter = painterResource(R.drawable.qris_support),
                         contentDescription = "Kode QRIS untuk dukung pengembangan",
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(300.dp)
+                            .size(300.dp)
                             .clip(RoundedCornerShape(12.dp)),
                         contentScale = ContentScale.Fit,
-                    )
-                    Text(
-                        "Terima kasih kalau mau bantu biar Trackify terus berkembang.",
-                        fontSize = 12.sp,
-                        textAlign = TextAlign.Center,
                     )
                 }
             },

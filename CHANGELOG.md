@@ -9,14 +9,15 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 ### Ditambahkan
 
 - Setelan: seksi **Dukung** berisi kartu **Dukung dev** memakai `TrackifyCard`; saat ditekan membuka `TrackifyDialog` berisi gambar QRIS.
-- Aset `app/src/main/res/drawable/qris_support.jpg` (JPEG 1136×1600) berasal dari gambar yang dikirim user.
-- Dialog menampilkan QRIS dengan `ContentScale.Fit` pada tinggi `300.dp` agar tidak terpotong, plus tombol **Tutup**.
+- Aset `app/src/main/res/drawable/qris_support.jpg` berisi **kode QR saja** (632×632), dipotong otomatis dari screenshot 1136×1600 dengan margin 40 px; payload QR terverifikasi identik dengan aslinya.
+- Dialog menampilkan QR dalam kotak `300.dp` memakai `ContentScale.Fit` supaya tidak terpotong, plus tombol **Tutup**.
 
 ### Verifikasi
 
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan 14/14 tes.
 - Tidak menambah tab navigasi, header tetap `ScreenTitle`, dan larangan fitur pembayaran tunai tetap berlaku.
 - Smoke test perangkat: seksi **Dukung** dan kartu **Dukung dev** muncul di bawah **Data**; menekan kartu membuka dialog berisi gambar QRIS dan tombol **Tutup**.
+- Verifikasi screenshot perangkat (1080×2460): QR di dialog tetap terdeteksi dan payload-nya identik dengan aset sumber, sehingga tidak terpotong saat ditampilkan.
 
 ---
 
