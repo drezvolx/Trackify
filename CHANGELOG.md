@@ -27,6 +27,8 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` `BUILD SUCCESSFUL`; 14/14 tes lulus.
 - Grep COD, `WindowInsets(0)`, `FusedLocationProviderClient`, dan `AlertDialog` langsung tetap kosong; `AlertDialog` hanya ada di dalam token `TrackifyDialog`.
+- CI `validate` sukses pada run `45200069573` untuk `deb8dc9`; run `45198808613` (Fase 2) dan `45198332967` (Fase 1) juga sukses.
+- Smoke test perangkat: pintasan Catatan di Home berpindah ke tab Catatan dan chip templat membuka editor yang sudah terisi. Pengujian lanjutan terhenti karena perangkat dipakai aplikasi lain.
 
 ---
 
