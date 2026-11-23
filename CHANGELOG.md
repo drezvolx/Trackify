@@ -4,6 +4,16 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Verifikasi smoke test debug final
+
+### Verifikasi
+
+- Debug APK final di-install ulang dan dibuka: Home, Rekap, Lokasi, Catatan, dan Setelan semuanya render normal dengan PID aktif.
+- Bottom nav tetap tampil di empat tab utama dan hilang total di Setelan; hanya tombol `Kembali` yang tersedia.
+- Menekan `Kembali` dari Setelan mengembalikan Home beserta bottom nav tanpa crash.
+
+---
+
 ## 23 Nov 2026 — Gaya kode idiomatik & konvensi komentar
 
 ### Diubah
