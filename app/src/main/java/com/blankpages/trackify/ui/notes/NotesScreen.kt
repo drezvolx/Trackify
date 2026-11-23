@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,8 +67,8 @@ fun NotesScreen(
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
 
-    var query by remember { mutableStateOf("") }
-    var filterMode by remember { mutableIntStateOf(0) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var filterMode by rememberSaveable { mutableIntStateOf(0) }
     var editingNote by remember { mutableStateOf<CourierNote?>(null) }
     var isNewNote by remember { mutableStateOf(false) }
 

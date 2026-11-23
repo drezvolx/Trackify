@@ -4,6 +4,23 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Fase 2: state UI bertahan
+
+### Diubah
+
+- Rekap: `subTab`, `viewMode`, `sortDesc`, `filterMode`, `showSearch`, dan `searchQuery` kini memakai `rememberSaveable`.
+- Lokasi: query pencarian dan tag terpilih kini memakai `rememberSaveable`.
+- Catatan: query pencarian dan filter status kini memakai `rememberSaveable`.
+- Setelan: draft tarif, bonus, target, dan status pengingat memakai `rememberSaveable` dengan key yang sama seperti sebelumnya.
+- State dialog dan objek data (`DailyLog`, `SavedLocation`, `CourierNote`) sengaja tetap memakai `remember` karena tidak bisa disimpan di `Bundle`.
+- `targetRupiah` di Rekap tetap `remember(targetAmount)` karena merupakan draft lokal yang harus mengikuti source of truth.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` `BUILD SUCCESSFUL`; 14/14 tes lulus.
+
+---
+
 ## 23 Nov 2026 — Fase 1 pengembangan fitur & peta jalan
 
 ### Ditambahkan

@@ -54,6 +54,7 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -130,12 +131,12 @@ fun SpreadsheetScreen(
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
 
-    var subTab by remember { mutableIntStateOf(0) }
-    var viewMode by remember { mutableIntStateOf(0) }
-    var sortDesc by remember { mutableStateOf(true) }
-    var filterMode by remember { mutableIntStateOf(0) }
-    var showSearch by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
+    var subTab by rememberSaveable { mutableIntStateOf(0) }
+    var viewMode by rememberSaveable { mutableIntStateOf(0) }
+    var sortDesc by rememberSaveable { mutableStateOf(true) }
+    var filterMode by rememberSaveable { mutableIntStateOf(0) }
+    var showSearch by rememberSaveable { mutableStateOf(false) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
 
     var editingLog by remember { mutableStateOf<DailyLog?>(null) }
     var pendingDeleteLog by remember { mutableStateOf<DailyLog?>(null) }

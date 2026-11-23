@@ -55,6 +55,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -106,8 +107,8 @@ fun LocationsScreen(
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
 
-    var query by remember { mutableStateOf("") }
-    var selectedTag by remember { mutableStateOf("Semua") }
+    var query by rememberSaveable { mutableStateOf("") }
+    var selectedTag by rememberSaveable { mutableStateOf("Semua") }
     var currentLat by remember { mutableStateOf<Double?>(null) }
     var currentLon by remember { mutableStateOf<Double?>(null) }
     var lastFixTime by remember { mutableStateOf<Long?>(null) }

@@ -41,7 +41,7 @@
 - Laporan WhatsApp memakai `formatMonthlyWhatsappReport` dengan `%.1f` dan bonus tier default nol.
 
 **Usulan**
-- `rememberSaveable` untuk sub-tab, mode, sort, filter, pencarian, dan dialog.
+- `rememberSaveable` untuk sub-tab, mode, sort, filter, dan pencarian (selesai di Fase 2); dialog tetap `remember`.
 - DatePicker dibuka di tanggal log yang sedang diedit.
 - Input desimal untuk tarif, bonus, dan biaya.
 - Konfirmasi hapus log.
@@ -62,7 +62,7 @@
 - Toast `+1 Pkt` hanya saat jumlah benar-benar berubah.
 
 **Usulan (lanjutan)**
-- `rememberSaveable` untuk query dan tag terpilih.
+- `rememberSaveable` untuk query dan tag terpilih (selesai di Fase 2).
 - Tag tetap berbasis `landmarkNote` sampai ada keputusan eksplisit untuk migrasi DB ke versi 7.
 
 **Batasan:** dilarang `FusedLocationProviderClient`; DB tetap versi 6.
@@ -103,7 +103,7 @@
 | Fase | Isi | Status |
 |---|---|---|
 | 1 | GPS valid, unlink lokasi, konfirmasi hapus lokasi/log, toast `+1 Pkt` jujur | Dikerjakan |
-| 2 | `rememberSaveable` untuk Rekap, Lokasi, Catatan, Setelan | Belum |
+| 2 | `rememberSaveable` untuk Rekap, Lokasi, Catatan, Setelan | Selesai |
 | 3 | Home (pintasan Catatan + grafik nyata), Rekap (DatePicker/desimal/laporan), Catatan (templat/search/waktu), Setelan (konfirmasi restore/CSV) | Belum |
 
 Tiap fase wajib: backup sebelum edit → ktlint exit 0 → `:app:assembleDebug :app:testDebugUnitTest` hijau
