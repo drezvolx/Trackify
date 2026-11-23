@@ -8,7 +8,7 @@ enum class WageMode {
     FLAT_DAILY,
 }
 
-/** Periode tampilan pada Home/Rekap. Hanya mengubah label dan agregat, bukan schema DB. */
+/** Periode pada Home/Rekap. Hanya mengubah label dan agregat, bukan schema DB. */
 enum class WagePeriod {
     DAILY,
     WEEKLY,
@@ -68,7 +68,7 @@ object WageCalculator {
         }
     }
 
-    /** Target bulanan dibagi ke periode tampilan supaya progres tetap bermakna. */
+    /** Target bulanan dibagi ke periode Home/Rekap supaya progres tetap bermakna. */
     fun targetForPeriod(monthlyTarget: Double, period: WagePeriod): Double = when (period) {
         WagePeriod.DAILY -> monthlyTarget.coerceAtLeast(0.0) / 30.0
         WagePeriod.WEEKLY -> monthlyTarget.coerceAtLeast(0.0) / 4.0

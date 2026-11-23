@@ -49,7 +49,7 @@ class AppPreferences(context: Context) {
             prefs.edit().putLong(KEY_FLAT_DAILY_AMOUNT, value.coerceAtLeast(0.0).toBits()).apply()
         }
 
-    /** Periode tampilan Home/Rekap. Default Bulanan seperti perilaku lama. */
+    /** Periode Home/Rekap. Default Bulanan seperti perilaku lama. */
     var wagePeriod: WagePeriod
         get() = runCatching {
             WagePeriod.valueOf(prefs.getString(KEY_WAGE_PERIOD, WagePeriod.MONTHLY.name)!!)

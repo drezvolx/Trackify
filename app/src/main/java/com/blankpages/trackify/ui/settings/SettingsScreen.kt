@@ -279,7 +279,7 @@ fun SettingsScreen(
                             )
                         }
                         Text(
-                            text = "Periode tampilan",
+                            text = "Periode gaji",
                             fontSize = 12.sp,
                             color = scheme.onSurfaceVariant,
                         )
