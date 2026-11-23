@@ -117,7 +117,7 @@ Database `trackify_offline_db`, **version 6**, migrasi aktif **`MIGRATION_5_6`**
 - `expense`
 - `notes`
 
-> Field COD sudah dihapus permanen. Jangan ditambahkan kembali.
+> Field fitur pembayaran tunai sudah dihapus permanen. Jangan ditambahkan kembali.
 
 ### 4.2 `saved_locations`
 - `id` (PK, auto-generate)
@@ -184,7 +184,7 @@ core/data/src/main/java/com/blankpages/trackify/
 - Kartu memakai `TrackifyCard` (20.dp / surface / outlineVariant / padding 16.dp / SemiBold).
 - Semua dialog memakai `TrackifyDialog` (20.dp / `scheme.surface` / `onSurface` / `onSurfaceVariant` / elevation 0 / judul SemiBold), bukan `AlertDialog` default.
 - Konten boleh lewat di belakang outline; padding bawah tiap tab/layar `96.dp`.
-- COD hilang total dari source aktif.
+- Fitur pembayaran tunai hilang total dari source aktif.
 - Hilt tidak boleh downgrade dari `2.60.1`.
 - Live location tidak boleh memakai `FusedLocationProviderClient`.
 - Import backup memakai `repository.restoreSnapshot(...)` dan mengganti penuh data lama.
@@ -212,10 +212,10 @@ rg -n "Pencatatan dan gaji bulanan|rumah tersimpan|Trackify 1\\.0" app/src --glo
 
 Expected: tidak ada output.
 
-Cek COD:
+Cek fitur pembayaran tunai:
 
 ```powershell
-rg -n "\bCOD\b|codCount|codBonus|cashOnDelivery|CashOnDelivery" app/src core --glob "*.kt"
+rg -n "bayar di tempat|pembayaran tunai|dibayar saat pengiriman" app/src core --glob "*.kt"
 ```
 
 Expected: kosong.
@@ -246,12 +246,8 @@ adb shell monkey -p com.blankpages.trackify -c android.intent.category.LAUNCHER 
 
 ## 8. Backup
 
-Baseline kontrak: `backup_locked_contract_20261123_180100`.
-Baseline sebelum Scaffold konsisten: `backup_before_scaffold_consistency_20261123_180650`.
-Baseline sebelum header konsisten: `backup_before_header_consistency_20261123_181140`.
-Baseline sebelum tema konsisten: `backup_before_theme_consistency_20261123_181640`.
-Baseline final saat ini: `backup_before_dialog_theme_db_20261123_183117`.
+Arsip folder lokal sudah dihapus. Cadangan resmi memakai riwayat git di `main` dan tag `v1.0.0`.
 
-Backup historis lain ada di root folder dengan pola `backup_before_*`. Backup lama tertentu masih mengandung COD sebagai snapshot historis dan tidak boleh dipakai sebagai acuan source aktif.
+Untuk kembali ke titik rilis, gunakan commit yang ditandai `v1.0.0`. Riwayat git adalah satu-satunya sumber rollback; jangan mengandalkan salinan folder lama.
 
 Laporan bug/insiden tetap memakai [`report.md`](report.md).

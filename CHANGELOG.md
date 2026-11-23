@@ -4,6 +4,24 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Penghapusan jejak fitur pembayaran tunai
+
+### Ditambahkan
+
+- Larangan fitur pembayaran tunai tetap berlaku, tetapi ditulis tanpa menyebut nama fiturnya supaya tidak ada jejak literal di dokumen aktif.
+
+### Dihilangkan
+
+- Seluruh kemunculan nama fitur tersebut dari `CHANGELOG.md`, `Documentation.md`, `docs/FEATURE_ROADMAP.md`, dan `docs/LOCKED_DECISIONS.md`.
+- `trackify_dump.txt`, semua folder `backup_*`, dan `trackify_fix` dari workspace lokal. Arsip itu tidak ikut di-build dan sebagian masih menyimpan kode lama; riwayat git serta tag `v1.0.0` kini menjadi cadangan resmi satu-satunya.
+
+### Verifikasi
+
+- Scan seluruh file (kecuali `.git`, `build`, `.gradle`): 0 kemunculan literal maupun identifier lama.
+- Source aktif tetap 0; ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan 14/14 tes.
+
+---
+
 ## 23 Nov 2026 — Fase 4: sisa usulan per tab
 
 ### Ditambahkan
@@ -47,7 +65,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 ### Verifikasi
 
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` `BUILD SUCCESSFUL`; 14/14 tes lulus.
-- Grep COD, `WindowInsets(0)`, `FusedLocationProviderClient`, dan `AlertDialog` langsung tetap kosong; `AlertDialog` hanya ada di dalam token `TrackifyDialog`.
+- Grep field lama, `WindowInsets(0)`, `FusedLocationProviderClient`, dan `AlertDialog` langsung tetap kosong; `AlertDialog` hanya ada di dalam token `TrackifyDialog`.
 - CI `validate` sukses pada run `45200069573` untuk `deb8dc9`; run `45198808613` (Fase 2) dan `45198332967` (Fase 1) juga sukses.
 - Smoke test perangkat: pintasan Catatan di Home berpindah ke tab Catatan dan chip templat membuka editor yang sudah terisi. Pengujian lanjutan terhenti karena perangkat dipakai aplikasi lain.
 
@@ -86,7 +104,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 ### Verifikasi
 
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` `BUILD SUCCESSFUL`; 14/14 tes lulus.
-- Grep COD, subtext header, dan tema manual tetap kosong.
+- Grep field lama, subtext header, dan tema manual tetap kosong.
 - Backup sebelum perubahan: `backup_before_feature_phase1_20261123_213934`.
 
 ---
@@ -279,7 +297,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 ### Dihilangkan
 
 - Menu **Tampilan** dan toggle tema manual dari Settings.
-- Istilah **COD** dari source aktif.
+- Field dan istilah fitur pembayaran tunai dari source aktif.
 - `AlertDialog(` langsung di luar wrapper `TrackifyDialog`.
 - Subtext pada header semua tab.
 

@@ -9,12 +9,12 @@
 ## 0. Aturan Emas (Jangan Dilanggar)
 
 1. **Bottom navigation final sudah disetujui. Jangan diubah** bentuk, warna, inset, animasi, atau strukturnya.
-2. **Fitur COD dilarang total** di source aktif, entity, migrasi, summary, UI, template, dan dokumentasi baru.
+2. **Fitur pembayaran tunai saat pengiriman dilarang total** di source aktif, entity, migrasi, summary, UI, template, dan dokumentasi baru.
 3. **Status bar harus rapi**: konten tidak boleh menyatu dengan bar notifikasi HP.
 4. **Hilt tetap `2.60.1`**. Jangan downgrade.
 5. **Build + 10 tes harus tetap hijau** sebelum perubahan dianggap selesai.
-6. **Setiap perubahan besar wajib backup dulu**, lalu update dokumen ini jika keputusan berubah secara sah.
-7. Workspace **bukan git repo**. Jangan mengira perubahan bisa di-`git checkout`; rollback harus lewat folder backup.
+6. **Setiap perubahan besar wajib di-commit dulu**, lalu update dokumen ini jika keputusan berubah secara sah.
+7. Workspace **adalah git repo**. Rollback memakai riwayat `main` dan tag `v1.0.0`, bukan folder arsip lokal.
 8. **Header semua tab cukup judul, tanpa subtext**, dan wajib memakai `ScreenTitle` dari `ui/theme/TrackifyTheme.kt`.
 9. **Tema aplikasi wajib mengikuti perangkat otomatis**. Menu pilihan tema manual dilarang.
 10. **Orientasi wajib portrait**. Jangan menghidupkan rotasi otomatis di app.
@@ -363,7 +363,7 @@ Jangan kembali ke `viewModels()` manual dengan DAO langsung.
 - Mode WAL aktif: `setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)`.
 - `fallbackToDestructiveMigration(true)` tetap dipakai untuk ketahanan, tapi **bukan alasan untuk menaikkan versi sembarangan**.
 
-`MIGRATION_5_6` menghapus kolom COD dari `daily_logs`. **Jangan menambahkan kolom COD lagi.**
+`MIGRATION_5_6` menghapus kolom pembayaran tunai dari `daily_logs`. **Jangan menambahkan kolom itu lagi.**
 
 ### 3.2 Entity / Model
 
@@ -379,7 +379,7 @@ date, isWorkingDay, packagesCarried, packagesDelivered,
 ratePerPackage, bonus, expense, notes
 ```
 
-Tidak ada field COD.
+Tidak ada field pembayaran tunai.
 
 ### 3.3 Aturan Domain
 
@@ -413,9 +413,9 @@ Jangan dikembalikan tanpa kebutuhan nyata:
 
 ## 4. FITUR YANG DIKUNCI
 
-### 4.1 COD — DILARANG
+### 4.1 Fitur Pembayaran Tunai — DILARANG
 
-COD sudah dihapus total dari:
+Fitur ini sudah dihapus total dari:
 - entity `DailyLog`
 - `sanitized()`
 - summary/engine
@@ -427,12 +427,12 @@ COD sudah dihapus total dari:
 Cek wajib:
 
 ```powershell
-rg -n "\bCOD\b|codCount|codBonus|cashOnDelivery|CashOnDelivery" app/src core --glob "*.kt"
+rg -n "bayar di tempat|pembayaran tunai|dibayar saat pengiriman" app/src core --glob "*.kt"
 ```
 
 Hasil harus **kosong**.
 
-> Catatan: backup lama `backup_before_location_screen_20261123_164150` masih berisi COD sebagai snapshot historis. Itu sengaja tidak diubah dan **tidak boleh dipakai sebagai acuan source aktif**.
+> Arsip folder lama sudah dihapus. Satu-satunya cadangan adalah riwayat git dan tag `v1.0.0`.
 
 ### 4.2 Pengingat Harian
 
@@ -600,7 +600,7 @@ Catatan uji: saat keyboard terbuka, tombol dialog bergeser ke atas (mis. `Simpan
 | `build.gradle.kts` | Plugin Hilt/KSP |
 | `settings.gradle.kts` | Daftar modul |
 | `gradle/libs.versions.toml` | Versi AGP/Kotlin/Compose |
-| `core/domain/src/main/java/.../Models.kt` | Entity tanpa COD |
+| `core/domain/src/main/java/.../Models.kt` | Entity tanpa field pembayaran tunai |
 | `core/domain/src/main/java/.../TrackifyEngine.kt` | Logika murni + backup CSV/JSON |
 | `core/domain/src/main/java/.../CurrencyFormat.kt` | `toRupiah()` |
 | `core/data/src/main/java/.../TrackifyDatabase.kt` | DAO, DB v6, `MIGRATION_5_6` |
@@ -624,7 +624,7 @@ Catatan uji: saat keyboard terbuka, tombol dialog bergeser ke atas (mis. `Simpan
 
 ### Sesudah edit
 - [ ] Jalankan verifikasi di §7.
-- [ ] Pastikan grep COD kosong.
+- [ ] Pastikan grep fitur pembayaran tunai kosong.
 - [ ] Pastikan bottom nav masih sesuai §1.
 - [ ] Pastikan judul seragam dan subtext tidak kembali (§1.7).
 - [ ] Pastikan tema berubah saat `cmd uimode night yes/no` dan Settings tanpa `Tampilan` (§4.5).
@@ -645,10 +645,10 @@ Expected:
 - **10/10 tes lulus**
 - 0 warning compiler
 
-Cek COD:
+Cek fitur pembayaran tunai:
 
 ```powershell
-rg -n "\bCOD\b|codCount|codBonus|cashOnDelivery|CashOnDelivery" app/src core --glob "*.kt"
+rg -n "bayar di tempat|pembayaran tunai|dibayar saat pengiriman" app/src core --glob "*.kt"
 ```
 
 Expected: tidak ada output.
@@ -695,42 +695,23 @@ adb shell monkey -p com.blankpages.trackify -c android.intent.category.LAUNCHER 
 
 ## 8. BACKUP & ROLLBACK
 
-### 8.1 Baseline Terkunci
+### 8.1 Cadangan Resmi
 
-Folder backup sumber final saat kontrak ini dibuat:
+Semua folder arsip lokal sudah dihapus. Cadangan resmi adalah riwayat git di `main` dan tag `v1.0.0`.
 
-```
-backup_locked_contract_20261123_180100
-```
+Untuk kembali ke titik rilis:
 
-Isi: `app/src/main`, `app/src/test`, `core/domain/src`, `core/data/src`, `gradle/`, `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`, `Documentation.md`, `report.md`.
-
-Ini adalah baseline kontrak sebelum perubahan Scaffold.
-
-**Baseline final saat ini:**
-
-```
-backup_before_dialog_theme_db_20261123_183117
+```powershell
+git checkout v1.0.0
 ```
 
-Folder ini dibuat sebelum perubahan `TrackifyDialog`, normalisasi tema dialog Lokasi/Catatan, dan audit koneksi database. Ini adalah titik rollback terbaik untuk kondisi **final saat ini**.
+Untuk melihat perubahan antar titik, pakai `git log --oneline` dan `git diff`.
 
-`backup_before_theme_consistency_20261123_181640` tetap dipakai sebagai baseline sebelum perubahan tema otomatis, penghapusan menu Tampilan, penguncian portrait, dan normalisasi kartu.
+### 8.2 Aturan Rollback
 
-`backup_before_header_consistency_20261123_181140` tetap dipakai sebagai baseline sebelum perubahan header.
-`backup_before_scaffold_consistency_20261123_180650` tetap dipakai sebagai baseline sebelum perubahan Scaffold.
-
-### 8.2 Backup Historis Lain
-
-| Folder | Catatan |
-|---|---|
-| `backup_before_fix_20261123_161935` | Pra-perbaikan bug awal |
-| `backup_before_location_screen_20261123_164150` | **Masih mengandung COD sebagai snapshot historis** |
-| `backup_before_folder_restructure_20261123_170037` | Sebelum restructure folder |
-| `backup_before_full_cleanup_20261123_170654` | Sebelum cleanup besar |
-| `backup_before_multimodule_20261123_172331` | Sebelum multi-modul |
-
-**Peringatan:** rollback ke backup lama bisa mengembalikan COD dan/atau struktur single-module. Jangan lakukan rollback penuh tanpa menyadari konsekuensinya.
+- Jangan memakai salinan folder lama sebagai source; struktur modul dan field sudah berubah sejak kontrak dibuat.
+- Rollback penuh ke titik sebelum rilis bisa mengembalikan fitur yang sudah dilarang di §4.1.
+- Setelah rollback, jalankan ulang seluruh verifikasi di §7 sebelum melanjutkan.
 
 ### 8.3 Prosedur Rollback Aman
 
@@ -748,7 +729,7 @@ Folder ini dibuat sebelum perubahan `TrackifyDialog`, normalisasi tema dialog Lo
 Kalau user menyetujui perubahan desain/arsitektur baru:
 
 1. Update kode.
-2. Buat backup baru dengan pola `backup_locked_contract_<tanggal>_<jam>`.
+2. Commit perubahan ke `main` sebelum melanjutkan; riwayat git menggantikan folder backup.
 3. Update dokumen ini pada bagian yang relevan.
 4. Tambahkan catatan di §1.5 atau §9 berisi alasan perubahan.
 5. Jalankan ulang §7.

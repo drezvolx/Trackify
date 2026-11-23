@@ -2,7 +2,7 @@
 
 > Status: **23 Nov 2026**. Dokumen ini melengkapi `LOCKED_DECISIONS.md`, bukan menggantikannya.
 > Semua usulan di bawah **tidak boleh** mengubah bottom navigation, header `ScreenTitle`, tema otomatis,
-> orientasi portrait, token `TrackifyCard`/`TrackifyDialog`, struktur modul, atau menambahkan COD.
+> orientasi portrait, token `TrackifyCard`/`TrackifyDialog`, struktur modul, atau menambahkan fitur pembayaran tunai.
 
 ---
 
