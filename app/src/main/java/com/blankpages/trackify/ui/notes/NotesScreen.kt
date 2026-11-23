@@ -442,7 +442,7 @@ fun NotesScreen(
                                     text = rendered,
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = if (block.type == NoteBlock.Type.HEADING) {
-                                        FontWeight.SemiBold
+                                        FontWeight.ExtraBold
                                     } else {
                                         FontWeight.Normal
                                     },
@@ -706,7 +706,7 @@ private fun NoteEditorDialog(
                         when (block.type) {
                             NoteBlock.Type.HEADING -> Text(
                                 text = "#",
-                                style = MaterialTheme.typography.titleSmall,
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.ExtraBold),
                                 color = scheme.primary,
                                 modifier = Modifier.padding(top = 14.dp),
                             )
@@ -739,7 +739,7 @@ private fun NoteEditorDialog(
                             minLines = 1,
                             maxLines = 4,
                             textStyle = if (block.type == NoteBlock.Type.HEADING) {
-                                MaterialTheme.typography.titleSmall
+                                MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.ExtraBold)
                             } else {
                                 MaterialTheme.typography.bodyMedium
                             },

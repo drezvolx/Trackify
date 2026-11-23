@@ -178,7 +178,7 @@ core/data/src/main/java/com/blankpages/trackify/
 - Bottom bar: outline + notch + fill `scheme.background.copy(alpha = 0.72f)`, tanpa kotak hitam solid.
 - Status bar: `contentWindowInsets = WindowInsets.statusBars`, konten tidak menyatu dengan notifikasi HP.
 - Satu `Scaffold` membungkus semua layar termasuk Settings; bottom bar hanya disembunyikan saat `inSettings`.
-- Header semua tab/layar: `ScreenTitle`, judul saja, tanpa subtext, `FontWeight.Bold`.
+- Header semua tab/layar: `ScreenTitle`, judul saja, tanpa subtext, `FontWeight.ExtraBold` (Fase 16).
 - Tema otomatis mengikuti sistem; tidak ada menu `Tampilan` / toggle Dark–White.
 - Orientasi portrait; rotasi otomatis dinonaktifkan.
 - Kartu memakai `TrackifyCard` (20.dp / surface / outlineVariant / padding 16.dp / SemiBold).

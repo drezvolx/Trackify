@@ -55,6 +55,7 @@ import com.blankpages.trackify.domain.WageCalculator
 import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.ui.theme.ScreenTitle
+import com.blankpages.trackify.ui.theme.TabularFigures
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyGradients
 import com.blankpages.trackify.ui.theme.TrackifyIcons
@@ -283,6 +284,7 @@ fun HomeScreen(
                         ) {
                             Text(
                                 text = "${activeToday.safeDelivered}",
+                                style = TabularFigures,
                                 fontSize = 54.sp,
                                 lineHeight = 56.sp,
                                 fontWeight = FontWeight.Medium,

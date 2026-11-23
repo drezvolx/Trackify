@@ -4,6 +4,36 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 16: typography tebal & angka tabular
+
+### Ditambahkan
+
+- `GeistFamily` mendapat alias `geist_bold` untuk `FontWeight.ExtraBold` (800) tanpa aset font baru, dan token
+  `TabularFigures` (`MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum")`) dipakai eksplisit
+  pada angka besar Home. Semua slot tipografi memang sudah memakai `tnum` lewat `TextStyle.geist()`.
+- Empat tampilan koordinat di Lokasi (GPS live, baris daftar, dialog detail, kartu terdekat) memakai
+  `FontFamily.Monospace`, sehingga titik desimal dan digit sejajar.
+
+### Diubah
+
+- `ScreenTitle` memakai `FontWeight.ExtraBold` (tetap 28.sp / 32.sp / -0.6.sp, tanpa subtext, satu komponen
+  untuk kelima tab).
+- Blok `HEADING` di Catatan lebih berat dari paragraf: pratinjau kartu dan editor memakai `ExtraBold`;
+  paragraf tetap `Normal`. Penanda `#` ikut `ExtraBold`.
+- Judul kartu tetap `SemiBold` dan judul dialog tetap `titleMedium` — token `TrackifyCard`/`TrackifyDialog`
+  tidak berubah. Fase ini hanya typography; spacing dan border ditangani Fase 17.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **30/30** tes, 0 failure.
+- Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`;
+  `Scaffold(` hanya di `MainActivity.kt`; 4 pemakaian `FontFamily.Monospace` dan 3 token `TabularFigures`.
+- Smoke perangkat: Home, Lokasi, Catatan terbuka tanpa crash; koordinat `-6.390512, 106.866109` dan daftar
+  tetap terbaca; logcat tidak ada `FATAL`/`AndroidRuntime`.
+- CI `validate`: _menunggu run_.
+
+---
+
 ## 24 Nov 2026 — Fase 15: tema gradien monokrom
 
 ### Ditambahkan
@@ -32,7 +62,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 - Smoke perangkat: screenshot dianalisis per piksel. Mode dark: latar `#202124 → #1a1b1d`, hero
   `#4a4c4f → #1e2023`. Setelah `cmd uimode night no` + restart: latar `#f3f3f3 → #ececec`, hero
   `#39393a → #161617`. Mode perangkat dikembalikan ke `night yes`; aplikasi tidak crash.
-- CI `validate`: _menunggu run_.
+- CI `validate` hijau: run `45251653184` (`23818b1`).
 
 ---
 

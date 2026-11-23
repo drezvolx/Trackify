@@ -38,7 +38,7 @@ fun ScreenTitle(text: String, modifier: Modifier = Modifier) {
         modifier = modifier,
         fontSize = 28.sp,
         lineHeight = 32.sp,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.ExtraBold,
         letterSpacing = (-0.6).sp,
         color = MaterialTheme.colorScheme.onBackground,
     )

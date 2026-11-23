@@ -118,7 +118,7 @@
 | 13 | Lokasi murni + bagikan foto & teks | Selesai |
 | 14 | Template Notion opsional + multi-foto catatan, DB v8 | Selesai |
 | 15 | Tema gradien monokrom: Royal Charcoal / Pure Charcoal | Selesai |
-| 16 | Typography tebal di judul + gaya khas tiap layout | Rencana |
+| 16 | Typography tebal di judul + gaya khas tiap layout | Selesai |
 | 17 | Tombol outline + spacing/typography konsisten | Rencana |
 | 18 | Tombol update, kredit, folder manajemen, README/docs | Rencana |
 
@@ -171,8 +171,11 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
   `#3a3a3c → #232324 → #161617`). `TrackifyGradients` dipakai di root kelima layar; hero Home memakai
   gradien hero dengan teks putih. `LocalTrackifyDarkTheme` meneruskan `isSystemInDarkTheme()` tanpa preferensi
   baru. `Scaffold` tetap hanya di `MainActivity`, dan tidak ada toggle tema manual.
-- **Fase 16 — Typography:** judul `ExtraBold`, angka Home `tnum`, koordinat Lokasi monospaced, judul blok
-  Catatan lebih berat dari paragraf. `ScreenTitle` tetap tanpa subtext.
+- **Fase 16 — Typography (selesai):** `ScreenTitle` memakai `FontWeight.ExtraBold` lewat alias aset `geist_bold`
+  (tanpa font baru). Angka besar Home memakai token `TabularFigures` (`tnum`, sudah juga aktif di semua slot
+  tipografi). Empat tampilan koordinat di Lokasi memakai `FontFamily.Monospace`. Blok `HEADING` Catatan di kartu
+  pratinjau dan editor memakai `ExtraBold`, paragraf tetap `Normal`. Judul kartu `SemiBold` dan dialog
+  `titleMedium` tidak berubah; `ScreenTitle` tetap tanpa subtext.
 - **Fase 17 — Tombol:** komponen tombol dengan outline `1.dp outlineVariant` di kedua tema, skala spacing
   4/8/12/16/24, shadow diterjemahkan dari CSS ke elevation Compose.
 - **Fase 18 — Update & kredit:** bel di header Home mengecek `GET /repos/drezvolx/Trackify/releases/latest`,

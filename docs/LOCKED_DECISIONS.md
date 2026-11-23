@@ -543,7 +543,7 @@ Token final:
 - border `BorderStroke(1.dp, scheme.outlineVariant)`
 - padding konten `16.dp`
 - judul kartu `FontWeight.SemiBold`
-- judul layar tetap `FontWeight.Bold` lewat `ScreenTitle`
+- judul layar tetap `FontWeight.ExtraBold` lewat `ScreenTitle` (Fase 16; sebelumnya `Bold`)
 
 `TrackifyCard` sekarang dipakai untuk:
 - kartu kosong dan kartu catatan di `NotesScreen`;
@@ -895,3 +895,19 @@ User menyetujui pergantian palet solid menjadi gradien monokrom. Keputusan:
   `scheme.surface` + border `outlineVariant`.
 - `TrackifyMockupPalette`, `res/values/colors.xml`, dan window background XML diselaraskan ke stop tengah
   gradien. `ScreenTitle`, bottom nav, orientasi portrait, dan token dialog tidak berubah.
+
+### 24 Nov 2026 — Fase 16: typography
+
+User menyetujui judul lebih tebal, angka tabular, dan koordinat monospaced. Keputusan:
+
+- `ScreenTitle` satu-satunya gaya header tab: 28.sp / 32.sp / `letterSpacing -0.6.sp` / tanpa subtext,
+  kini `FontWeight.ExtraBold`. Tidak boleh ada `Text` judul inline di layar. `FontWeight.ExtraBold` di-mapping
+  ke aset `geist_bold` yang sama dengan `Bold` — **tidak ada aset font baru**.
+- `tnum` sudah diaktifkan global oleh `TextStyle.geist()` pada semua slot `MockupTypography`. Token
+  `TabularFigures` dipakai eksplisit di angka besar Home sebagai penanda niat; tidak mengubah angka lain.
+- Koordinat Lokasi (GPS live, baris daftar, dialog detail, kartu terdekat) memakai `FontFamily.Monospace`.
+  Teks campuran (patokan atau koordinat) di Home sengaja tidak diubah.
+- Judul blok `HEADING` Catatan memakai `ExtraBold` di pratinjau kartu dan editor; paragraf tetap `Normal`.
+  Penanda `#` ikut `ExtraBold`.
+- Judul kartu tetap `SemiBold`, judul dialog tetap `titleMedium`. Spacing, border, dan bentuk tombol bukan bagian
+  Fase 16 (Fase 17). Bottom nav, gradien, tema otomatis, dan orientasi portrait tidak berubah.

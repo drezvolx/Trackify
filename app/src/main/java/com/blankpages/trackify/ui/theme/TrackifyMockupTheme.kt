@@ -1,8 +1,10 @@
 package com.blankpages.trackify.ui.theme
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -78,7 +80,13 @@ val GeistFamily = FontFamily(
     Font(R.font.geist_medium, FontWeight.Medium),
     Font(R.font.geist_semibold, FontWeight.SemiBold),
     Font(R.font.geist_bold, FontWeight.Bold),
+    // Fase 16: aset bold yang sama dipakai untuk 800 agar judul ExtraBold tanpa aset baru.
+    Font(R.font.geist_bold, FontWeight.ExtraBold),
 )
+
+/** Style angka: `tnum` sudah aktif di semua slot, token ini membuat niatnya eksplisit di UI. */
+val TabularFigures: TextStyle
+    @Composable get() = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum")
 
 private fun TextStyle.geist(): TextStyle = copy(fontFamily = GeistFamily, fontFeatureSettings = "tnum")
 

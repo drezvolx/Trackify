@@ -64,6 +64,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -290,6 +291,7 @@ fun LocationsScreen(
                             Text(
                                 text = "GPS live: ${"%.5f".format(currentLat)}, ${"%.5f".format(currentLon)}",
                                 style = MaterialTheme.typography.labelSmall,
+                                fontFamily = FontFamily.Monospace,
                                 color = scheme.onSurfaceVariant,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
@@ -502,6 +504,7 @@ fun LocationsScreen(
                                             Text(
                                                 text = loc.displaySubtitle(),
                                                 style = MaterialTheme.typography.bodySmall,
+                                                fontFamily = FontFamily.Monospace,
                                                 color = scheme.onSurfaceVariant,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
@@ -577,6 +580,7 @@ fun LocationsScreen(
                     Text(
                         text = "Koordinat: $coordStr",
                         style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace,
                         color = scheme.onSurfaceVariant,
                     )
                     entry.second?.let { meters ->
@@ -781,6 +785,7 @@ private fun LocationNearbyCard(
                 Text(
                     text = coordText,
                     style = MaterialTheme.typography.bodySmall,
+                    fontFamily = FontFamily.Monospace,
                     color = scheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
