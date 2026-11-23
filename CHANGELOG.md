@@ -13,11 +13,13 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 - Komponen SDK `platforms;android-37.0` dan `build-tools;37.0.0` sekarang dipasang eksplisit sebelum build.
 - Run CI kedua gagal di langkah `Install Android SDK components` karena `platforms;android-37` bukan ID paket yang valid; ID yang benar adalah `platforms;android-37.0` (sesuai SDK lokal dan katalog Google channel-0).
 - Langkah penerimaan lisensi dihapus karena sudah dilakukan otomatis oleh `setup-android@v4`.
-- Tag `v1.0.0` akan dipindahkan ke commit dengan CI yang sudah hijau.
+- Tag `v1.0.0` dipindahkan ke commit final yang sudah terverifikasi CI hijau.
 
 ### Verifikasi
 
 - Perintah ktlint dengan glob yang dipakai CI sudah dijalankan lokal dan keluar dengan exit 0.
+- Run CI `45193097358` (commit `ebf4e6f`) berakhir `success`: checkout, JDK 21, Android SDK, install komponen SDK, ktlint, build, dan 14 tes JVM semuanya hijau.
+- Tag `v1.0.0` kini menunjuk ke commit dengan CI hijau, bukan lagi commit sebelum perbaikan workflow.
 
 ---
 
