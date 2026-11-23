@@ -43,8 +43,13 @@ app/build/outputs/apk/debug/app-debug.apk
 
 - [Documentation.md](Documentation.md) — gambaran proyek dan detail fitur.
 - [docs/LOCKED_DECISIONS.md](docs/LOCKED_DECISIONS.md) — keputusan yang tidak boleh diubah, terutama bottom navigation dan tema.
+- [License.md](License.md) — lisensi penggunaan dan syarat atribusi.
 
 > Baca `LOCKED_DECISIONS.md` sebelum mengubah UI, arsitektur, atau build file.
+
+## Lisensi
+
+Trackify dilisensikan di bawah [MIT License](License.md). Pihak lain boleh menggunakan, memodifikasi, dan mendistribusikan kode ini, dengan syarat notice lisensi dan atribusi copyright tetap disertakan pada salinan atau bagian substantif dari perangkat lunak.
 
 ## Catatan
 

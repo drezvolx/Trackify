@@ -4,6 +4,19 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Lisensi MIT
+
+### Ditambahkan
+
+- `License.md` dengan MIT License: kode boleh dipakai, dimodifikasi, dan didistribusikan, tetapi notice lisensi serta atribusi copyright wajib ikut serta pada salinan atau bagian substantif.
+- Tautan ke lisensi di `README.md`, pada bagian Dokumentasi dan Lisensi.
+
+### Tidak diubah
+
+- Fitur, UI, alur data, dan konfigurasi build tetap seperti versi sebelumnya.
+
+---
+
 ## 23 Nov 2026 — Startup & konsistensi field (`593e64e`)
 
 ### Diubah
