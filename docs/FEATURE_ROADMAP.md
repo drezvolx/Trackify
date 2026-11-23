@@ -111,6 +111,16 @@
 | 6 | Foto lokasi (kamera → galeri + unggah galeri), DB v7 | Selesai |
 | 7 | Input URL Maps (panjang + short link), hapus sistem tag | Selesai |
 | 8 | Catatan ala Notion lite: blok teks + checklist | Selesai |
+| 9 | Input paket Dibawa/Dikirim pakai teks | Selesai |
+| 10 | Engine performa & device profile untuk perangkat low-end | Rencana |
+| 11 | Flow gajian & periode yang bisa diatur user | Rencana |
+| 12 | Jam notifikasi bisa diatur user | Rencana |
+| 13 | Lokasi murni + bagikan foto & teks | Rencana |
+| 14 | Template Notion opsional + multi-foto catatan, DB v8 | Rencana |
+| 15 | Tema gradien monokrom: Royal Charcoal / Pure Charcoal | Rencana |
+| 16 | Typography tebal di judul + gaya khas tiap layout | Rencana |
+| 17 | Tombol outline + spacing/typography konsisten | Rencana |
+| 18 | Tombol update, kredit, folder manajemen, README/docs | Rencana |
 
 Fase 6 menambah `photoPath` pada `saved_locations` lewat `MIGRATION_6_7`. Foto kamera masuk galeri,
 lalu salinan stabil disimpan di `filesDir/location_photos`; preview tampil di editor, detail, dan kartu
@@ -126,5 +136,38 @@ Fase 8 menambah blok paragraf, judul, daftar, dan checklist pada editor Catatan 
 schema `courier_notes` (isi tetap satu field `content`). `NoteBlocks` memakai prefiks `# `, `- `,
 `[ ]`, dan `[x]`; checklist disimpan sebagai teks, jadi backup/ekspor lama tetap terbaca.
 
+Fase 9 menambah dua field angka **Dibawa** dan **Dikirim** di Home. Tombol `-1/+1/+5/+10` tetap ada,
+tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-commit lewat tombol
+**Simpan paket**; `DailyLog.sanitized()` tetap memotong `dikirim` agar tidak melebihi `dibawa`.
+
+### Rencana lanjutan yang sudah dipetakan (Fase 10–18)
+
+- **Fase 10 — Performa:** `DeviceProfile` membaca `isLowRamDevice`, API level, dan memori sekali saat start,
+  lalu `PerformanceConfig` mengatur downsample foto, interval GPS, throttle recompute, dan batas preview.
+  Tidak mengubah aturan domain.
+- **Fase 11 — Gaji & periode:** `AppPreferences` menyimpan `wageMode` (`tarif per paket` / `nominal tetap per hari`),
+  nominal, `wagePeriod` (`Harian`/`Mingguan`/`Bulanan`), dan tanggal gajian. Default lama dipertahankan,
+  sehingga data existing tidak berubah. Semua setting menjadi milik user.
+- **Fase 12 — Notifikasi:** jam pengingat pindah dari konstanta `20.00` ke prefs + `TimePicker`;
+  izin `POST_NOTIFICATIONS` diminta saat user mengaktifkan.
+- **Fase 13 — Lokasi & bagikan:** aksi **+1 Pkt** dan **Catat** dihapus dari kartu/detail. Tombol **Bagikan**
+  mengirim foto lewat `FileProvider` plus teks:
+  `FOTO / ------- / Nama Penerima / Detail/Patokan / Maps / by Trackify.`
+- **Fase 14 — Catatan:** template Notion bersifat opsional (user boleh memilih `Kosong`). Foto catatan
+  didukung hingga 5 foto lewat tabel `note_photos` dan migrasi DB v8; backup schema `8` mengekspor array `photos`,
+  import schema `7` tetap diterima.
+- **Fase 15 — Tema:** dark **Royal Charcoal** (`#25262a → #1e1f22 → #17181a`, hero `#4c4e51 → #1e2023`)
+  dan light **Pure Charcoal** (`#fafafa → #f1f1f1 → #e8e8e8`, hero `#3a3a3c → #161617`). Gradien dipasang
+  di container tiap screen; `Scaffold` tetap hanya di `MainActivity`, dan tidak ada toggle tema manual.
+- **Fase 16 — Typography:** judul `ExtraBold`, angka Home `tnum`, koordinat Lokasi monospaced, judul blok
+  Catatan lebih berat dari paragraf. `ScreenTitle` tetap tanpa subtext.
+- **Fase 17 — Tombol:** komponen tombol dengan outline `1.dp outlineVariant` di kedua tema, skala spacing
+  4/8/12/16/24, shadow diterjemahkan dari CSS ke elevation Compose.
+- **Fase 18 — Update & kredit:** bel di header Home mengecek `GET /repos/drezvolx/Trackify/releases/latest`,
+  menampilkan dialog versi + tombol unduh/buka GitHub (alur flexible, tanpa auto-install). Blok Dukungan
+  menampilkan versi aplikasi, **Drezvolx**, <https://github.com/drezvolx>, dan
+  <https://discord.com/users/1182612195419369562>. `credits.md`, struktur folder nested, dan README profesional
+  menyusul di fase ini.
+
 Tiap fase wajib: backup sebelum edit → ktlint exit 0 → `:app:assembleDebug :app:testDebugUnitTest` hijau
-→ 14 tes lulus → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.
+→ semua tes lulus (baseline 14) → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.

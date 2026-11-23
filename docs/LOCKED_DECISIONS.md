@@ -785,3 +785,10 @@ empat jenis blok (**Teks**, **Judul**, **Daftar**, **Checklist**), isi tetap sat
 prefiks teks, tanpa schema DB baru, tabel, atau format khusus. Alasan: catatan perlu struktur ringan dan
 checklist yang bisa dicentang, tetapi backup/ekspor lama harus tetap kompatibel. Kontrak UI lain
 (bottom nav, `ScreenTitle`, tema otomatis, `TrackifyCard`/`TrackifyDialog`) tidak berubah.
+
+### 24 Nov 2026 — Fase 9: input paket pakai teks
+
+User meminta jumlah paket **Dibawa** dan **Dikirim** bisa diketik, bukan hanya ditekan berulang lewat
+`-1/+1/+5/+10`. Keputusan: tombol lama tetap dipertahankan sebagai pelengkap; field teks memakai keyboard
+numerik dan tombol **Simpan paket**. Aturan domain tidak berubah — `DailyLog.sanitized()` tetap membatasi
+`packagesDelivered ≤ packagesCarried`, termasuk saat user mengetik angka lebih besar dari jumlah dibawa.

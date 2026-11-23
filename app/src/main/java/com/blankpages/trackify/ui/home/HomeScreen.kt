@@ -20,13 +20,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +43,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -50,6 +54,7 @@ import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyIcons
+import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -136,6 +141,25 @@ fun HomeScreen(
     val selectedBar = last7Days.getOrNull(selectedBarIndex) ?: last7Days.last()
     var pendingDelta by remember { mutableStateOf<Int?>(null) }
     var pendingPause by remember { mutableStateOf(false) }
+    var carriedText by remember { mutableStateOf(activeToday.safeCarried.toString()) }
+    var deliveredText by remember { mutableStateOf(activeToday.safeDelivered.toString()) }
+
+    LaunchedEffect(activeToday.safeCarried, activeToday.safeDelivered) {
+        carriedText = activeToday.safeCarried.toString()
+        deliveredText = activeToday.safeDelivered.toString()
+    }
+
+    fun commitPackageCounts() {
+        val carried = carriedText.trim().toIntOrNull()?.coerceAtLeast(0) ?: activeToday.safeCarried
+        val delivered = deliveredText.trim().toIntOrNull()?.coerceAtLeast(0) ?: activeToday.safeDelivered
+        onUpdateTodayLog(
+            activeToday.copy(
+                isWorkingDay = true,
+                packagesCarried = carried,
+                packagesDelivered = delivered.coerceAtMost(carried),
+            ).sanitized(),
+        )
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -361,6 +385,41 @@ fun HomeScreen(
                     }
 
                     if (activeToday.isWorkingDay) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            OutlinedTextField(
+                                value = carriedText,
+                                onValueChange = { value -> carriedText = value.filter { c -> c.isDigit() } },
+                                label = { Text("Dibawa") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = trackifyFieldColors(),
+                                modifier = Modifier.weight(1f),
+                            )
+                            OutlinedTextField(
+                                value = deliveredText,
+                                onValueChange = { value -> deliveredText = value.filter { c -> c.isDigit() } },
+                                label = { Text("Dikirim") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = trackifyFieldColors(),
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        TextButton(
+                            onClick = { commitPackageCounts() },
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                        ) {
+                            Text(
+                                text = "Simpan paket",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(6.dp),

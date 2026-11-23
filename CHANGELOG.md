@@ -4,6 +4,24 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 9: input paket pakai teks
+
+### Ditambahkan
+
+- Home: field **Dibawa** dan **Dikirim** dengan keyboard numerik. User bisa mengetik jumlah persis, lalu menekan **Simpan paket**; tombol `-1`, `+1`, `+5`, `+10` tetap tersedia seperti sebelumnya.
+- State field disinkronkan ulang dari `DailyLog` saat nilai berubah lewat aksi lain, sehingga tidak ada dua sumber kebenaran.
+
+### Diubah
+
+- Commit input teks tetap melewati `DailyLog.sanitized()`: `dikirim` dipotong ke `dibawa` bila user mengetik angka lebih besar, dan nilai negatif ditolak. Konfirmasi aksi cepat Fase 5 tidak berubah.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan 14/14 tes.
+- Smoke test perangkat: mengetik `12` dibawa + `7` dikirim menghasilkan `7 dari 12 paket` (58%, Rp12.600); input `3` dibawa + `9` dikirim ter-clamp menjadi `dari 3 paket`; data uji dikembalikan ke `0 dari 0 paket`.
+
+---
+
 ## 24 Nov 2026 — Fase 8: catatan blok ala Notion lite
 
 ### Ditambahkan
@@ -18,6 +36,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 - Harness parser: kelima tipe blok terbaca dengan `lineIndex` benar dan `serialize(parse(x)) == x` (roundtrip identik).
 - Smoke test perangkat: membuat catatan berisi paragraf + judul + daftar + checklist, mencentang checklist, menyimpan, lalu membuka ulang — semua blok dan status centang tetap ada; preview tampil di kartu. Catatan uji dihapus.
 - Bottom nav, `ScreenTitle`, tema otomatis, dan kontrak UI lain tidak berubah.
+- CI `validate` hijau: [run 45226188604](https://github.com/drezvolx/Trackify/actions/runs/45226188604).
 
 ---
 
