@@ -16,7 +16,10 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 - Gate ulang setelah bump: ktlint exit 0, `:app:assembleDebug :app:testDebugUnitTest` hijau, **36/36** tes.
 - Smoke cepat: Home menampilkan `Versi terpasang: 1.1` saat bel ditekan, dan Setelan → Dukungan menampilkan
   `Versi aplikasi: 1.1`.
-- CI `validate` untuk commit bump: _menunggu run_.
+- CI `validate` hijau untuk commit bump: run `45259931729` (`de57390`).
+- Tag `v1.1.0` dan GitHub Release **Trackify v1.1.0** diterbitkan
+  (<https://github.com/drezvolx/Trackify/releases/tag/v1.1.0>, release id `455966363`). `GET releases/latest`
+  mengembalikan `v1.1.0`. Tag dan rilis `v1.0.0` tidak diubah (`a81d6ca`) dan tetap menjadi baseline.
 
 ---
 
