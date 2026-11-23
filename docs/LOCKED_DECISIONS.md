@@ -357,8 +357,8 @@ Jangan kembali ke `viewModels()` manual dengan DAO langsung.
 ### 3.1 Database
 
 - Nama: `trackify_offline_db`.
-- Versi: **`7`** (disetujui 23 Nov 2026 untuk lampiran foto lokasi).
-- Migrasi aktif: **`MIGRATION_5_6`** dan **`MIGRATION_6_7`**.
+- Versi: **`8`** (disetujui 24 Nov 2026 untuk foto catatan; versi `7` sebelumnya untuk lampiran foto lokasi).
+- Migrasi aktif: **`MIGRATION_5_6`**, **`MIGRATION_6_7`**, dan **`MIGRATION_7_8`**.
 - `exportSchema = false`.
 - Mode WAL aktif: `setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)`.
 - `fallbackToDestructiveMigration(true)` tetap dipakai untuk ketahanan, tapi **bukan alasan untuk menaikkan versi sembarangan**.
@@ -369,12 +369,17 @@ Jangan kembali ke `viewModels()` manual dengan DAO langsung.
 Foto hasil kamera masuk galeri lewat `MediaStore`, lalu salinan stabilnya disimpan di `filesDir/location_photos`
 dan path-nya menjadi lampiran lokasi. Hapus lokasi ikut menghapus salinan tersebut.
 
+`MIGRATION_7_8` membuat tabel `note_photos` (`id`, `noteId`, `path`, `sortOrder`) dengan FK `CASCADE` ke
+`courier_notes.id` dan index pada `noteId`. Foto catatan disimpan terpisah di `filesDir/note_photos`
+(awalan `note_`); hapus catatan ikut menghapus baris dan file. Tidak ada kolom baru di `courier_notes`.
+
 ### 3.2 Entity / Model
 
-Tiga entity:
+Empat entity:
 - `DailyLog` → `daily_logs`
 - `SavedLocation` → `saved_locations`
 - `CourierNote` → `courier_notes`
+- `NotePhoto` → `note_photos` (maks. 5 per catatan, dijaga di repository + UI)
 
 Field `DailyLog` final:
 
@@ -484,7 +489,7 @@ Hasil harus **kosong**.
 ### 4.4 Backup / Reset
 
 - Export backup memakai `repository.readBackupSettings()` untuk menyertakan tarif, bonus, target, dan flag pengingat. `themeMode` sengaja tidak diekspor karena tema selalu mengikuti sistem.
-- Schema backup naik ke `7`. Backup schema `5` dan `6` tetap bisa dibaca; `photoPath` memakai `""` jika tidak ada, dan bagian `settings` memakai default jika tidak ada.
+- Schema backup naik ke `8` (Fase 14). Backup schema `5`, `6`, dan `7` tetap bisa dibaca; `photoPath` memakai `""` jika tidak ada, kunci `photos` yang absen dibaca sebagai daftar kosong, dan bagian `settings` memakai default jika tidak ada. `decodeBackup` tidak menolak angka schema lama.
 - Import backup memakai `repository.restoreSnapshot(decoded.value)` lalu `repository.restoreBackupSettings(decoded.value.settings)`.
 - `restoreSnapshot` **mengganti penuh** isi tabel (clear dulu, baru isi), bukan menambah.
 - Setelah restore, VM menyegarkan `overrideTodayLogFlow`, `defaultRateFlow`, `settingsFlow`, dan jadwal pengingat.
@@ -849,3 +854,24 @@ User meminta tab Lokasi fokus ke lokasi. Keputusan:
   `FOTO` / `-------` / `Nama Penerima : …` / `Detail/Patokan : …` / `Maps : …` / baris kosong / `by Trackify.`
 - Field `SavedLocation` final tetap `id, customerName, landmarkNote, latitude, longitude, photoPath`.
   Tidak ada migrasi DB, tidak ada izin baru, tidak ada perubahan bottom nav/header/tema/token UI.
+
+### 24 Nov 2026 — Fase 14: template opsional, multi-foto catatan, DB v8
+
+User meminta templat tidak memaksa dan catatan bisa membawa beberapa foto. Keputusan:
+
+- Templat Notion **opsional**. Chip **Kosong** menggantikan "Reset" dan langsung membuka editor blank;
+  `Titipan` / `Kendala Kirim` tetap tersedia. Tidak ada templat baru yang dipaksakan.
+- Isi catatan tetap **satu field `content`** dengan `NoteBlocks`; tidak ada tabel/kolom untuk blok.
+  Foto memakai entity terpisah `NotePhoto` → tabel `note_photos` dan `MIGRATION_7_8` (DB versi `8`).
+- Maksimal **5 foto per catatan**. Batas dijaga di `MAX_PHOTOS_PER_NOTE` (repository) dan UI; path unik,
+  diurutkan lewat `sortOrder`. `upsertNoteWithPhotos` menimpa daftar foto saat menyimpan ulang.
+- Foto kamera tetap lewat `MediaStore`, salinan stabilnya untuk catatan masuk `filesDir/note_photos`
+  dengan awalan `note_` (lokasi tetap `location_photos`/`loc_`). `file_paths.xml` menyediakan keduanya.
+  Menghapus catatan menghapus baris `note_photos` **dan** file salinannya.
+- Backup schema `8`: setiap objek `courier_notes` punya kunci `photos` berisi array path (maks. 5).
+  `decodeBackup` memakai `optJSONArray("photos")`, jadi backup schema `7` dan lama tetap terbaca tanpa
+  kunci tersebut. `restoreSnapshot` mengosongkan tabel foto sebelum mengisi ulang.
+- `TrackifyUiState.notePhotos` adalah satu-satunya sumber path foto untuk UI. `onSaveNote` kini menerima
+  3 argumen `(CourierNote, Boolean, List<String>)`; callback lama 2 argumen dilarang.
+- Tidak ada perubahan pada bottom nav, `ScreenTitle`, tema otomatis, orientasi portrait, `DailyLog`,
+  `SavedLocation`, atau token `TrackifyCard`/`TrackifyDialog`. Izin tidak bertambah.

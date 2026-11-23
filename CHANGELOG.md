@@ -4,6 +4,32 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 14: template opsional + multi-foto catatan, DB v8
+
+### Ditambahkan
+
+- `core:domain`: entity `NotePhoto` (`note_photos`, FK `noteId` → `courier_notes.id` dengan `CASCADE`, index `noteId`) dan konstanta `MAX_PHOTOS_PER_NOTE = 5` di `core:data`.
+- `NoteTemplates` kini punya opsi **Kosong**: memilihnya langsung membuka editor blank dengan judul, isi, dan daftar foto kosong. Templat `Titipan` / `Kendala Kirim` tetap opsional.
+- Editor Catatan menampilkan **Foto catatan (n/5)** dengan tombol **Ambil foto** dan **Dari galeri**, thumbnail, dan **Hapus** per foto. Kartu catatan menampilkan thumbnail (dibatasi `PerformanceConfig.maxPreviewItems`).
+- Foto catatan disalin ke `filesDir/note_photos` berawalan `note_` memakai `LocationPhotoStore.persist(..., directory, prefix)` yang kini generik; `file_paths.xml` mendapat entri `note_photos`.
+- `NotePhotoBackupTest` (2 tes): round-trip `photos` di backup schema `8` dan penerimaan backup schema `7` tanpa `photos`.
+
+### Diubah
+
+- DB naik ke versi **8** lewat `MIGRATION_7_8` (buat tabel `note_photos` + index); `restoreSnapshot` mengosongkan dan mengisi ulang tabel foto. Tanpa perubahan pada `DailyLog`, `SavedLocation`, atau `courier_notes`.
+- `BackupPayload.notePhotos`, `encodeBackup` menulis `"schema": 8` dan array `photos` (maks. 5, diurutkan) per catatan; `decodeBackup` membaca `photos` secara opsional sehingga backup lama tetap diterima.
+- `TrackifyRepository.upsertNoteWithPhotos` / `deleteNoteWithPhotos` menjaga batas 5 path unik dan menghapus file saat catatan dihapus. `TrackifyUiState.notePhotos` menyuap UI; `MainActivity` meneruskan 3 argumen `onSaveNote`.
+- `TrackifyViewModel.upsertNote` / `deleteNote` menerima daftar path; `incrementTodayDelivered` sudah tidak ada sejak Fase 13. Total tes **30/30**.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **30/30** tes, 0 failure.
+- Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`, `OLD_LOCATION_ACTIONS=0`; DB versi 8 dan `MIGRATION_7_8` aktif.
+- Smoke perangkat: install di atas data Fase 13 tidak crash dan lokasi lama ("Gerai") tetap ada (migrasi v7→v8); chip **Kosong** membuka editor blank; galeri menambah foto sampai `5/5`; **Hapus** per foto menurunkan ke `4/5`; menyimpan catatan menampilkan 4 thumbnail di kartu dan 4 file `note_*.jpg` di `filesDir/note_photos`; menghapus catatan mengosongkan folder dan tabel.
+- CI `validate`: _menunggu run_.
+
+---
+
 ## 24 Nov 2026 — Fase 13: Lokasi murni + bagikan foto & teks
 
 ### Ditambahkan
@@ -23,7 +49,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **28/28** tes, 0 failure.
 - Smoke perangkat: tab Lokasi tidak lagi memuat tombol `+1 Pkt`/`Catat`; mengetuk **Bagikan** di kartu maupun di detail membuka chooser dengan teks `FOTO / ------- / Nama Penerima : Gerai / Detail/Patokan : / Maps : … / (kosong) / by Trackify.`
 - Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`, `OLD_LOCATION_ACTIONS=0`.
-- CI `validate`: _menunggu run_.
+- CI `validate` hijau: run `45244256633` (`80ec5cc`).
 
 ---
 

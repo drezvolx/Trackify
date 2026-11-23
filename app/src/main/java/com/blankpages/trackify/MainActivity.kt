@@ -234,8 +234,11 @@ private fun TabContent(
         TrackifyTab.CATATAN -> NotesScreen(
             notes = state.notes,
             locations = state.locations,
-            onSaveNote = { note, isNew -> vm.upsertNote(if (isNew) note.copy(id = 0) else note) },
-            onDeleteNote = vm::deleteNote,
+            notePhotos = state.notePhotos,
+            onSaveNote = { note, isNew, paths ->
+                vm.upsertNote(if (isNew) note.copy(id = 0) else note, paths)
+            },
+            onDeleteNote = { note -> vm.deleteNote(note, state.notePhotos[note.id].orEmpty()) },
         )
     }
 }

@@ -1,7 +1,13 @@
 package com.blankpages.trackify.ui.notes
+
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +35,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -39,38 +46,48 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import com.blankpages.trackify.data.MAX_PHOTOS_PER_NOTE
+import com.blankpages.trackify.data.performance.DevicePerformance
 import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.NoteBlock
 import com.blankpages.trackify.domain.NoteBlocks
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.domain.noteTemplates
+import com.blankpages.trackify.ui.locations.LocationPhotoStore
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyCard
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.time.LocalDate
+import kotlinx.coroutines.launch
 
 @Composable
 fun NotesScreen(
     notes: List<CourierNote>,
     locations: List<SavedLocation>,
-    onSaveNote: (CourierNote, Boolean) -> Unit,
+    notePhotos: Map<Int, List<String>> = emptyMap(),
+    onSaveNote: (CourierNote, Boolean, List<String>) -> Unit,
     onDeleteNote: (CourierNote) -> Unit,
 ) {
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
+    val perf = DevicePerformance.config(context)
 
     var query by rememberSaveable { mutableStateOf("") }
     var filterMode by rememberSaveable { mutableIntStateOf(0) }
@@ -199,10 +216,18 @@ fun NotesScreen(
                     }
                     FilterChip(
                         selected = selectedTemplate == null,
-                        onClick = { selectedTemplate = null },
+                        onClick = {
+                            selectedTemplate = null
+                            isNewNote = true
+                            editingNote = CourierNote(
+                                title = "",
+                                content = "",
+                                updatedAt = LocalDate.now().toString(),
+                            )
+                        },
                         label = {
                             Text(
-                                text = "Reset",
+                                text = "Kosong",
                                 style = MaterialTheme.typography.labelSmall,
                             )
                         },
@@ -280,6 +305,7 @@ fun NotesScreen(
                                     onSaveNote(
                                         note.copy(isResolved = true, updatedAt = today),
                                         false,
+                                        notePhotos[note.id].orEmpty(),
                                     )
                                 }
                                 selectionMode = false
@@ -355,6 +381,7 @@ fun NotesScreen(
                                                 updatedAt = LocalDate.now().toString(),
                                             ),
                                             false,
+                                            notePhotos[note.id].orEmpty(),
                                         )
                                     },
                                     modifier = Modifier.size(28.dp),
@@ -378,6 +405,7 @@ fun NotesScreen(
                                     onSaveNote(
                                         note.copy(isPinned = !note.isPinned),
                                         false,
+                                        notePhotos[note.id].orEmpty(),
                                     )
                                 },
                                 modifier = Modifier.size(30.dp),
@@ -426,6 +454,25 @@ fun NotesScreen(
                         }
                     }
 
+                    val cardPhotos = notePhotos[note.id].orEmpty().take(perf.maxPreviewItems)
+                    if (cardPhotos.isNotEmpty()) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            cardPhotos.forEach { path ->
+                                val bitmap = remember(path) { LocationPhotoStore.load(path, perf) }
+                                if (bitmap != null) {
+                                    Image(
+                                        bitmap = bitmap,
+                                        contentDescription = "Foto catatan",
+                                        modifier = Modifier
+                                            .size(52.dp)
+                                            .clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Crop,
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -463,9 +510,10 @@ fun NotesScreen(
             initial = target,
             isNew = isNewNote,
             locations = locations,
+            initialPhotos = notePhotos[target.id].orEmpty(),
             onDismiss = { editingNote = null },
-            onSave = { saved ->
-                onSaveNote(saved, isNewNote)
+            onSave = { saved, paths ->
+                onSaveNote(saved, isNewNote, paths)
                 editingNote = null
             },
             onDelete = {
@@ -506,11 +554,70 @@ private fun NoteEditorDialog(
     initial: CourierNote,
     isNew: Boolean,
     locations: List<SavedLocation>,
+    initialPhotos: List<String>,
     onDismiss: () -> Unit,
-    onSave: (CourierNote) -> Unit,
+    onSave: (CourierNote, List<String>) -> Unit,
     onDelete: () -> Unit,
 ) {
+    val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
+    val perf = DevicePerformance.config(context)
+    val scope = rememberCoroutineScope()
+    var photoPaths by remember(initial.id) { mutableStateOf(initialPhotos.take(MAX_PHOTOS_PER_NOTE)) }
+    var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->
+        if (taken && pendingCameraUri != null) {
+            LocationPhotoStore.finalizeGalleryImage(context, pendingCameraUri)
+            scope.launch {
+                LocationPhotoStore.persist(
+                    context,
+                    pendingCameraUri!!,
+                    perf,
+                    directory = "note_photos",
+                    prefix = "note_",
+                )?.let { path ->
+                    photoPaths = (photoPaths + path).take(MAX_PHOTOS_PER_NOTE)
+                }
+            }
+        }
+    }
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            val uri = LocationPhotoStore.createGalleryImageUri(context)
+            pendingCameraUri = uri
+            if (uri != null) cameraLauncher.launch(uri)
+        }
+    }
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            scope.launch {
+                LocationPhotoStore.persist(
+                    context,
+                    uri,
+                    perf,
+                    directory = "note_photos",
+                    prefix = "note_",
+                )?.let { path ->
+                    photoPaths = (photoPaths + path).take(MAX_PHOTOS_PER_NOTE)
+                }
+            }
+        }
+    }
+
+    fun openCamera() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            val uri = LocationPhotoStore.createGalleryImageUri(context)
+            pendingCameraUri = uri
+            if (uri != null) cameraLauncher.launch(uri)
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
     var title by remember { mutableStateOf(initial.title) }
     val blocks = remember(initial.id) {
         NoteBlocks.parse(initial.content)
@@ -655,6 +762,51 @@ private fun NoteEditorDialog(
                 TextButton(onClick = { blocks.add(NoteBlock(NoteBlock.Type.PARAGRAPH, "", blocks.size)) }) {
                     Text("+ Tambah blok")
                 }
+                Text(
+                    text = "Foto catatan (${photoPaths.size}/$MAX_PHOTOS_PER_NOTE)",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = scheme.onSurfaceVariant,
+                )
+                if (photoPaths.isNotEmpty()) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        photoPaths.forEachIndexed { index, path ->
+                            val bitmap = remember(path) { LocationPhotoStore.load(path, perf) }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                if (bitmap != null) {
+                                    Image(
+                                        bitmap = bitmap,
+                                        contentDescription = "Foto catatan",
+                                        modifier = Modifier
+                                            .size(56.dp)
+                                            .clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Crop,
+                                    )
+                                }
+                                TextButton(
+                                    onClick = {
+                                        LocationPhotoStore.delete(path)
+                                        photoPaths = photoPaths.filterIndexed { i, _ -> i != index }
+                                    },
+                                    contentPadding = PaddingValues(horizontal = 2.dp, vertical = 0.dp),
+                                ) {
+                                    Text("Hapus", style = MaterialTheme.typography.labelSmall)
+                                }
+                            }
+                        }
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = ::openCamera,
+                        enabled = photoPaths.size < MAX_PHOTOS_PER_NOTE,
+                        shape = RoundedCornerShape(10.dp),
+                    ) { Text("Ambil foto", style = MaterialTheme.typography.labelSmall) }
+                    OutlinedButton(
+                        onClick = { galleryLauncher.launch("image/*") },
+                        enabled = photoPaths.size < MAX_PHOTOS_PER_NOTE,
+                        shape = RoundedCornerShape(10.dp),
+                    ) { Text("Dari galeri", style = MaterialTheme.typography.labelSmall) }
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -728,6 +880,7 @@ private fun NoteEditorDialog(
                             linkedLocationId = linkedId,
                             updatedAt = if (isNew || contentChanged) LocalDate.now().toString() else initial.updatedAt,
                         ),
+                        photoPaths,
                     )
                 },
             ) {

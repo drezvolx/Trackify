@@ -18,6 +18,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.blankpages.trackify.domain.BackupPayload
 import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.DailyLog
+import com.blankpages.trackify.domain.NotePhoto
 import com.blankpages.trackify.domain.SavedLocation
 import kotlinx.coroutines.flow.Flow
 
@@ -51,13 +52,31 @@ interface TrackifyDao {
     fun getAllLocations(): Flow<List<SavedLocation>>
 
     @Upsert
-    suspend fun upsertNote(note: CourierNote)
+    suspend fun upsertNote(note: CourierNote): Long
 
     @Delete
     suspend fun deleteNote(note: CourierNote)
 
     @Query("SELECT * FROM courier_notes ORDER BY isResolved ASC, isPinned DESC, id DESC")
     fun getAllNotes(): Flow<List<CourierNote>>
+
+    @Query("SELECT * FROM note_photos ORDER BY noteId ASC, sortOrder ASC, id ASC")
+    fun getAllNotePhotos(): Flow<List<NotePhoto>>
+
+    @Query("SELECT * FROM note_photos WHERE noteId = :noteId ORDER BY sortOrder ASC, id ASC")
+    suspend fun notePhotos(noteId: Int): List<NotePhoto>
+
+    @Query("SELECT * FROM note_photos ORDER BY noteId ASC, sortOrder ASC, id ASC")
+    suspend fun dumpNotePhotos(): List<NotePhoto>
+
+    @Upsert
+    suspend fun upsertNotePhotos(photos: List<NotePhoto>)
+
+    @Query("DELETE FROM note_photos WHERE noteId = :noteId")
+    suspend fun deleteNotePhotos(noteId: Int)
+
+    @Query("DELETE FROM note_photos")
+    suspend fun clearNotePhotos()
 
     @Query("SELECT * FROM daily_logs")
     suspend fun dumpLogs(): List<DailyLog>
@@ -91,10 +110,12 @@ interface TrackifyDao {
     suspend fun restoreSnapshot(payload: BackupPayload) {
         clearLogs()
         clearLocations()
+        clearNotePhotos()
         clearNotes()
         if (payload.logs.isNotEmpty()) upsertLogs(payload.logs)
         if (payload.locations.isNotEmpty()) insertLocations(payload.locations)
         if (payload.notes.isNotEmpty()) insertNotes(payload.notes)
+        if (payload.notePhotos.isNotEmpty()) upsertNotePhotos(payload.notePhotos.take(5 * payload.notes.size))
     }
 }
 
@@ -131,7 +152,26 @@ private val MIGRATION_6_7 = object : Migration(6, 7) {
     }
 }
 
-@Database(entities = [DailyLog::class, SavedLocation::class, CourierNote::class], version = 7, exportSchema = false)
+private val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `note_photos` (" +
+                "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`noteId` INTEGER NOT NULL, " +
+                "`path` TEXT NOT NULL, " +
+                "`sortOrder` INTEGER NOT NULL DEFAULT 0, " +
+                "FOREIGN KEY(`noteId`) REFERENCES `courier_notes`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE)",
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_note_photos_noteId` ON `note_photos` (`noteId`)")
+    }
+}
+
+@Database(
+    entities = [DailyLog::class, SavedLocation::class, CourierNote::class, NotePhoto::class],
+    version = 8,
+    exportSchema = false,
+)
 abstract class TrackifyDatabase : RoomDatabase() {
     abstract fun dao(): TrackifyDao
 
@@ -146,7 +186,7 @@ abstract class TrackifyDatabase : RoomDatabase() {
                 "trackify_offline_db",
             )
                 .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
-                .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
+                .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                 .fallbackToDestructiveMigration(true)
                 .build()
                 .also { instance = it }

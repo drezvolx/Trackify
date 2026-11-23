@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.blankpages.trackify.data.MAX_PHOTOS_PER_NOTE
 import com.blankpages.trackify.data.TrackifyRepository
 import com.blankpages.trackify.data.notification.DailyReminderScheduler
 import com.blankpages.trackify.domain.BackupPayload
@@ -12,6 +13,7 @@ import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.DailyLog
 import com.blankpages.trackify.domain.EngineResult
 import com.blankpages.trackify.domain.MonthlySummary
+import com.blankpages.trackify.domain.NotePhoto
 import com.blankpages.trackify.domain.ReminderTime
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.TrackifyEngine
@@ -66,6 +68,8 @@ data class TrackifyUiState(
     val currentMonthSummary: MonthlySummary = MonthlySummary(),
     val locations: List<SavedLocation> = emptyList(),
     val notes: List<CourierNote> = emptyList(),
+    /** Path foto per id catatan, sudah diurutkan. */
+    val notePhotos: Map<Int, List<String>> = emptyMap(),
     val activeNotesCount: Int = 0,
 )
 
@@ -149,6 +153,7 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         repository.allNotes(),
         settingsFlow,
         currentMonthLogsFlow,
+        repository.allNotePhotos(),
     ) { args ->
         val rate = args[0] as Double
         val month = args[1] as YearMonth
@@ -169,6 +174,10 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         @Suppress("UNCHECKED_CAST")
         val nowLogs = (args[7] as List<DailyLog>).map { it.sanitized() }
 
+        @Suppress("UNCHECKED_CAST")
+        val photos = (args[8] as List<NotePhoto>).groupBy({ it.noteId }, { it.path })
+            .mapValues { entry -> entry.value.take(MAX_PHOTOS_PER_NOTE) }
+
         val yesterdayStr = LocalDate.parse(today.date).minusDays(1).toString()
         val yLog = nowLogs.find { it.date == yesterdayStr } ?: logs.find { it.date == yesterdayStr }
         val yRem = if (yLog != null && yLog.isWorkingDay) yLog.remainingPackages else 0
@@ -186,6 +195,7 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
             currentMonthSummary = nowLogs.toWageSummary(settings.wageMode, settings.flatDailyAmount),
             locations = locs,
             notes = notesList,
+            notePhotos = photos,
             activeNotesCount = activeNotes,
         )
     }.flowOn(Dispatchers.Default).stateIn(
@@ -314,15 +324,15 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         }
     }
 
-    fun upsertNote(note: CourierNote) {
+    fun upsertNote(note: CourierNote, photoPaths: List<String> = emptyList()) {
         viewModelScope.launch {
-            repository.upsertNote(note)
+            repository.upsertNoteWithPhotos(note, photoPaths)
         }
     }
 
-    fun deleteNote(note: CourierNote) {
+    fun deleteNote(note: CourierNote, photoPaths: List<String> = emptyList()) {
         viewModelScope.launch {
-            repository.deleteNote(note)
+            repository.deleteNoteWithPhotos(note, photoPaths)
         }
     }
 
@@ -361,6 +371,7 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
                 logs = repository.dumpLogs(),
                 locations = repository.dumpLocations(),
                 notes = repository.dumpNotes(),
+                notePhotos = repository.dumpNotePhotos(),
                 settings = repository.readBackupSettings(),
             )
             when (val res = TrackifyEngine.encodeBackup(LocalDate.now().toString(), payload)) {

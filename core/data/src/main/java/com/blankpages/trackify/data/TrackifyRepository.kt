@@ -7,13 +7,17 @@ import com.blankpages.trackify.domain.BackupPayload
 import com.blankpages.trackify.domain.BackupSettings
 import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.DailyLog
+import com.blankpages.trackify.domain.NotePhoto
 import com.blankpages.trackify.domain.ReminderTime
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+
+const val MAX_PHOTOS_PER_NOTE = 5
 
 data class TrackifySettings(
     val themeMode: Int = 0,
@@ -37,6 +41,7 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
     fun logsByMonth(yearMonth: String): Flow<List<DailyLog>> = dao.getLogsByMonth(yearMonth)
     fun allLocations(): Flow<List<SavedLocation>> = dao.getAllLocations()
     fun allNotes(): Flow<List<CourierNote>> = dao.getAllNotes()
+    fun allNotePhotos(): Flow<List<NotePhoto>> = dao.getAllNotePhotos()
 
     val defaultRate: Double get() = prefs.defaultRatePerPackage
 
@@ -128,18 +133,40 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
         dao.unlinkNotesFromLocation(location.id)
         dao.deleteLocation(location)
     }
-    suspend fun upsertNote(note: CourierNote) = dao.upsertNote(note)
-    suspend fun deleteNote(note: CourierNote) = dao.deleteNote(note)
+
+    @Transaction
+    suspend fun upsertNoteWithPhotos(note: CourierNote, paths: List<String>): Int {
+        val noteId = dao.upsertNote(note).toInt()
+        dao.deleteNotePhotos(noteId)
+        val safePaths = paths.distinct().filter { it.isNotBlank() }.take(MAX_PHOTOS_PER_NOTE)
+        if (safePaths.isNotEmpty()) {
+            dao.upsertNotePhotos(
+                safePaths.mapIndexed { index, path ->
+                    NotePhoto(noteId = noteId, path = path, sortOrder = index)
+                },
+            )
+        }
+        return noteId
+    }
+
+    @Transaction
+    suspend fun deleteNoteWithPhotos(note: CourierNote, paths: List<String>) {
+        dao.deleteNotePhotos(note.id)
+        dao.deleteNote(note)
+        paths.forEach { runCatching { File(it).delete() } }
+    }
 
     suspend fun dumpLogs(): List<DailyLog> = dao.dumpLogs()
     suspend fun dumpLocations(): List<SavedLocation> = dao.dumpLocations()
     suspend fun dumpNotes(): List<CourierNote> = dao.dumpNotes()
+    suspend fun dumpNotePhotos(): List<NotePhoto> = dao.dumpNotePhotos()
 
     suspend fun restoreSnapshot(payload: BackupPayload) = dao.restoreSnapshot(payload)
 
     suspend fun clearAllData() {
         dao.clearLogs()
         dao.clearLocations()
+        dao.clearNotePhotos()
         dao.clearNotes()
     }
 }

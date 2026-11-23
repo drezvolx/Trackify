@@ -1,7 +1,9 @@
 package com.blankpages.trackify.domain
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Ignore
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "daily_logs")
@@ -82,6 +84,26 @@ data class CourierNote(
         updatedAt = updatedAt.ifBlank { fallbackDate },
     )
 }
+
+/** Foto catatan. Maksimal 5 foto per catatan dijaga di lapisan UI/repository. */
+@Entity(
+    tableName = "note_photos",
+    foreignKeys = [
+        ForeignKey(
+            entity = CourierNote::class,
+            parentColumns = ["id"],
+            childColumns = ["noteId"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("noteId")],
+)
+data class NotePhoto(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val noteId: Int,
+    val path: String,
+    val sortOrder: Int = 0,
+)
 
 data class MonthlySummary(val totalWorkingDays: Int = 0, val totalDelivered: Int = 0, val totalNetIncome: Double = 0.0)
 

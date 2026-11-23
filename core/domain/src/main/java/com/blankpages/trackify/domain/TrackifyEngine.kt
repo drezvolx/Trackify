@@ -39,6 +39,7 @@ data class BackupPayload(
     val locations: List<SavedLocation>,
     val notes: List<CourierNote>,
     val settings: BackupSettings = BackupSettings(),
+    val notePhotos: List<NotePhoto> = emptyList(),
 )
 
 data class PeriodBreakdown(
@@ -365,7 +366,7 @@ object TrackifyEngine {
     fun encodeBackup(today: String, payload: BackupPayload): EngineResult<String> = runCatching {
         JSONObject().apply {
             put("app", "Trackify")
-            put("schema", 7)
+            put("schema", 8)
             put("exportedAt", today)
             put(
                 "settings",
@@ -422,6 +423,7 @@ object TrackifyEngine {
             put(
                 "courier_notes",
                 JSONArray().apply {
+                    val photosByNote = payload.notePhotos.groupBy { it.noteId }
                     payload.notes.forEach { n ->
                         put(
                             JSONObject().apply {
@@ -432,6 +434,15 @@ object TrackifyEngine {
                                 put("updatedAt", n.updatedAt)
                                 put("linkedLocationId", n.linkedLocationId ?: JSONObject.NULL)
                                 put("isResolved", n.isResolved)
+                                put(
+                                    "photos",
+                                    JSONArray().apply {
+                                        photosByNote[n.id].orEmpty()
+                                            .sortedBy { it.sortOrder }
+                                            .take(5)
+                                            .forEach { put(it.path) }
+                                    },
+                                )
                             },
                         )
                     }
@@ -471,9 +482,23 @@ object TrackifyEngine {
                 photoPath = o.optString("photoPath"),
             )
         }
+        val notePhotos = mutableListOf<NotePhoto>()
         val notes = root.optJSONArray("courier_notes").mapObjects { o ->
+            val noteId = o.optInt("id")
+            // Schema 7 dan lebih lama tidak punya `photos`; kuncinya opsional.
+            o.optJSONArray("photos")?.let { arr ->
+                for (i in 0 until arr.length()) {
+                    val path = arr.optString(i).trim()
+                    if (path.isEmpty()) continue
+                    notePhotos += NotePhoto(
+                        noteId = noteId,
+                        path = path,
+                        sortOrder = notePhotos.count { it.noteId == noteId },
+                    )
+                }
+            }
             CourierNote(
-                id = o.optInt("id"),
+                id = noteId,
                 title = o.getString("title").trim(),
                 content = o.getString("content").trim(),
                 isPinned = o.optBoolean("isPinned"),
@@ -506,7 +531,7 @@ object TrackifyEngine {
                 ),
             )
         }
-        BackupPayload(logs, locs, notes, settings)
+        BackupPayload(logs, locs, notes, settings, notePhotos)
     }.fold(
         onSuccess = { EngineResult.Ok(it) },
         onFailure = { EngineResult.Err(it.localizedMessage ?: "Format JSON rusak") },

@@ -46,33 +46,38 @@ object LocationPhotoStore {
      * sekadar untuk ukuran, lalu dengan [PerformancePolicy.sampleSize] sesuai profil perangkat.
      * Ini menghindari bitmap penuh di memory saat perangkat low-RAM.
      */
-    suspend fun persist(context: Context, source: Uri, config: PerformanceConfig): String? =
-        withContext(Dispatchers.IO) {
-            runCatching {
-                val bytes = context.contentResolver.openInputStream(source)?.use { it.readBytes() }
-                    ?: return@runCatching null
-                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-                if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@runCatching null
-                val sample = PerformancePolicy.sampleSize(
-                    bounds.outWidth,
-                    bounds.outHeight,
-                    config.maxPhotoDimension,
-                )
-                val bitmap = BitmapFactory.decodeByteArray(
-                    bytes,
-                    0,
-                    bytes.size,
-                    BitmapFactory.Options().apply { inSampleSize = sample },
-                ) ?: return@runCatching null
-                val dir = File(context.filesDir, "location_photos").apply { mkdirs() }
-                val file = File(dir, "loc_${System.currentTimeMillis()}.jpg")
-                FileOutputStream(file).use { output ->
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, config.photoQuality, output)
-                }
-                file.absolutePath
-            }.getOrNull()
-        }
+    suspend fun persist(
+        context: Context,
+        source: Uri,
+        config: PerformanceConfig,
+        directory: String = "location_photos",
+        prefix: String = "loc_",
+    ): String? = withContext(Dispatchers.IO) {
+        runCatching {
+            val bytes = context.contentResolver.openInputStream(source)?.use { it.readBytes() }
+                ?: return@runCatching null
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@runCatching null
+            val sample = PerformancePolicy.sampleSize(
+                bounds.outWidth,
+                bounds.outHeight,
+                config.maxPhotoDimension,
+            )
+            val bitmap = BitmapFactory.decodeByteArray(
+                bytes,
+                0,
+                bytes.size,
+                BitmapFactory.Options().apply { inSampleSize = sample },
+            ) ?: return@runCatching null
+            val dir = File(context.filesDir, directory).apply { mkdirs() }
+            val file = File(dir, "${prefix}${System.currentTimeMillis()}.jpg")
+            FileOutputStream(file).use { output ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, config.photoQuality, output)
+            }
+            file.absolutePath
+        }.getOrNull()
+    }
 
     fun load(path: String, config: PerformanceConfig): ImageBitmap? {
         if (path.isBlank()) return null

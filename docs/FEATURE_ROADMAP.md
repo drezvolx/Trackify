@@ -116,7 +116,7 @@
 | 11 | Flow gajian & periode yang bisa diatur user | Selesai |
 | 12 | Jam notifikasi bisa diatur user | Selesai |
 | 13 | Lokasi murni + bagikan foto & teks | Selesai |
-| 14 | Template Notion opsional + multi-foto catatan, DB v8 | Rencana |
+| 14 | Template Notion opsional + multi-foto catatan, DB v8 | Selesai |
 | 15 | Tema gradien monokrom: Royal Charcoal / Pure Charcoal | Rencana |
 | 16 | Typography tebal di judul + gaya khas tiap layout | Rencana |
 | 17 | Tombol outline + spacing/typography konsisten | Rencana |
@@ -161,9 +161,11 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
   `filesDir/location_photos` lewat `FileProvider` plus teks persis:
   `FOTO / ------- / Nama Penerima : … / Detail/Patokan : … / Maps : … / (baris kosong) / by Trackify.`
   Tidak ada kolom DB, izin, atau field `SavedLocation` baru.
-- **Fase 14 — Catatan:** template Notion bersifat opsional (user boleh memilih `Kosong`). Foto catatan
-  didukung hingga 5 foto lewat tabel `note_photos` dan migrasi DB v8; backup schema `8` mengekspor array `photos`,
-  import schema `7` tetap diterima.
+- **Fase 14 — Catatan (selesai):** template Notion bersifat opsional; chip **Kosong** membuka editor blank.
+  Foto catatan didukung hingga 5 foto per catatan lewat entity `NotePhoto` / tabel `note_photos` dan
+  `MIGRATION_7_8` (DB versi **8**). Foto disalin ke `filesDir/note_photos` dengan awalan `note_` dan dihapus
+  bersama catatan. Backup schema `8` mengekspor array `photos` per catatan; import schema `7` tanpa kunci
+  itu tetap diterima. Tidak ada perubahan pada `courier_notes`, blok `NoteBlocks`, bottom nav, header, atau tema.
 - **Fase 15 — Tema:** dark **Royal Charcoal** (`#25262a → #1e1f22 → #17181a`, hero `#4c4e51 → #1e2023`)
   dan light **Pure Charcoal** (`#fafafa → #f1f1f1 → #e8e8e8`, hero `#3a3a3c → #161617`). Gradien dipasang
   di container tiap screen; `Scaffold` tetap hanya di `MainActivity`, dan tidak ada toggle tema manual.
@@ -178,4 +180,4 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
   menyusul di fase ini.
 
 Tiap fase wajib: backup sebelum edit → ktlint exit 0 → `:app:assembleDebug :app:testDebugUnitTest` hijau
-→ semua tes lulus (baseline 14) → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.
+→ semua tes lulus (baseline 30) → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.
