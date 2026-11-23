@@ -1,5 +1,6 @@
 ﻿plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.androidx.baselineprofile)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
@@ -25,10 +26,23 @@ android {
         release {
             optimization {
                 enable = true
-                // Jangan pakai `packageScope`: R8 dengan scope terbatas menghasilkan APK
-                // yang langsung tutup saat diluncurkan (manifest/DEX valid, tanpa log crash).
-                // R8 default sudah terverifikasi normal dengan cold start ~0,4 s.
+                // R8 > Avoid packageScope: limited scope produced an APK that exited
+                // instantly. Default R8 gives a verified ~0.4 s cold start.
             }
+        }
+
+        // Baseline Profile > Pre-create this variant; AGP 9 copies optimization
+        // from release via initWith, so disable it explicitly here.
+        create("nonMinifiedRelease") {
+            initWith(getByName("release"))
+            isDebuggable = false
+            isProfileable = true
+            isMinifyEnabled = false
+            isShrinkResources = false
+            optimization {
+                enable = false
+            }
+            matchingFallbacks += listOf("release")
         }
     }
     compileOptions {
@@ -40,8 +54,17 @@ android {
     }
 }
 
+baselineProfile {
+    saveInSrc = true
+}
+
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
+
+    // Profile installer > Applies the bundled profile on local installs.
+    implementation(libs.androidx.profileinstaller)
+    baselineProfile(project(":baselineprofile"))
+
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
@@ -60,11 +83,11 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
-    // Modul internal
+    // Modules > Internal modules
     implementation(project(":core:domain"))
     implementation(project(":core:data"))
 
-    // Dependency injection (Hilt)
+    // DI > Hilt
     val hiltVersion = "2.60.1"
     implementation("com.google.dagger:hilt-android:$hiltVersion")
     ksp("com.google.dagger:hilt-android-compiler:$hiltVersion")

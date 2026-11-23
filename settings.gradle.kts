@@ -26,3 +26,4 @@ rootProject.name = "Trackify"
 include(":app")
 include(":core:domain")
 include(":core:data")
+include(":baselineprofile")
