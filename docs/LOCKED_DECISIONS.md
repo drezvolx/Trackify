@@ -465,7 +465,7 @@ Hasil harus **kosong**.
 
 - Izin: `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`.
 - Channel: `trackify_daily_reminder`.
-- Jam: 20.00, alarm inexact via `setAndAllowWhileIdle`.
+- Jam: default `20.00`, kini milik user lewat `ReminderTime` dan prefs `reminder_hour` / `reminder_minute` (Fase 12). Alarm inexact via `setAndAllowWhileIdle`, dijadwalkan ulang setiap jam diubah.
 - Receiver: `DailyReminderReceiver`, `BootReminderReceiver`.
 - Karena `:core:data` tidak boleh bergantung ke `:app`:
   - launcher dibuka lewat `PackageManager.getLaunchIntentForPackage`
@@ -816,3 +816,20 @@ User meminta cara hitung gaji dan periode tampilan bisa diatur, bukan hardcode. 
   `wagePeriod`, dan `paydayDate`. Backup lama tanpa kunci itu dibaca dengan default di atas.
 - Tidak ada kolom DB baru, tidak ada migrasi, dan tidak ada perubahan pada bottom nav, header, tema,
   atau token UI lain.
+
+### 24 Nov 2026 — Fase 12: jam pengingat milik user
+
+User meminta jam notifikasi tidak hardcode `20.00`. Keputusan:
+
+- `ReminderTime` di `:core:domain` menjadi satu-satunya representasi jam: `hour 0..23`, `minute 0..59`,
+  `label` berformat `HH.mm`. `DEFAULT = 20.00` dipakai saat tidak ada nilai tersimpan.
+- Jam disimpan di `SharedPreferences` sebagai `reminder_hour` dan `reminder_minute`, bukan kolom DB.
+  Tidak ada migrasi schema.
+- Setelan memakai `TimePicker` 24 jam di dalam `TrackifyDialog` dengan tombol **Batal** / **Simpan**.
+  Label `Notifikasi pukul …` mengikuti nilai terpilih. Tidak ada toggle tema dan tidak ada notifikasi baru.
+- `DailyReminderScheduler` membaca prefs setiap kali dipanggil, jadi perubahan jam langsung menjadwalkan
+  ulang alarm `DailyReminderReceiver` yang sama. Izin tetap `POST_NOTIFICATIONS` + `RECEIVE_BOOT_COMPLETED`.
+- Backup JSON schema masih `7`, kini menyimpan `reminderHour` / `reminderMinute`; backup lama tanpa kunci
+  itu dibaca dengan default `20.00`.
+- Pengaturan lain tidak berubah: bottom nav, header `ScreenTitle`, gradien monokrom, orientasi portrait,
+  dan token `TrackifyCard`/`TrackifyDialog`.

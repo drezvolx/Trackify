@@ -12,6 +12,7 @@ import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.DailyLog
 import com.blankpages.trackify.domain.EngineResult
 import com.blankpages.trackify.domain.MonthlySummary
+import com.blankpages.trackify.domain.ReminderTime
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.domain.WageMode
@@ -47,6 +48,7 @@ data class AppSettings(
     val flatDailyAmount: Double = 2_500.0,
     val wagePeriod: WagePeriod = WagePeriod.MONTHLY,
     val paydayDate: Int = 25,
+    val reminderTime: ReminderTime = ReminderTime.DEFAULT,
 )
 
 @Immutable
@@ -82,6 +84,7 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
             flatDailyAmount = saved.flatDailyAmount,
             wagePeriod = saved.wagePeriod,
             paydayDate = saved.paydayDate,
+            reminderTime = saved.reminderTime,
         )
     }
 
@@ -231,6 +234,15 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         settingsFlow.value = settingsFlow.value.copy(dailyReminderEnabled = enabled)
         viewModelScope.launch(Dispatchers.Default) {
             DailyReminderScheduler.schedule(getApplication(), enabled)
+        }
+    }
+
+    fun updateReminderTime(time: ReminderTime) {
+        repository.setReminderTime(time)
+        settingsFlow.value = settingsFlow.value.copy(reminderTime = time)
+        viewModelScope.launch(Dispatchers.Default) {
+            // Scheduler membaca jam dari prefs, jadi alarm lama otomatis diganti.
+            DailyReminderScheduler.schedule(getApplication(), settingsFlow.value.dailyReminderEnabled)
         }
     }
 

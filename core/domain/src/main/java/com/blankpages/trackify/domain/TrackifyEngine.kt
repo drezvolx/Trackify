@@ -31,6 +31,7 @@ data class BackupSettings(
     val flatDailyAmount: Double = 2_500.0,
     val wagePeriod: WagePeriod = WagePeriod.MONTHLY,
     val paydayDate: Int = 25,
+    val reminderTime: ReminderTime = ReminderTime.DEFAULT,
 )
 
 data class BackupPayload(
@@ -377,6 +378,8 @@ object TrackifyEngine {
                     put("flatDailyAmount", payload.settings.flatDailyAmount)
                     put("wagePeriod", payload.settings.wagePeriod.name)
                     put("paydayDate", payload.settings.paydayDate)
+                    put("reminderHour", payload.settings.reminderTime.hour)
+                    put("reminderMinute", payload.settings.reminderTime.minute)
                 },
             )
             put(
@@ -497,6 +500,10 @@ object TrackifyEngine {
                     WagePeriod.valueOf(settingsObj.optString("wagePeriod", WagePeriod.MONTHLY.name))
                 }.getOrDefault(WagePeriod.MONTHLY),
                 paydayDate = settingsObj.optInt("paydayDate", 25).coerceIn(1, 31),
+                reminderTime = ReminderTime.of(
+                    settingsObj.optInt("reminderHour", ReminderTime.DEFAULT.hour),
+                    settingsObj.optInt("reminderMinute", ReminderTime.DEFAULT.minute),
+                ),
             )
         }
         BackupPayload(logs, locs, notes, settings)

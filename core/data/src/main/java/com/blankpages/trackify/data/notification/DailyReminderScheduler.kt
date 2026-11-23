@@ -19,8 +19,6 @@ object DailyReminderScheduler {
     private const val CHANNEL_ID = "trackify_daily_reminder"
     private const val REQUEST_CODE_REMINDER = 1001
     private const val REQUEST_CODE_OPEN_APP = 1002
-    private const val REMINDER_HOUR = 20
-    private const val REMINDER_MINUTE = 0
 
     fun hasNotificationPermission(context: Context): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
         ContextCompat.checkSelfPermission(
@@ -38,7 +36,7 @@ object DailyReminderScheduler {
                 "Pengingat harian",
                 NotificationManager.IMPORTANCE_DEFAULT,
             ).apply {
-                description = "Pengingat untuk mencatat rekap harian Trackify pukul 20.00"
+                description = "Pengingat untuk mencatat rekap harian Trackify"
             },
         )
     }
@@ -59,10 +57,13 @@ object DailyReminderScheduler {
         }
         ensureChannel(context)
 
+        // Jam milik user. Scheduler membaca prefs setiap kali dijadwalkan ulang,
+        // jadi perubahan jam langsung berlaku tanpa reinstall/force-stop.
+        val reminderTime = AppPreferences(context).reminderTime
         val now = Calendar.getInstance()
         val fireAt = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, REMINDER_HOUR)
-            set(Calendar.MINUTE, REMINDER_MINUTE)
+            set(Calendar.HOUR_OF_DAY, reminderTime.hour)
+            set(Calendar.MINUTE, reminderTime.minute)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
             if (before(now)) add(Calendar.DAY_OF_YEAR, 1)

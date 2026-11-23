@@ -7,6 +7,7 @@ import com.blankpages.trackify.domain.BackupPayload
 import com.blankpages.trackify.domain.BackupSettings
 import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.DailyLog
+import com.blankpages.trackify.domain.ReminderTime
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
@@ -23,6 +24,7 @@ data class TrackifySettings(
     val flatDailyAmount: Double = 2_500.0,
     val wagePeriod: WagePeriod = WagePeriod.MONTHLY,
     val paydayDate: Int = 25,
+    val reminderTime: ReminderTime = ReminderTime.DEFAULT,
 )
 
 /**
@@ -47,6 +49,7 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
         flatDailyAmount = prefs.flatDailyAmount,
         wagePeriod = prefs.wagePeriod,
         paydayDate = prefs.paydayDate,
+        reminderTime = prefs.reminderTime,
     )
 
     fun setDefaultRate(value: Double) {
@@ -81,6 +84,10 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
         prefs.paydayDate = value
     }
 
+    fun setReminderTime(value: ReminderTime) {
+        prefs.reminderTime = value
+    }
+
     /** Dipakai VM saat menyusun backup JSON. */
     fun readBackupSettings() = BackupSettings(
         defaultRate = defaultRate,
@@ -91,6 +98,7 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
         flatDailyAmount = prefs.flatDailyAmount,
         wagePeriod = prefs.wagePeriod,
         paydayDate = prefs.paydayDate,
+        reminderTime = prefs.reminderTime,
     )
 
     /** Dipakai VM saat memulihkan backup JSON. */
@@ -103,6 +111,7 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
         prefs.flatDailyAmount = settings.flatDailyAmount
         prefs.wagePeriod = settings.wagePeriod
         prefs.paydayDate = settings.paydayDate
+        prefs.reminderTime = settings.reminderTime
     }
 
     fun resetPreferences() = prefs.resetAll()

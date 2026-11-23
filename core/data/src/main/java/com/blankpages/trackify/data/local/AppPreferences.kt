@@ -1,6 +1,7 @@
 package com.blankpages.trackify.data.local
 
 import android.content.Context
+import com.blankpages.trackify.domain.ReminderTime
 import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
 
@@ -65,6 +66,19 @@ class AppPreferences(context: Context) {
             prefs.edit().putInt(KEY_PAYDAY_DATE, value.coerceIn(1, 31)).apply()
         }
 
+    /** Jam pengingat harian. Default lama 20.00 dipertahankan. */
+    var reminderTime: ReminderTime
+        get() = ReminderTime.of(
+            prefs.getInt(KEY_REMINDER_HOUR, ReminderTime.DEFAULT.hour),
+            prefs.getInt(KEY_REMINDER_MINUTE, ReminderTime.DEFAULT.minute),
+        )
+        set(value) {
+            prefs.edit()
+                .putInt(KEY_REMINDER_HOUR, value.hour)
+                .putInt(KEY_REMINDER_MINUTE, value.minute)
+                .apply()
+        }
+
     /** Legacy: dipertahankan hanya untuk kompatibilitas backup. Tema aplikasi selalu mengikuti sistem. */
     var themeMode: Int
         get() = prefs.getInt(KEY_THEME_MODE, 0).coerceIn(0, 2)
@@ -86,6 +100,8 @@ class AppPreferences(context: Context) {
         private const val KEY_FLAT_DAILY_AMOUNT = "flat_daily_amount"
         private const val KEY_WAGE_PERIOD = "wage_period"
         private const val KEY_PAYDAY_DATE = "payday_date"
+        private const val KEY_REMINDER_HOUR = "reminder_hour"
+        private const val KEY_REMINDER_MINUTE = "reminder_minute"
         private const val KEY_THEME_MODE = "theme_mode"
     }
 }

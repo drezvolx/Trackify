@@ -84,7 +84,7 @@
 
 ### E. Setelan
 **Kondisi aktual**
-- Tarif, bonus, target, pengingat 20.00, backup/restore JSON, reset, ekspor CSV bulanan.
+- Tarif, bonus, target, pengingat (default 20.00, bisa diatur sejak Fase 12), backup/restore JSON, reset, ekspor CSV bulanan.
 - Pill "Pembagian gajian 2x" statis, tidak bisa diklik.
 - Restore langsung berjalan tanpa konfirmasi, padahal mengganti seluruh data (diperbaiki di Fase 3).
 - Subtitle backup belum menyebut catatan (diperbaiki di Fase 3); pemilih bulan CSV tidak ada di layar ini.
@@ -95,7 +95,7 @@
 - Pemilih bulan untuk ekspor CSV (selesai di Fase 4; belum disinkronkan dengan bulan di Rekap).
 - Status "Pembagian gajian 2x" dibuat jelas sebagai informasi, bukan tombol palsu (selesai di Fase 4).
 
-**Batasan:** tidak boleh ada menu Tampilan / toggle tema, dan jadwal pengingat tetap 20.00.
+**Batasan:** tidak boleh ada menu Tampilan / toggle tema. Jadwal pengingat milik user (default 20.00), tapi tidak boleh menambah toggle tema atau notifikasi baru di luar pengingat harian.
 
 ---
 
@@ -114,7 +114,7 @@
 | 9 | Input paket Dibawa/Dikirim pakai teks | Selesai |
 | 10 | Engine performa & device profile untuk perangkat low-end | Selesai |
 | 11 | Flow gajian & periode yang bisa diatur user | Selesai |
-| 12 | Jam notifikasi bisa diatur user | Rencana |
+| 12 | Jam notifikasi bisa diatur user | Selesai |
 | 13 | Lokasi murni + bagikan foto & teks | Rencana |
 | 14 | Template Notion opsional + multi-foto catatan, DB v8 | Rencana |
 | 15 | Tema gradien monokrom: Royal Charcoal / Pure Charcoal | Rencana |
@@ -150,8 +150,12 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
   `WageCalculator` (domain murni) menghitung pendapatan per hari, ringkasan, agregat periode, dan target periode.
   Default **Tarif per paket + Bulanan + tanggal 25 + Rp2.500** dipertahankan sehingga data lama tidak berubah.
   Semua setting menjadi milik user; backup JSON ikut menyimpan keempat nilai itu. Tidak ada migrasi DB.
-- **Fase 12 — Notifikasi:** jam pengingat pindah dari konstanta `20.00` ke prefs + `TimePicker`;
-  izin `POST_NOTIFICATIONS` diminta saat user mengaktifkan.
+- **Fase 12 — Notifikasi (selesai):** jam pengingat pindah dari konstanta `20.00` ke prefs
+  (`reminder_hour` / `reminder_minute`) lewat model `ReminderTime` di domain. Setelan menampilkan
+  `Notifikasi pukul …` dan tombol **Atur jam** dengan `TimePicker` 24 jam di dalam `TrackifyDialog`.
+  `DailyReminderScheduler` membaca prefs setiap dijadwalkan, jadi alarm langsung diperbarui tanpa
+  install ulang. Backup JSON ikut menyimpan `reminderHour` / `reminderMinute`; backup lama memakai
+  default `20.00`. Tidak ada izin baru dan tidak ada notifikasi tambahan.
 - **Fase 13 — Lokasi & bagikan:** aksi **+1 Pkt** dan **Catat** dihapus dari kartu/detail. Tombol **Bagikan**
   mengirim foto lewat `FileProvider` plus teks:
   `FOTO / ------- / Nama Penerima / Detail/Patokan / Maps / by Trackify.`

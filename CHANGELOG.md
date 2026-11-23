@@ -4,6 +4,30 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 12: jam notifikasi bisa diatur user
+
+### Ditambahkan
+
+- `core:domain`: `ReminderTime` (jam 0–23, menit 0–59, `label` seperti `20.00`, `DEFAULT = 20.00`, `of()` untuk nilai dari prefs/backup yang bisa di luar rentang).
+- `AppPreferences` menyimpan `reminder_hour` / `reminder_minute`; `TrackifySettings`, `TrackifyRepository`, dan `AppSettings` meneruskan `reminderTime`. Tanpa migrasi DB.
+- Setelan → **Pengingat** menampilkan `Notifikasi pukul …` dan tombol **Atur jam**; dialog `TimePicker` 24 jam memakai `TrackifyDialog` dengan **Batal** / **Simpan**.
+- Backup JSON menyimpan `reminderHour` / `reminderMinute` di `settings`; backup lama tanpa keduanya memakai default `20.00`.
+
+### Diubah
+
+- `DailyReminderScheduler` tidak lagi memakai konstanta `20.00`: jam dibaca dari prefs setiap kali dijadwalkan, sehingga perubahan langsung berlaku. Deskripsi channel tidak menyebut jam tetap.
+- `TrackifyViewModel.updateReminderTime` menyimpan nilai dan menjadwalkan ulang alarm. Tombol **Atur jam** wired di `MainActivity`.
+- `ReminderTimeTest` (4 tes): default lama, clamp nilai, round-trip backup, dan fallback backup legacy. Total tes **26/26**.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **26/26** tes, 0 failure.
+- Smoke perangkat: membuka **Atur jam** → memilih `07.05` → label berubah menjadi `Notifikasi pukul 07.05`; setelah force-stop + peluncuran ulang nilai tetap `07.05`; `dumpsys alarm` menunjukkan alarm `DailyReminderReceiver` aktif. Jam dikembalikan ke `20.00` dan alarm terjadwal ulang; tanggal gajian uji dikembalikan ke `25`.
+- Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`.
+- CI `validate`: _menunggu run_.
+
+---
+
 ## 24 Nov 2026 — Fase 11: flow gajian & periode bisa diatur user
 
 ### Ditambahkan
@@ -23,6 +47,8 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **22/22** tes (baseline 14 + 4 performa + 4 gaji).
 - Smoke perangkat: mengubah ke **Nominal tetap per hari** membuat `Bersih hari ini` menjadi Rp2.500 walau 0 paket; memilih **Mingguan** mengubah label Home jadi `Target Mingguan` dengan target Rp1.000.000 (4M/4); pengaturan dikembalikan ke `Tarif per paket + Bulanan` dan Home kembali ke `Target Bulanan 67%`.
+- Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`.
+- CI `validate` hijau: run `45238728969` (`d40d2fe`); run `45238270209` (`832957e`) juga hijau.
 
 ---
 

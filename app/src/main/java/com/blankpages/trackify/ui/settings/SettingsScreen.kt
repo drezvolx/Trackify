@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +36,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -56,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.blankpages.trackify.R
 import com.blankpages.trackify.data.notification.DailyReminderScheduler
+import com.blankpages.trackify.domain.ReminderTime
 import com.blankpages.trackify.domain.WageCalculator
 import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
@@ -78,6 +82,7 @@ private fun Double.setIdr(): String {
     return nf.format(this).replace("Rp", "Rp").replace("\u00a0", "")
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     defaultRate: Double,
@@ -88,6 +93,7 @@ fun SettingsScreen(
     flatDailyAmount: Double = 2_500.0,
     wagePeriod: WagePeriod = WagePeriod.MONTHLY,
     paydayDate: Int = 25,
+    reminderTime: ReminderTime = ReminderTime.DEFAULT,
     onBack: () -> Unit,
     onUpdateRate: (Double) -> Unit,
     onUpdateBonus: (Double) -> Unit = {},
@@ -97,6 +103,7 @@ fun SettingsScreen(
     onUpdateFlatDailyAmount: (Double) -> Unit = {},
     onUpdateWagePeriod: (WagePeriod) -> Unit = {},
     onUpdatePaydayDate: (Int) -> Unit = {},
+    onUpdateReminderTime: (ReminderTime) -> Unit = {},
     onExportCsv: (Uri, YearMonth, (String) -> Unit) -> Unit = { _, _, _ -> },
     onBackupData: (Uri, (String) -> Unit) -> Unit = { _, _ -> },
     onRestoreData: (Uri, (String) -> Unit) -> Unit = { _, _ -> },
@@ -114,6 +121,7 @@ fun SettingsScreen(
     var showResetConfirm by remember { mutableStateOf(false) }
     var showRestoreConfirm by remember { mutableStateOf(false) }
     var showQris by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
     var csvMonthText by rememberSaveable { mutableStateOf(YearMonth.now().toString()) }
     val csvMonth = runCatching { YearMonth.parse(csvMonthText) }.getOrDefault(YearMonth.now())
 
@@ -387,7 +395,18 @@ fun SettingsScreen(
                                 fontWeight = FontWeight.Medium,
                                 color = scheme.onSurface,
                             )
-                            Text("Notifikasi setiap malam 20.00", fontSize = 12.sp, color = scheme.onSurfaceVariant)
+                            Text(
+                                "Notifikasi pukul ${reminderTime.label}",
+                                fontSize = 12.sp,
+                                color = scheme.onSurfaceVariant,
+                            )
+                            OutlinedButton(
+                                onClick = { showTimePicker = true },
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.padding(top = 8.dp),
+                            ) {
+                                Text("Atur jam", fontSize = 12.sp)
+                            }
                         }
                         Switch(
                             checked = remVal,
@@ -626,6 +645,30 @@ fun SettingsScreen(
                 }
             }
         }
+    }
+
+    if (showTimePicker) {
+        val timeState = rememberTimePickerState(
+            initialHour = reminderTime.hour,
+            initialMinute = reminderTime.minute,
+            is24Hour = true,
+        )
+        TrackifyDialog(
+            onDismissRequest = { showTimePicker = false },
+            title = { Text("Jam pengingat") },
+            text = { TimePicker(timeState) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onUpdateReminderTime(ReminderTime.of(timeState.hour, timeState.minute))
+                        showTimePicker = false
+                    },
+                ) { Text("Simpan") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text("Batal") }
+            },
+        )
     }
 
     if (showResetConfirm) {
