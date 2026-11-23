@@ -4,6 +4,22 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Fase 5: konfirmasi Home & pengurutan catatan
+
+### Ditambahkan
+
+- Home: aksi cepat `-1`, `+1`, `+5`, `+10` kini membuka `TrackifyDialog` konfirmasi sebelum mengubah jumlah paket; tombolnya sendiri tidak berubah bentuk.
+- Home: toggle **Masuk → Libur** juga dikonfirmasi karena mengosongkan paket dan pengeluaran hari ini. Toggle **Libur → Masuk** tetap langsung.
+- Catatan: chip **Urut** dengan pilihan `Prioritas` (default), `Terbaru`, `Terlama`, dan `Judul A–Z`; state memakai `rememberSaveable`.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan 14/14 tes.
+- Kontrak tetap: `ScreenTitle` tanpa subtext, kartu/dialog memakai token `TrackifyCard`/`TrackifyDialog`, tidak ada tab atau menu tema baru.
+- Smoke test perangkat: dialog konfirmasi `+1`/`-1` tampil dan perubahan angka benar-benar terjadi setelah **Ya, perbarui**; toggle **Masuk → Libur** memunculkan konfirmasi; chip **Urut** tampil di Catatan. Data uji dikembalikan ke `54/54` lewat editor Rekap.
+
+---
+
 ## 23 Nov 2026 — Dukung dev via QRIS
 
 ### Ditambahkan

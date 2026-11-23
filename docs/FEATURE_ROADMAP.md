@@ -29,7 +29,7 @@
 **Usulan**
 - Tambah pintasan ke **Catatan** (selesai di Fase 3).
 - Grafik 7 batang memakai data harian nyata dan bisa dipilih (selesai di Fase 4).
-- Konfirmasi untuk aksi cepat `+1/+5/+10` dan reset.
+- Konfirmasi untuk aksi cepat `-1/+1/+5/+10` dan reset (selesai di Fase 5: konfirmasi juga untuk toggle **Masuk → Libur**, yang mengosongkan paket dan pengeluaran hari ini).
 
 **Batasan:** tidak menambah subtext di header; kartu baru wajib `TrackifyCard`.
 
@@ -79,7 +79,7 @@
 - Wiring `isNew` diperbaiki di `MainActivity` (selesai di Fase 3).
 - Pencarian ikut nama lokasi (selesai di Fase 4 lewat `customerName`).
 - `updatedAt` hanya berubah saat konten berubah (selesai di Fase 3; model tidak punya `createdAt`).
-- Aksi massal selesai/hapus selesai di Fase 4; pengurutan catatan masih terbuka.
+- Aksi massal selesai/hapus selesai di Fase 4; pengurutan catatan selesai di Fase 5 (`Prioritas`, `Terbaru`, `Terlama`, `Judul A–Z`).
 
 ### E. Setelan
 **Kondisi aktual**
@@ -106,9 +106,11 @@
 | 2 | `rememberSaveable` untuk Rekap, Lokasi, Catatan, Setelan | Selesai |
 | 3 | Home (pintasan Catatan), Rekap (DatePicker/desimal/laporan), Catatan (templat/waktu), Setelan (konfirmasi restore/subtitle) | Selesai |
 | 4 | Grafik interaktif, pencarian lokasi, aksi massal, pemilih bulan CSV, info gajian | Selesai |
+| 5 | Konfirmasi aksi cepat & toggle Libur di Home, pengurutan catatan | Selesai |
 
-Usulan yang masih terbuka setelah Fase 4: konfirmasi untuk aksi cepat `+1/+5/+10` dan reset di Home,
-serta pengurutan catatan. Keduanya sengaja belum disentuh agar layout kartu dan kontrak tetap stabil.
+Setelah Fase 5 tidak ada usulan terbuka. Konfirmasi memakai `TrackifyDialog`; tombol aksi cepat dan
+toggle **Masuk/Libur** tidak diubah bentuknya, jadi layout kartu Home tetap stabil. Pengurutan catatan
+memakai chip dengan state `rememberSaveable` dan tidak mengubah header `ScreenTitle`.
 
 Tiap fase wajib: backup sebelum edit → ktlint exit 0 → `:app:assembleDebug :app:testDebugUnitTest` hijau
 → 14 tes lulus → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.

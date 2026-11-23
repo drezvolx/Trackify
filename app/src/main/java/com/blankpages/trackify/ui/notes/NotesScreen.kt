@@ -70,6 +70,7 @@ fun NotesScreen(
 
     var query by rememberSaveable { mutableStateOf("") }
     var filterMode by rememberSaveable { mutableIntStateOf(0) }
+    var sortMode by rememberSaveable { mutableIntStateOf(0) }
     var editingNote by remember { mutableStateOf<CourierNote?>(null) }
     var isNewNote by remember { mutableStateOf(false) }
     var selectedTemplate by rememberSaveable { mutableStateOf<String?>(null) }
@@ -78,8 +79,20 @@ fun NotesScreen(
     var showBulkDeleteConfirm by remember { mutableStateOf(false) }
 
     val locationsById = remember(locations) { locations.associateBy { it.id } }
-    val filteredNotes = remember(notes, query, filterMode, locations) {
-        TrackifyEngine.filterNotes(notes, query, filterMode, locations)
+    val filteredNotes = remember(notes, query, filterMode, sortMode, locations) {
+        val matched = TrackifyEngine.filterNotes(notes, query, filterMode, locations)
+        when (sortMode) {
+            1 -> matched.sortedWith(compareByDescending<CourierNote> { it.updatedAt }.thenByDescending { it.id })
+
+            2 -> matched.sortedWith(compareBy<CourierNote> { it.updatedAt }.thenBy { it.id })
+
+            3 -> matched.sortedWith(
+                compareBy(String.CASE_INSENSITIVE_ORDER) { note: CourierNote -> note.title.ifBlank { "Catatan" } }
+                    .thenByDescending { it.id },
+            )
+
+            else -> matched
+        }
     }
     val selectedNotes = remember(notes, selectedIds) { notes.filter { it.id in selectedIds } }
 
@@ -209,6 +222,38 @@ fun NotesScreen(
                                     text = label,
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = if (filterMode == idx) FontWeight.SemiBold else FontWeight.Normal,
+                                )
+                            },
+                            shape = RoundedCornerShape(9.dp),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = scheme.primary,
+                                selectedLabelColor = scheme.onPrimary,
+                                containerColor = scheme.surface,
+                                labelColor = scheme.onSurfaceVariant,
+                            ),
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Urut:",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scheme.onSurfaceVariant,
+                    )
+                    listOf("Prioritas", "Terbaru", "Terlama", "Judul A–Z").forEachIndexed { idx, label ->
+                        FilterChip(
+                            selected = sortMode == idx,
+                            onClick = { sortMode = idx },
+                            label = {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = if (sortMode == idx) FontWeight.SemiBold else FontWeight.Normal,
                                 )
                             },
                             shape = RoundedCornerShape(9.dp),

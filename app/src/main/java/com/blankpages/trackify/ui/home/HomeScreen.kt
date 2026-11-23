@@ -25,9 +25,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -46,6 +48,7 @@ import com.blankpages.trackify.domain.DailyLog
 import com.blankpages.trackify.domain.MonthlySummary
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.ui.theme.ScreenTitle
+import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 import java.text.NumberFormat
 import java.time.LocalDate
@@ -131,6 +134,8 @@ fun HomeScreen(
     val max7 = last7Days.maxOfOrNull { it.third }?.coerceAtLeast(1) ?: 1
     var selectedBarIndex by rememberSaveable { mutableIntStateOf(last7Days.lastIndex) }
     val selectedBar = last7Days.getOrNull(selectedBarIndex) ?: last7Days.last()
+    var pendingDelta by remember { mutableStateOf<Int?>(null) }
+    var pendingPause by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
@@ -209,17 +214,11 @@ fun HomeScreen(
                                     },
                                 )
                                 .clickable {
-                                    val next = if (activeToday.isWorkingDay) {
-                                        activeToday.copy(
-                                            isWorkingDay = false,
-                                            packagesCarried = 0,
-                                            packagesDelivered = 0,
-                                            expense = 0.0,
-                                        )
+                                    if (activeToday.isWorkingDay) {
+                                        pendingPause = true
                                     } else {
-                                        activeToday.copy(isWorkingDay = true)
-                                    }.sanitized()
-                                    onUpdateTodayLog(next)
+                                        onUpdateTodayLog(activeToday.copy(isWorkingDay = true).sanitized())
+                                    }
                                 }
                                 .padding(horizontal = 10.dp, vertical = 3.dp),
                         ) {
@@ -373,17 +372,7 @@ fun HomeScreen(
                                         .weight(1f)
                                         .clip(RoundedCornerShape(11.dp))
                                         .background(scheme.surfaceVariant)
-                                        .clickable {
-                                            val nextS = (activeToday.safeDelivered + delta).coerceAtLeast(0)
-                                            val nextC = activeToday.safeCarried.coerceAtLeast(nextS)
-                                            onUpdateTodayLog(
-                                                activeToday.copy(
-                                                    isWorkingDay = true,
-                                                    packagesCarried = nextC,
-                                                    packagesDelivered = nextS,
-                                                ).sanitized(),
-                                            )
-                                        }
+                                        .clickable { pendingDelta = delta }
                                         .padding(vertical = 10.dp),
                                     contentAlignment = Alignment.Center,
                                 ) {
@@ -833,5 +822,67 @@ fun HomeScreen(
                 }
             }
         }
+    }
+
+    val delta = pendingDelta
+    if (delta != null) {
+        TrackifyDialog(
+            onDismissRequest = { pendingDelta = null },
+            title = { Text("Perbarui paket hari ini?") },
+            text = {
+                Text(
+                    if (delta > 0) {
+                        "Tambah $delta paket terkirim ke catatan hari ini."
+                    } else {
+                        "Kurangi ${-delta} paket terkirim dari catatan hari ini."
+                    },
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingDelta = null
+                        val nextS = (activeToday.safeDelivered + delta).coerceAtLeast(0)
+                        val nextC = activeToday.safeCarried.coerceAtLeast(nextS)
+                        onUpdateTodayLog(
+                            activeToday.copy(
+                                isWorkingDay = true,
+                                packagesCarried = nextC,
+                                packagesDelivered = nextS,
+                            ).sanitized(),
+                        )
+                    },
+                ) { Text("Ya, perbarui") }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelta = null }) { Text("Batal") }
+            },
+        )
+    }
+
+    if (pendingPause) {
+        TrackifyDialog(
+            onDismissRequest = { pendingPause = false },
+            title = { Text("Tandai libur hari ini?") },
+            text = { Text("Paket dan pengeluaran hari ini akan dikosongkan. Data hari lain tidak berubah.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingPause = false
+                        onUpdateTodayLog(
+                            activeToday.copy(
+                                isWorkingDay = false,
+                                packagesCarried = 0,
+                                packagesDelivered = 0,
+                                expense = 0.0,
+                            ).sanitized(),
+                        )
+                    },
+                ) { Text("Ya, liburkan") }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingPause = false }) { Text("Batal") }
+            },
+        )
     }
 }
