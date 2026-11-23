@@ -20,7 +20,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 ### Verifikasi
 
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` `BUILD SUCCESSFUL`; 14/14 tes lulus.
-- Grep kontrak tetap kosong.
+- Grep kontrak tetap kosong; CI `validate` sukses pada run `45203998438` untuk `6ca2636`.
 - Smoke test perangkat: grafik berpindah ke "Sel 11-17 • 91 paket" saat batang diketuk, mode Pilih menampilkan aksi massal dan `Hapus (1)` setelah satu catatan dicentang, Setelan menampilkan `Bulan CSV` serta `2x (info)`.
 
 ---
