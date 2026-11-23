@@ -72,7 +72,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import com.blankpages.trackify.data.location.DeviceLocationSource
+import com.blankpages.trackify.data.location.MapLinkResolver
 import com.blankpages.trackify.domain.CourierNote
+import com.blankpages.trackify.domain.MapUrlParser
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.ui.theme.ScreenTitle
@@ -83,21 +85,14 @@ import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.time.LocalDate
 import java.util.Locale
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private fun SavedLocation.displayTitle(): String = customerName.trim().ifBlank { "Pelanggan #${id.coerceAtLeast(1)}" }
 
 private fun SavedLocation.displaySubtitle(): String = landmarkNote.trim().ifBlank {
     String.format(Locale.US, "%.5f, %.5f", latitude, longitude)
-}
-
-private fun SavedLocation.inferTag(): String {
-    val raw = "$customerName $landmarkNote".lowercase(Locale.ROOT)
-    return when {
-        raw.contains("langganan") -> "Langganan"
-        raw.contains("titip") || raw.contains("satpam") || raw.contains("warung") -> "Titip"
-        else -> "Biasa"
-    }
 }
 
 @Composable
@@ -112,7 +107,6 @@ fun LocationsScreen(
     val scheme = MaterialTheme.colorScheme
 
     var query by rememberSaveable { mutableStateOf("") }
-    var selectedTag by rememberSaveable { mutableStateOf("Semua") }
     var currentLat by remember { mutableStateOf<Double?>(null) }
     var currentLon by remember { mutableStateOf<Double?>(null) }
     var lastFixTime by remember { mutableStateOf<Long?>(null) }
@@ -124,8 +118,6 @@ fun LocationsScreen(
     var editingTarget by remember { mutableStateOf<SavedLocation?>(null) }
     var showEditor by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<SavedLocation?>(null) }
-
-    val tags = listOf("Semua", "Langganan", "Titip", "Biasa")
 
     fun applyFix(loc: Location) {
         currentLat = loc.latitude
@@ -210,9 +202,8 @@ fun LocationsScreen(
         }
     }
 
-    val filtered = remember(locations, query, selectedTag, currentLat, currentLon) {
+    val filtered = remember(locations, query, currentLat, currentLon) {
         TrackifyEngine.filterLocations(locations, query, currentLat, currentLon)
-            .filter { (loc, _) -> selectedTag == "Semua" || loc.inferTag() == selectedTag }
     }
 
     fun openEditor(target: SavedLocation?) {
@@ -339,31 +330,6 @@ fun LocationsScreen(
                     colors = trackifyFieldColors(),
                     modifier = Modifier.fillMaxWidth(),
                 )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    tags.forEach { tag ->
-                        val active = selectedTag == tag
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(if (active) scheme.onSurface else scheme.surfaceVariant)
-                                .clickable { selectedTag = tag }
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                        ) {
-                            Text(
-                                text = tag,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (active) scheme.surface else scheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                }
             }
         }
 
@@ -432,10 +398,7 @@ fun LocationsScreen(
                                 color = scheme.onSurfaceVariant,
                             )
                             TextButton(
-                                onClick = {
-                                    query = ""
-                                    selectedTag = "Semua"
-                                },
+                                onClick = { query = "" },
                             ) {
                                 Text(
                                     "Reset pencarian",
@@ -534,7 +497,9 @@ fun LocationsScreen(
                                         HorizontalDivider(thickness = 1.dp, color = scheme.outlineVariant)
                                     }
                                     val loc = entry.first
-                                    val tagCode = loc.inferTag().take(3).uppercase(Locale.forLanguageTag("id-ID"))
+                                    val initialCode = loc.displayTitle().take(
+                                        1,
+                                    ).uppercase(Locale.forLanguageTag("id-ID"))
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -551,7 +516,7 @@ fun LocationsScreen(
                                             contentAlignment = Alignment.Center,
                                         ) {
                                             Text(
-                                                text = tagCode,
+                                                text = initialCode,
                                                 style = MaterialTheme.typography.labelSmall,
                                                 fontWeight = FontWeight.Bold,
                                                 color = scheme.onSurfaceVariant,
@@ -815,20 +780,6 @@ private fun LocationNearbyCard(
                     modifier = Modifier.padding(10.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(scheme.background)
-                            .border(1.dp, scheme.outlineVariant, CircleShape)
-                            .padding(horizontal = 11.dp, vertical = 3.dp),
-                    ) {
-                        Text(
-                            text = loc.inferTag(),
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = scheme.onSurface,
-                        )
-                    }
                     entry.second?.let { meters ->
                         Box(
                             modifier = Modifier
@@ -958,10 +909,15 @@ private fun LocationEditorDialog(
     val scheme = MaterialTheme.colorScheme
     var name by remember(initial.id, isNew) { mutableStateOf(initial.customerName) }
     var landmark by remember(initial.id, isNew) { mutableStateOf(initial.landmarkNote) }
-    var latStr by remember(initial.id, isNew) { mutableStateOf(initial.latitude.toString()) }
-    var lonStr by remember(initial.id, isNew) { mutableStateOf(initial.longitude.toString()) }
-    var category by remember(initial.id, isNew) {
-        mutableStateOf(initial.inferTag().takeIf { it != "Biasa" } ?: "Biasa")
+    var mapUrl by remember(initial.id, isNew) {
+        mutableStateOf(
+            if (isNew) {
+                ""
+            } else {
+                "https://www.google.com/maps/search/?api=1&query=" +
+                    String.format(Locale.US, "%.6f,%.6f", initial.latitude, initial.longitude)
+            },
+        )
     }
     var photoPath by remember(initial.id, isNew) { mutableStateOf(initial.photoPath) }
     var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
@@ -1093,33 +1049,22 @@ private fun LocationEditorDialog(
                         }
                     }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = latStr,
-                        onValueChange = { latStr = it },
-                        label = { Text("Latitude") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = trackifyFieldColors(),
-                        modifier = Modifier.weight(1f),
-                    )
-                    OutlinedTextField(
-                        value = lonStr,
-                        onValueChange = { lonStr = it },
-                        label = { Text("Longitude") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = trackifyFieldColors(),
-                        modifier = Modifier.weight(1f),
-                    )
-                }
+                OutlinedTextField(
+                    value = mapUrl,
+                    onValueChange = { mapUrl = it },
+                    label = { Text("URL Maps") },
+                    placeholder = { Text("Tempel link Google Maps di sini") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = trackifyFieldColors(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 if (currentLat != null && currentLon != null) {
                     TextButton(
                         onClick = {
-                            latStr = currentLat.toString()
-                            lonStr = currentLon.toString()
+                            mapUrl = "https://www.google.com/maps/search/?api=1&query=" +
+                                String.format(Locale.US, "%.6f,%.6f", currentLat, currentLon)
                         },
                         contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
                     ) {
@@ -1128,25 +1073,6 @@ private fun LocationEditorDialog(
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.SemiBold,
                         )
-                    }
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    listOf("Langganan", "Titip", "Biasa").forEach { tag ->
-                        val selected = category.equals(tag, ignoreCase = true)
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(if (selected) scheme.onSurface else scheme.surfaceVariant)
-                                .clickable { category = tag }
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                        ) {
-                            Text(
-                                text = tag,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (selected) scheme.surface else scheme.onSurfaceVariant,
-                            )
-                        }
                     }
                 }
             }
@@ -1160,20 +1086,32 @@ private fun LocationEditorDialog(
                         Toast.makeText(context, "Isi nama penerima atau patokan", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
-                    val mergedNote = if (category != "Biasa" && !cleanLandmark.contains(category, ignoreCase = true)) {
-                        if (cleanLandmark.isBlank()) category else "$cleanLandmark · $category"
-                    } else {
-                        cleanLandmark
+                    val pasted = mapUrl.trim()
+                    scope.launch {
+                        val resolved = if (MapLinkResolver.isShortLink(pasted)) {
+                            withContext(Dispatchers.IO) { MapLinkResolver.resolve(pasted) }
+                        } else {
+                            pasted
+                        }
+                        val coords = MapUrlParser.parse(resolved ?: pasted)
+                        if (coords == null) {
+                            Toast.makeText(
+                                context,
+                                "URL Maps tidak dikenali. Tempel link yang memuat titik lokasi.",
+                                Toast.LENGTH_LONG,
+                            ).show()
+                            return@launch
+                        }
+                        onSave(
+                            initial.copy(
+                                customerName = cleanName.ifBlank { "Pelanggan" },
+                                landmarkNote = cleanLandmark,
+                                latitude = coords.latitude,
+                                longitude = coords.longitude,
+                                photoPath = photoPath,
+                            ),
+                        )
                     }
-                    onSave(
-                        initial.copy(
-                            customerName = cleanName.ifBlank { "Pelanggan" },
-                            landmarkNote = mergedNote,
-                            latitude = latStr.trim().toDoubleOrNull() ?: initial.latitude,
-                            longitude = lonStr.trim().toDoubleOrNull() ?: initial.longitude,
-                            photoPath = photoPath,
-                        ),
-                    )
                 },
             ) {
                 Text(if (isNew) "Simpan lokasi" else "Simpan perubahan")

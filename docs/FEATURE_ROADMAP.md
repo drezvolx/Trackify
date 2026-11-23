@@ -109,11 +109,21 @@
 | 4 | Grafik interaktif, pencarian lokasi, aksi massal, pemilih bulan CSV, info gajian | Selesai |
 | 5 | Konfirmasi aksi cepat & toggle Libur di Home, pengurutan catatan | Selesai |
 | 6 | Foto lokasi (kamera → galeri + unggah galeri), DB v7 | Selesai |
+| 7 | Input URL Maps (panjang + short link), hapus sistem tag | Selesai |
+| 8 | Catatan ala Notion lite: blok teks + checklist | Rencana |
 
 Fase 6 menambah `photoPath` pada `saved_locations` lewat `MIGRATION_6_7`. Foto kamera masuk galeri,
 lalu salinan stabil disimpan di `filesDir/location_photos`; preview tampil di editor, detail, dan kartu
 terdekat. Konfirmasi Fase 5 tetap memakai `TrackifyDialog`; tombol aksi cepat dan toggle
 **Masuk/Libur** tidak diubah bentuknya. Pengurutan catatan memakai chip dengan state `rememberSaveable`.
+
+Fase 7 mengganti dua field koordinat dengan satu field **URL Maps**. `MapUrlParser` menangani format
+`@lat,lon`, query `q/query/destination/ll/center`, `!3d...!4d...`, `%2C`, dan `lat,lon` polos;
+`MapLinkResolver` mengikuti short link sampai 5 redirect. Sistem tag `Langganan`/`Titip`/`Biasa`
+dihapus dari filter, editor, kartu, dan logika catatan. Tidak ada migrasi DB baru.
+
+Fase 8 akan menambah blok paragraf, judul, daftar, dan checklist pada editor Catatan tanpa mengubah
+schema `courier_notes` (isi tetap satu field `content`).
 
 Tiap fase wajib: backup sebelum edit → ktlint exit 0 → `:app:assembleDebug :app:testDebugUnitTest` hijau
 → 14 tes lulus → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.

@@ -4,6 +4,24 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 7: URL Maps & hapus sistem tag
+
+### Diubah
+
+- Editor Lokasi: field **Latitude** dan **Longitude** diganti satu field **URL Maps**. Tempel URL Google Maps apa adanya; tombol **Pakai Koordinat GPS Saat Ini** kini mengisi field itu dengan URL yang memuat koordinat GPS.
+- `MapUrlParser` (`core:domain`) menangani `@lat,lon`, `q=`, `query=`, `destination=`, `ll=`, `center=`, `!3d...!4d...`, `%2C`, dan pasangan `lat,lon` polos dengan validasi rentang; koordinat hasil parse tetap disimpan di kolom DB lama.
+- `MapLinkResolver` (`core:data`) mengikuti redirect short link `maps.app.goo.gl` maksimal 5 kali dengan `instanceFollowRedirects = false` dan timeout 8 detik, dipanggil dari korutina IO.
+- Sistem tag **Langganan / Titip / Biasa** dihapus total: chip filter, chip kategori editor, `inferTag()`, kode inisial tag, dan penggabungan tag ke catatan patokan. Catatan lokasi sekarang murni teks bebas.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan 14/14 tes.
+- Parser diuji langsung untuk 10 contoh (semua format di atas + koordinat di luar rentang + teks bukan URL): 8 format valid menghasilkan `-6.2,106.8`, 2 ditolak.
+- Smoke test perangkat: chip tag hilang dari daftar dan editor, field **URL Maps** tampil; menempel `https://maps.google.com/?q=-6.25,106.85` menghasilkan lokasi dengan koordinat `-6.25000, 106.85000` di detail dan kartu. Lokasi uji dihapus.
+- Izin `INTERNET` dari Fase 6 dipakai resolver; tidak ada perubahan DB, bottom nav, `ScreenTitle`, atau tema.
+
+---
+
 ## 23 Nov 2026 — Fase 6: foto lampiran lokasi
 
 ### Ditambahkan
@@ -18,6 +36,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan 14/14 tes.
 - Kontrak diperbarui di `docs/LOCKED_DECISIONS.md` §3, §4.3, §4.4, dan §9 sesuai keputusan user.
 - Smoke test perangkat: install di atas DB lama sukses, lokasi **Gerai** tetap ada; **Dari galeri** berhasil memilih gambar, preview tampil, file tersalin, dan tetap tampil setelah force-stop/restart (kartu + dialog detail); menghapus lokasi ikut menghapus file fotonya. Tombol **Ambil foto** berhasil membuka kamera, tetapi aplikasi kamera bawaan perangkat uji force-stop sebelum capture, jadi jalur kamera belum terverifikasi sampai hasil foto. Data uji dihapus dan galeri uji dibersihkan.
+- CI `validate` hijau: [run 45221394811](https://github.com/drezvolx/Trackify/actions/runs/45221394811).
 
 ---
 

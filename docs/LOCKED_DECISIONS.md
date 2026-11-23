@@ -393,6 +393,16 @@ id, customerName, landmarkNote, latitude, longitude, photoPath
 
 `photoPath` boleh kosong dan tidak mengubah cara `Rute`/perhitungan jarak memakai `latitude`/`longitude`.
 
+Sejak 24 Nov 2026, input editor Lokasi memakai **satu field `URL Maps`**, bukan dua field Latitude/Longitude.
+`MapUrlParser` (`core:domain`) menarik koordinat dari `@lat,lon`, `q=`, `query=`, `destination=`, `ll=`,
+`center=`, `!3d...!4d...`, `%2C`, dan pasangan `lat,lon` polos; nilai di luar rentang ditolak.
+`MapLinkResolver` (`core:data`) mengikuti maksimal 5 redirect short link `maps.app.goo.gl` dengan
+`instanceFollowRedirects = false` dan dipanggil dari korutina IO. Koordinat hasil parse tetap disimpan
+di kolom lama, sehingga schema DB tidak berubah.
+
+Sistem tag **`Langganan` / `Titip` / `Biasa` dihapus total**: tidak ada chip filter, chip kategori editor,
+`inferTag()`, `tagCode`, atau penggabungan tag ke `landmarkNote`. Catatan lokasi murni teks bebas.
+
 ### 3.3 Aturan Domain
 
 - `DailyLog.sanitized()` wajib:
@@ -756,3 +766,9 @@ User menyetujui perluasan DB ke versi `7`, kolom `photoPath`, izin `CAMERA`, dan
 (untuk short link Maps di fase berikutnya). Alasan: lokasi perlu bukti foto yang bisa diambil langsung
 dari kamera maupun dipilih dari galeri, dan tetap tersimpan per lokasi. Bottom navigation, header,
 tema, orientasi, dan daftar tab tidak berubah.
+
+### 24 Nov 2026 — Fase 7: URL Maps & hapus sistem tag
+
+User meminta field Latitude/Longitude diganti dengan satu field URL Maps (termasuk short link) dan
+sistem tag `Langganan`/`Titip`/`Biasa` dihapus karena dianggap tidak penting. Keputusan diambil lewat
+persetujuan eksplisit; koordinat hasil parse tetap memakai kolom lama, jadi tidak ada migrasi DB baru.
