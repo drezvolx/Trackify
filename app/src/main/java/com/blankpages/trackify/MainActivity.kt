@@ -188,6 +188,7 @@ private fun TabContent(
             onOpenSettings = onOpenSettings,
             onOpenRekap = { onNavigateTab(TrackifyTab.REKAP) },
             onOpenLocations = { onNavigateTab(TrackifyTab.LOKASI) },
+            onOpenNotes = { onNavigateTab(TrackifyTab.CATATAN) },
             onUpdateTodayLog = vm::upsertLog,
         )
 
@@ -218,7 +219,7 @@ private fun TabContent(
         TrackifyTab.CATATAN -> NotesScreen(
             notes = state.notes,
             locations = state.locations,
-            onSaveNote = { note, _ -> vm.upsertNote(note) },
+            onSaveNote = { note, isNew -> vm.upsertNote(if (isNew) note.copy(id = 0) else note) },
             onDeleteNote = vm::deleteNote,
         )
     }

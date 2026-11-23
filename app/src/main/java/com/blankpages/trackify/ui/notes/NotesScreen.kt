@@ -71,6 +71,7 @@ fun NotesScreen(
     var filterMode by rememberSaveable { mutableIntStateOf(0) }
     var editingNote by remember { mutableStateOf<CourierNote?>(null) }
     var isNewNote by remember { mutableStateOf(false) }
+    var selectedTemplate by rememberSaveable { mutableStateOf<String?>(null) }
 
     val locationsById = remember(locations) { locations.associateBy { it.id } }
     val filteredNotes = remember(notes, query, filterMode) {
@@ -127,6 +128,7 @@ fun NotesScreen(
                 )
 
                 Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -136,15 +138,19 @@ fun NotesScreen(
                         color = scheme.onSurfaceVariant,
                     )
                     noteTemplates.forEach { template ->
+                        val isSelected = selectedTemplate == template.title
                         FilterChip(
-                            selected = false,
+                            selected = isSelected,
                             onClick = {
-                                isNewNote = true
-                                editingNote = CourierNote(
-                                    title = template.title,
-                                    content = template.content,
-                                    updatedAt = LocalDate.now().toString(),
-                                )
+                                selectedTemplate = if (isSelected) null else template.title
+                                if (!isSelected) {
+                                    isNewNote = true
+                                    editingNote = CourierNote(
+                                        title = template.title,
+                                        content = template.content,
+                                        updatedAt = LocalDate.now().toString(),
+                                    )
+                                }
                             },
                             label = {
                                 Text(
@@ -154,11 +160,30 @@ fun NotesScreen(
                             },
                             shape = RoundedCornerShape(9.dp),
                             colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = scheme.primary,
+                                selectedLabelColor = scheme.onPrimary,
                                 containerColor = scheme.surface,
                                 labelColor = scheme.onSurfaceVariant,
                             ),
                         )
                     }
+                    FilterChip(
+                        selected = selectedTemplate == null,
+                        onClick = { selectedTemplate = null },
+                        label = {
+                            Text(
+                                text = "Reset",
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        },
+                        shape = RoundedCornerShape(9.dp),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = scheme.primary,
+                            selectedLabelColor = scheme.onPrimary,
+                            containerColor = scheme.surface,
+                            labelColor = scheme.onSurfaceVariant,
+                        ),
+                    )
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -443,13 +468,17 @@ private fun NoteEditorDialog(
         confirmButton = {
             Button(
                 onClick = {
+                    val contentChanged = title.trim() != initial.title.trim() ||
+                        content.trim() != initial.content.trim() ||
+                        isPinned != initial.isPinned ||
+                        linkedId != initial.linkedLocationId
                     onSave(
                         initial.copy(
                             title = title.trim(),
                             content = content.trim(),
                             isPinned = isPinned,
                             linkedLocationId = linkedId,
-                            updatedAt = LocalDate.now().toString(),
+                            updatedAt = if (isNew || contentChanged) LocalDate.now().toString() else initial.updatedAt,
                         ),
                     )
                 },

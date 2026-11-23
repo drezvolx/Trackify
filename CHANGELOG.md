@@ -4,6 +4,32 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Fase 3: penyempurnaan per tab
+
+### Ditambahkan
+
+- Home: pintasan **Catatan** di samping tombol **Buka** pada bagian Lokasi, mengarah ke `TrackifyTab.CATATAN`.
+- Rekap: `sanitizeDecimalInput` menerima satu pemisah desimal (titik atau koma) untuk tarif, bonus, dan potongan; keyboard memakai `KeyboardType.Decimal`.
+- Setelan: konfirmasi lewat `TrackifyDialog` sebelum memilih file restore; subtitle backup kini menyebut log, lokasi, catatan, dan setelan.
+
+### Diubah
+
+- Rekap: DatePicker dibuka pada tanggal log yang sedang diedit, atau tanggal pertama bulan terpilih bila bukan bulan berjalan.
+- Laporan WhatsApp: rata-rata paket per hari diformat dengan locale `id-ID`, bukan format default perangkat.
+- Catatan: chip templat kini menandai seleksi, bisa di-reset, dan mengisi editor; flag `isNew` di wiring `MainActivity` kini dipakai untuk memaksa id baru.
+- Catatan: `updatedAt` tidak ditimpa bila menyimpan edit tanpa perubahan judul, isi, pin, atau lokasi tertaut.
+
+### Tidak dilakukan
+
+- Grafik 7 batang interaktif dan pemilih bulan CSV masih menjadi usulan berikutnya agar layout dan kontrak tetap stabil.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` `BUILD SUCCESSFUL`; 14/14 tes lulus.
+- Grep COD, `WindowInsets(0)`, `FusedLocationProviderClient`, dan `AlertDialog` langsung tetap kosong; `AlertDialog` hanya ada di dalam token `TrackifyDialog`.
+
+---
+
 ## 23 Nov 2026 — Fase 2: state UI bertahan
 
 ### Diubah

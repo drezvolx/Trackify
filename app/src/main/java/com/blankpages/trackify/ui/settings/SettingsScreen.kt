@@ -85,6 +85,7 @@ fun SettingsScreen(
     var targetVal by rememberSaveable(targetAmount) { mutableDoubleStateOf(targetAmount) }
     var remVal by rememberSaveable(dailyReminderEnabled) { mutableStateOf(dailyReminderEnabled) }
     var showResetConfirm by remember { mutableStateOf(false) }
+    var showRestoreConfirm by remember { mutableStateOf(false) }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -345,7 +346,11 @@ fun SettingsScreen(
                                     fontWeight = FontWeight.Medium,
                                     color = scheme.onSurface,
                                 )
-                                Text("Simpan semua log dan lokasi", fontSize = 12.sp, color = scheme.onSurfaceVariant)
+                                Text(
+                                    "Simpan log, lokasi, catatan, dan setelan",
+                                    fontSize = 12.sp,
+                                    color = scheme.onSurfaceVariant,
+                                )
                             }
                             Box(
                                 modifier = Modifier
@@ -381,7 +386,7 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .background(scheme.surfaceVariant)
-                                    .clickable { restoreLauncher.launch(arrayOf("application/json", "text/*")) }
+                                    .clickable { showRestoreConfirm = true }
                                     .padding(horizontal = 13.dp, vertical = 7.dp),
                             ) {
                                 Text(
@@ -451,6 +456,30 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showResetConfirm = false }) { Text("Batal") }
+            },
+        )
+    }
+
+    if (showRestoreConfirm) {
+        TrackifyDialog(
+            onDismissRequest = { showRestoreConfirm = false },
+            title = { Text("Pulihkan data?") },
+            text = {
+                Text(
+                    "Seluruh log, lokasi, catatan, dan pengaturan saat ini akan diganti dengan isi file backup. " +
+                        "Tindakan ini tidak bisa dibatalkan.",
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showRestoreConfirm = false
+                        restoreLauncher.launch(arrayOf("application/json", "text/*"))
+                    },
+                ) { Text("Pilih file backup") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRestoreConfirm = false }) { Text("Batal") }
             },
         )
     }

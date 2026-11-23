@@ -27,7 +27,7 @@
 - Grafik 7 batang bersifat dekoratif, tanpa nilai dan interaksi.
 
 **Usulan**
-- Tambah pintasan ke **Catatan** (sudah dijanjikan `Documentation.md`, belum ada di UI).
+- Tambah pintasan ke **Catatan** (selesai di Fase 3).
 - Grafik 7 batang memakai data harian nyata dan bisa dipilih.
 - Konfirmasi untuk aksi cepat `+1/+5/+10` dan reset.
 
@@ -42,10 +42,10 @@
 
 **Usulan**
 - `rememberSaveable` untuk sub-tab, mode, sort, filter, dan pencarian (selesai di Fase 2); dialog tetap `remember`.
-- DatePicker dibuka di tanggal log yang sedang diedit.
-- Input desimal untuk tarif, bonus, dan biaya.
-- Konfirmasi hapus log.
-- Format angka laporan memakai locale `id-ID` lewat `toRupiah()`.
+- DatePicker dibuka di tanggal log yang sedang diedit (selesai di Fase 3).
+- Input desimal untuk tarif, bonus, dan biaya (selesai di Fase 3).
+- Konfirmasi hapus log (selesai di Fase 1).
+- Angka rupiah sudah lewat `toRupiah()`; rata-rata paket per hari kini memakai locale `id-ID` (selesai di Fase 3).
 
 **Batasan:** jangan menghidupkan kembali `applyAutoBonus`, `computeTargetPace`, atau `TargetPaceInfo`.
 
@@ -70,27 +70,27 @@
 ### D. Catatan
 **Kondisi aktual**
 - Tulis/edit/hapus catatan, pin, status selesai, taut lokasi, pencarian judul/isian, templat Titipan/Kendala Kirim.
-- Chip templat selalu `selected = false`; parameter `isNew` diabaikan oleh wiring `MainActivity`.
-- `updatedAt` ditimpa tanggal hari ini tiap simpan, sehingga tidak ada waktu buat.
+- Chip templat selalu `selected = false`; parameter `isNew` diabaikan oleh wiring `MainActivity` (diperbaiki di Fase 3).
+- `updatedAt` ditimpa tanggal hari ini tiap simpan (diperbaiki di Fase 3).
 - Pencarian belum menyertakan nama lokasi ters taut.
 
 **Usulan**
-- Chip templat benar-benar mengisi editor dan menandai seleksi.
-- Wiring `isNew` diperbaiki di `MainActivity`.
-- Pencarian ikut nama lokasi.
-- `createdAt` dipertahankan saat edit; `updatedAt` hanya berubah saat konten berubah.
+- Chip templat benar-benar mengisi editor dan menandai seleksi (selesai di Fase 3, lengkap dengan **Reset**).
+- Wiring `isNew` diperbaiki di `MainActivity` (selesai di Fase 3).
+- Pencarian ikut nama lokasi (belum).
+- `updatedAt` hanya berubah saat konten berubah (selesai di Fase 3; model tidak punya `createdAt`).
 - Sort dan aksi massal (selesai/hapus) — butuh keputusan terpisah karena menyentuh layout kartu.
 
 ### E. Setelan
 **Kondisi aktual**
 - Tarif, bonus, target, pengingat 20.00, backup/restore JSON, reset, ekspor CSV bulanan.
 - Pill "Pembagian gajian 2x" statis, tidak bisa diklik.
-- Restore langsung berjalan tanpa konfirmasi, padahal mengganti seluruh data.
-- Subtitle backup belum menyebut catatan; pemilih bulan CSV tidak ada di layar ini.
+- Restore langsung berjalan tanpa konfirmasi, padahal mengganti seluruh data (diperbaiki di Fase 3).
+- Subtitle backup belum menyebut catatan (diperbaiki di Fase 3); pemilih bulan CSV tidak ada di layar ini.
 
 **Usulan**
-- Konfirmasi restore sebelum full-replace.
-- Subtitle backup menyebut log, lokasi, catatan, dan pengaturan.
+- Konfirmasi restore sebelum full-replace (selesai di Fase 3).
+- Subtitle backup menyebut log, lokasi, catatan, dan pengaturan (selesai di Fase 3).
 - Pemilih bulan untuk ekspor CSV atau sinkronkan dengan bulan terpilih di Rekap.
 - Status "Pembagian gajian 2x" dibuat jelas sebagai informasi, bukan tombol palsu.
 
@@ -102,9 +102,12 @@
 
 | Fase | Isi | Status |
 |---|---|---|
-| 1 | GPS valid, unlink lokasi, konfirmasi hapus lokasi/log, toast `+1 Pkt` jujur | Dikerjakan |
+| 1 | GPS valid, unlink lokasi, konfirmasi hapus lokasi/log, toast `+1 Pkt` jujur | Selesai |
 | 2 | `rememberSaveable` untuk Rekap, Lokasi, Catatan, Setelan | Selesai |
-| 3 | Home (pintasan Catatan + grafik nyata), Rekap (DatePicker/desimal/laporan), Catatan (templat/search/waktu), Setelan (konfirmasi restore/CSV) | Belum |
+| 3 | Home (pintasan Catatan), Rekap (DatePicker/desimal/laporan), Catatan (templat/waktu), Setelan (konfirmasi restore/subtitle) | Selesai |
+
+Usulan yang sengaja belum masuk Fase 3: grafik 7 batang interaktif, pencarian Catatan ikut nama lokasi,
+aksi massal, pemilih bulan CSV, dan status "Pembagian gajian 2x".
 
 Tiap fase wajib: backup sebelum edit → ktlint exit 0 → `:app:assembleDebug :app:testDebugUnitTest` hijau
 → 14 tes lulus → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.

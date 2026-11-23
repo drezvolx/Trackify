@@ -6,6 +6,7 @@ import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.toMonthlySummary
 import java.time.LocalDate
 import java.time.YearMonth
+import java.util.Locale
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.pow
@@ -86,6 +87,7 @@ data class MonthlyChartSummary(
 
 object TrackifyEngine {
     private const val EARTH_RADIUS_M = 6_371_000.0
+    private val reportLocale = Locale.forLanguageTag("id-ID")
 
     fun grossIncomeOf(log: DailyLog): Double {
         val clean = log.sanitized()
@@ -239,6 +241,7 @@ object TrackifyEngine {
         appendLine("Hari Kerja : ${summary.totalWorkingDays} hari")
         appendLine(
             "Terkirim   : ${summary.totalDelivered} paket (Avg ${"%.1f".format(
+                reportLocale,
                 breakdown.avgDeliveredPerWorkDay,
             )}/hr • ${breakdown.deliveryEfficiencyPct}%)",
         )

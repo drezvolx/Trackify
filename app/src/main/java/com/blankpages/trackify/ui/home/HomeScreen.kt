@@ -70,6 +70,7 @@ fun HomeScreen(
     onOpenSettings: () -> Unit,
     onOpenRekap: () -> Unit,
     onOpenLocations: () -> Unit,
+    onOpenNotes: () -> Unit,
     onUpdateTodayLog: (DailyLog) -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -593,19 +594,35 @@ fun HomeScreen(
                         fontWeight = FontWeight.SemiBold,
                         color = scheme.onBackground,
                     )
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(scheme.surfaceVariant)
-                            .clickable(onClick = onOpenLocations)
-                            .padding(horizontal = 13.dp, vertical = 7.dp),
-                    ) {
-                        Text(
-                            text = "Buka",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = scheme.onSurface,
-                        )
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(scheme.surfaceVariant)
+                                .clickable(onClick = onOpenNotes)
+                                .padding(horizontal = 13.dp, vertical = 7.dp),
+                        ) {
+                            Text(
+                                text = "Catatan",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = scheme.onSurface,
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(scheme.surfaceVariant)
+                                .clickable(onClick = onOpenLocations)
+                                .padding(horizontal = 13.dp, vertical = 7.dp),
+                        ) {
+                            Text(
+                                text = "Buka",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = scheme.onSurface,
+                            )
+                        }
                     }
                 }
 

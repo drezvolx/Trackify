@@ -88,6 +88,15 @@ import kotlin.math.roundToInt
 
 private val idLocale = Locale.forLanguageTag("id-ID")
 private val monthFmt = DateTimeFormatter.ofPattern("MMMM yyyy", idLocale)
+
+private fun sanitizeDecimalInput(value: String): String {
+    val normalized = value.replace(',', '.')
+    val firstDot = normalized.indexOf('.')
+    if (firstDot < 0) return normalized.filter { it.isDigit() }
+    val before = normalized.substring(0, firstDot).filter { it.isDigit() }
+    val after = normalized.substring(firstDot + 1).filter { it.isDigit() }
+    return "$before.$after"
+}
 private val shortMonthFmt = DateTimeFormatter.ofPattern("MMM", idLocale)
 private val shortDayFmt = DateTimeFormatter.ofPattern("EEE", idLocale)
 
@@ -1460,7 +1469,14 @@ fun SpreadsheetScreen(
     }
 
     if (showDatePicker) {
-        val datePickerState = rememberDatePickerState()
+        val initialDate = runCatching {
+            LocalDate.parse(editingLog?.date ?: LocalDate.now().toString())
+        }.getOrElse {
+            if (YearMonth.now() == selectedMonth) LocalDate.now() else selectedMonth.atDay(1)
+        }
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = initialDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+        )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
@@ -1751,7 +1767,7 @@ private fun SheetLogEditorDialog(
                 OutlinedTextField(
                     value = rateText,
                     onValueChange = {
-                        rateText = it.filter { ch -> ch.isDigit() }
+                        rateText = sanitizeDecimalInput(it)
                     },
                     label = {
                         Text("Tarif / Paket (Rp)")
@@ -1762,13 +1778,13 @@ private fun SheetLogEditorDialog(
                     ),
                     colors = trackifyFieldColors(),
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
+                        keyboardType = KeyboardType.Decimal,
                     ),
                 )
                 OutlinedTextField(
                     value = bonusText,
                     onValueChange = {
-                        bonusText = it.filter { ch -> ch.isDigit() }
+                        bonusText = sanitizeDecimalInput(it)
                     },
                     label = {
                         Text("Bonus (Rp)")
@@ -1779,13 +1795,13 @@ private fun SheetLogEditorDialog(
                     ),
                     colors = trackifyFieldColors(),
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
+                        keyboardType = KeyboardType.Decimal,
                     ),
                 )
                 OutlinedTextField(
                     value = expenseText,
                     onValueChange = {
-                        expenseText = it.filter { ch -> ch.isDigit() }
+                        expenseText = sanitizeDecimalInput(it)
                     },
                     label = {
                         Text("Potongan (Rp)")
@@ -1796,7 +1812,7 @@ private fun SheetLogEditorDialog(
                     ),
                     colors = trackifyFieldColors(),
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
+                        keyboardType = KeyboardType.Decimal,
                     ),
                 )
                 OutlinedTextField(value = noteText, onValueChange = {
