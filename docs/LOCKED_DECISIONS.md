@@ -411,6 +411,11 @@ Sistem tag **`Langganan` / `Titip` / `Biasa` dihapus total**: tidak ada chip fil
 - `toRupiah()` berada di `core/domain/.../CurrencyFormat.kt` dan memakai `Locale.forLanguageTag("id-ID")`.
 - `Locale.forLanguageTag("id-ID")` juga dipakai di Home, Spreadsheet, Settings, dan Locations.
 - Templat catatan "`Titipan`" dan "`Kendala Kirim`" ada di `core/domain/.../NoteTemplates.kt` + chip di `NotesScreen`.
+- Sejak 24 Nov 2026, isi catatan tetap **satu field `content`**, tetapi dibaca/ditulis sebagai blok lewat
+  `core/domain/.../NoteBlocks.kt`: `# ` = `HEADING`, `- ` = `BULLET`, `[ ]` / `[x]` = `TASK`
+  (dengan `checked`), sisanya `PARAGRAPH`. Editor `NotesScreen` memakai chip **Teks/Judul/Daftar/Checklist**;
+  checklist dicentang lewat `Checkbox` dan statusnya ikut tersimpan di `content`. Jangan menambah tabel,
+  kolom DB, atau format JSON untuk blok — backup lama harus tetap terbaca.
 
 **Bug historis yang jangan diulang:**
 - `TrackifyApp` harus memanggil `previousHandler?.uncaughtException(...)` setelah logging.
@@ -772,3 +777,11 @@ tema, orientasi, dan daftar tab tidak berubah.
 User meminta field Latitude/Longitude diganti dengan satu field URL Maps (termasuk short link) dan
 sistem tag `Langganan`/`Titip`/`Biasa` dihapus karena dianggap tidak penting. Keputusan diambil lewat
 persetujuan eksplisit; koordinat hasil parse tetap memakai kolom lama, jadi tidak ada migrasi DB baru.
+
+### 24 Nov 2026 — Fase 8: editor blok catatan
+
+User memilih opsi "blok teks + checklist" untuk catatan ala Notion lite. Ruang lingkup yang disetujui:
+empat jenis blok (**Teks**, **Judul**, **Daftar**, **Checklist**), isi tetap satu field `content` dengan
+prefiks teks, tanpa schema DB baru, tabel, atau format khusus. Alasan: catatan perlu struktur ringan dan
+checklist yang bisa dicentang, tetapi backup/ekspor lama harus tetap kompatibel. Kontrak UI lain
+(bottom nav, `ScreenTitle`, tema otomatis, `TrackifyCard`/`TrackifyDialog`) tidak berubah.

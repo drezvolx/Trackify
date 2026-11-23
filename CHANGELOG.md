@@ -4,6 +4,23 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 8: catatan blok ala Notion lite
+
+### Ditambahkan
+
+- Editor Catatan kini memakai blok: **Teks** (paragraf), **Judul**, **Daftar**, dan **Checklist**. Chip toolbar menambah blok baru; setiap blok bisa diedit dan dihapus, checklist bisa dicentang.
+- `NoteBlocks` (`core:domain`) membaca dan menulis blok dari/ke satu field `content` yang sudah ada: `# ` = Judul, `- ` = Daftar, `[ ]` / `[x]` = Checklist, sisanya paragraf. Tidak ada tabel, database, kolom, atau schema DB baru.
+- Kartu Catatan menampilkan preview hingga 4 blok dengan penanda yang sesuai (`#`, `•`, `[ ]` / `[x]`), bukan satu paragraf polos.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan 14/14 tes.
+- Harness parser: kelima tipe blok terbaca dengan `lineIndex` benar dan `serialize(parse(x)) == x` (roundtrip identik).
+- Smoke test perangkat: membuat catatan berisi paragraf + judul + daftar + checklist, mencentang checklist, menyimpan, lalu membuka ulang — semua blok dan status centang tetap ada; preview tampil di kartu. Catatan uji dihapus.
+- Bottom nav, `ScreenTitle`, tema otomatis, dan kontrak UI lain tidak berubah.
+
+---
+
 ## 24 Nov 2026 — Fase 7: URL Maps & hapus sistem tag
 
 ### Diubah
@@ -19,6 +36,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 - Parser diuji langsung untuk 10 contoh (semua format di atas + koordinat di luar rentang + teks bukan URL): 8 format valid menghasilkan `-6.2,106.8`, 2 ditolak.
 - Smoke test perangkat: chip tag hilang dari daftar dan editor, field **URL Maps** tampil; menempel `https://maps.google.com/?q=-6.25,106.85` menghasilkan lokasi dengan koordinat `-6.25000, 106.85000` di detail dan kartu. Lokasi uji dihapus.
 - Izin `INTERNET` dari Fase 6 dipakai resolver; tidak ada perubahan DB, bottom nav, `ScreenTitle`, atau tema.
+- CI `validate` hijau: [run 45223902757](https://github.com/drezvolx/Trackify/actions/runs/45223902757).
 
 ---
 

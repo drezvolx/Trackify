@@ -36,10 +36,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -48,6 +50,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.blankpages.trackify.domain.CourierNote
+import com.blankpages.trackify.domain.NoteBlock
+import com.blankpages.trackify.domain.NoteBlocks
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.domain.noteTemplates
@@ -392,15 +396,34 @@ fun NotesScreen(
                         }
                     }
 
-                    if (note.content.isNotBlank()) {
-                        Text(
-                            text = note.content,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = scheme.onSurfaceVariant,
-                            textDecoration = if (note.isResolved) TextDecoration.LineThrough else null,
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis,
-                        )
+                    val previewBlocks = remember(note.id, note.content) {
+                        NoteBlocks.parse(note.content).take(4)
+                    }
+                    if (previewBlocks.isNotEmpty()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            previewBlocks.forEach { block ->
+                                val mark = if (block.checked) "[x]" else "[ ]"
+                                val rendered = when (block.type) {
+                                    NoteBlock.Type.HEADING -> block.text
+                                    NoteBlock.Type.BULLET -> "• ${block.text}"
+                                    NoteBlock.Type.TASK -> "$mark ${block.text}"
+                                    NoteBlock.Type.PARAGRAPH -> block.text
+                                }
+                                Text(
+                                    text = rendered,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = if (block.type == NoteBlock.Type.HEADING) {
+                                        FontWeight.SemiBold
+                                    } else {
+                                        FontWeight.Normal
+                                    },
+                                    color = scheme.onSurfaceVariant,
+                                    textDecoration = if (note.isResolved) TextDecoration.LineThrough else null,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
                     }
 
                     Row(
@@ -489,7 +512,11 @@ private fun NoteEditorDialog(
 ) {
     val scheme = MaterialTheme.colorScheme
     var title by remember { mutableStateOf(initial.title) }
-    var content by remember { mutableStateOf(initial.content) }
+    val blocks = remember(initial.id) {
+        NoteBlocks.parse(initial.content)
+            .ifEmpty { listOf(NoteBlock(NoteBlock.Type.PARAGRAPH, "", 0)) }
+            .toMutableStateList()
+    }
     var isPinned by remember { mutableStateOf(initial.isPinned) }
     var linkedId by remember { mutableStateOf(initial.linkedLocationId) }
 
@@ -528,16 +555,106 @@ private fun NoteEditorDialog(
                     colors = trackifyFieldColors(),
                     modifier = Modifier.fillMaxWidth(),
                 )
-                OutlinedTextField(
-                    value = content,
-                    onValueChange = { content = it },
-                    label = { Text("Isi") },
-                    minLines = 3,
-                    maxLines = 6,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = trackifyFieldColors(),
-                    modifier = Modifier.fillMaxWidth(),
+                Text(
+                    text = "Blok catatan",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = scheme.onSurfaceVariant,
                 )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    listOf(
+                        "Teks" to NoteBlock.Type.PARAGRAPH,
+                        "Judul" to NoteBlock.Type.HEADING,
+                        "Daftar" to NoteBlock.Type.BULLET,
+                        "Checklist" to NoteBlock.Type.TASK,
+                    ).forEach { (label, type) ->
+                        FilterChip(
+                            selected = false,
+                            onClick = { blocks.add(NoteBlock(type, "", blocks.size)) },
+                            label = {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            },
+                            shape = RoundedCornerShape(9.dp),
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = scheme.surface,
+                                labelColor = scheme.onSurfaceVariant,
+                            ),
+                        )
+                    }
+                }
+                blocks.forEachIndexed { index, block ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        when (block.type) {
+                            NoteBlock.Type.HEADING -> Text(
+                                text = "#",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = scheme.primary,
+                                modifier = Modifier.padding(top = 14.dp),
+                            )
+
+                            NoteBlock.Type.BULLET -> Text(
+                                text = "•",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = scheme.primary,
+                                modifier = Modifier.padding(top = 12.dp),
+                            )
+
+                            NoteBlock.Type.TASK -> Checkbox(
+                                checked = block.checked,
+                                onCheckedChange = { checked -> blocks[index] = block.copy(checked = checked) },
+                                modifier = Modifier.size(24.dp),
+                            )
+
+                            NoteBlock.Type.PARAGRAPH -> Spacer(Modifier.width(4.dp))
+                        }
+                        val hint = when (block.type) {
+                            NoteBlock.Type.HEADING -> "Judul blok"
+                            NoteBlock.Type.BULLET -> "Butir daftar"
+                            NoteBlock.Type.TASK -> "Tugas"
+                            NoteBlock.Type.PARAGRAPH -> "Tulis sesuatu..."
+                        }
+                        OutlinedTextField(
+                            value = block.text,
+                            onValueChange = { value -> blocks[index] = block.copy(text = value) },
+                            placeholder = { Text(hint) },
+                            minLines = 1,
+                            maxLines = 4,
+                            textStyle = if (block.type == NoteBlock.Type.HEADING) {
+                                MaterialTheme.typography.titleSmall
+                            } else {
+                                MaterialTheme.typography.bodyMedium
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = trackifyFieldColors(),
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconButton(
+                            onClick = { if (blocks.size > 1) blocks.removeAt(index) },
+                            modifier = Modifier.size(32.dp),
+                        ) {
+                            Icon(
+                                imageVector = TrackifyIcons.Trash,
+                                contentDescription = "Hapus blok",
+                                tint = scheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
+                    }
+                }
+                TextButton(onClick = { blocks.add(NoteBlock(NoteBlock.Type.PARAGRAPH, "", blocks.size)) }) {
+                    Text("+ Tambah blok")
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -598,14 +715,15 @@ private fun NoteEditorDialog(
         confirmButton = {
             Button(
                 onClick = {
+                    val savedContent = NoteBlocks.serialize(blocks)
                     val contentChanged = title.trim() != initial.title.trim() ||
-                        content.trim() != initial.content.trim() ||
+                        savedContent != initial.content.trim() ||
                         isPinned != initial.isPinned ||
                         linkedId != initial.linkedLocationId
                     onSave(
                         initial.copy(
                             title = title.trim(),
-                            content = content.trim(),
+                            content = savedContent,
                             isPinned = isPinned,
                             linkedLocationId = linkedId,
                             updatedAt = if (isNew || contentChanged) LocalDate.now().toString() else initial.updatedAt,
