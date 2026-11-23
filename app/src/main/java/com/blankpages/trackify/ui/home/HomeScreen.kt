@@ -27,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,9 +55,12 @@ import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TabularFigures
+import com.blankpages.trackify.ui.theme.TrackifyButton
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyGradients
+import com.blankpages.trackify.ui.theme.TrackifyIconButton
 import com.blankpages.trackify.ui.theme.TrackifyIcons
+import com.blankpages.trackify.ui.theme.TrackifyTextButton
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.text.NumberFormat
 import java.time.LocalDate
@@ -179,7 +181,7 @@ fun HomeScreen(
             .fillMaxSize()
             .background(TrackifyGradients.background()),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(22.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         // Header > Home
         item {
@@ -266,7 +268,7 @@ fun HomeScreen(
                                         onUpdateTodayLog(activeToday.copy(isWorkingDay = true).sanitized())
                                     }
                                 }
-                                .padding(horizontal = 10.dp, vertical = 3.dp),
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
                         ) {
                             Text(
                                 text = if (activeToday.isWorkingDay) "Masuk" else "Libur",
@@ -280,7 +282,7 @@ fun HomeScreen(
                     if (activeToday.isWorkingDay) {
                         Row(
                             verticalAlignment = Alignment.Bottom,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Text(
                                 text = "${activeToday.safeDelivered}",
@@ -374,7 +376,7 @@ fun HomeScreen(
                         Column(
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(start = 10.dp),
+                                .padding(start = 12.dp),
                         ) {
                             Text(
                                 text = "${activeToday.remainingPackages}",
@@ -391,7 +393,7 @@ fun HomeScreen(
                         Column(
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(start = 10.dp),
+                                .padding(start = 12.dp),
                         ) {
                             Text(
                                 text = "%.1f".format(homeIdLocale, avgPerDay),
@@ -433,9 +435,9 @@ fun HomeScreen(
                                 modifier = Modifier.weight(1f),
                             )
                         }
-                        TextButton(
+                        TrackifyTextButton(
                             onClick = { commitPackageCounts() },
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         ) {
                             Text(
                                 text = "Simpan paket",
@@ -445,7 +447,7 @@ fun HomeScreen(
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             listOf("-1", "+1", "+5", "+10").forEach { deltaStr ->
                                 val delta = deltaStr.toInt()
@@ -454,8 +456,9 @@ fun HomeScreen(
                                         .weight(1f)
                                         .clip(RoundedCornerShape(11.dp))
                                         .background(hero.surfaceVariant)
+                                        .border(1.dp, hero.outlineVariant, RoundedCornerShape(11.dp))
                                         .clickable { pendingDelta = delta }
-                                        .padding(vertical = 10.dp),
+                                        .padding(vertical = 12.dp),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Text(
@@ -473,10 +476,11 @@ fun HomeScreen(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(11.dp))
                                 .background(hero.onSurface)
+                                .border(1.dp, hero.outlineVariant, RoundedCornerShape(11.dp))
                                 .clickable {
                                     onUpdateTodayLog(activeToday.copy(isWorkingDay = true).sanitized())
                                 }
-                                .padding(vertical = 11.dp),
+                                .padding(vertical = 12.dp),
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
@@ -493,11 +497,11 @@ fun HomeScreen(
 
         // Section > Twice-a-month pay & monthly target
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 2.dp),
+                        .padding(horizontal = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -511,8 +515,9 @@ fun HomeScreen(
                         modifier = Modifier
                             .clip(CircleShape)
                             .background(scheme.surfaceVariant)
+                            .border(1.dp, scheme.outlineVariant, CircleShape)
                             .clickable(onClick = onOpenRekap)
-                            .padding(horizontal = 13.dp, vertical = 7.dp),
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
                     ) {
                         Text(
                             text = "Buka",
@@ -531,7 +536,7 @@ fun HomeScreen(
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         val totG = (abs(gajian1) + abs(gajian2)).coerceAtLeast(1.0)
                         val w1 = (abs(gajian1) / totG).toFloat().coerceIn(0.25f, 0.75f)
@@ -663,11 +668,11 @@ fun HomeScreen(
 
         // Section > Next goal
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 2.dp),
+                        .padding(horizontal = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -677,13 +682,14 @@ fun HomeScreen(
                         fontWeight = FontWeight.SemiBold,
                         color = scheme.onBackground,
                     )
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Box(
                             modifier = Modifier
                                 .clip(CircleShape)
                                 .background(scheme.surfaceVariant)
+                                .border(1.dp, scheme.outlineVariant, CircleShape)
                                 .clickable(onClick = onOpenNotes)
-                                .padding(horizontal = 13.dp, vertical = 7.dp),
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
                         ) {
                             Text(
                                 text = "Catatan",
@@ -696,8 +702,9 @@ fun HomeScreen(
                             modifier = Modifier
                                 .clip(CircleShape)
                                 .background(scheme.surfaceVariant)
+                                .border(1.dp, scheme.outlineVariant, CircleShape)
                                 .clickable(onClick = onOpenLocations)
-                                .padding(horizontal = 13.dp, vertical = 7.dp),
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
                         ) {
                             Text(
                                 text = "Buka",
@@ -718,7 +725,7 @@ fun HomeScreen(
                     if (nextLoc != null) {
                         Row(
                             modifier = Modifier.padding(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Box(
@@ -738,7 +745,7 @@ fun HomeScreen(
 
                             Column(
                                 modifier = Modifier.weight(1f),
-                                verticalArrangement = Arrangement.spacedBy(2.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
                             ) {
                                 Text(
                                     text = nextLoc.customerName.ifBlank { "Pelanggan" },
@@ -761,6 +768,7 @@ fun HomeScreen(
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(12.dp))
                                         .background(scheme.onSurface)
+                                        .border(1.dp, scheme.outlineVariant, RoundedCornerShape(12.dp))
                                         .clickable {
                                             val query = "${nextLoc.latitude},${nextLoc.longitude}"
                                             val intent = Intent(
@@ -773,7 +781,7 @@ fun HomeScreen(
                                             )
                                             context.startActivity(intent)
                                         }
-                                        .padding(vertical = 9.dp),
+                                        .padding(vertical = 8.dp),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Text(
@@ -791,7 +799,7 @@ fun HomeScreen(
                                 .fillMaxWidth()
                                 .padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Text(
                                 text = "Belum ada lokasi tersimpan.",
@@ -802,8 +810,9 @@ fun HomeScreen(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(scheme.surfaceVariant)
+                                    .border(1.dp, scheme.outlineVariant, RoundedCornerShape(12.dp))
                                     .clickable(onClick = onOpenLocations)
-                                    .padding(horizontal = 16.dp, vertical = 9.dp),
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
                             ) {
                                 Text(
                                     text = "Simpan",
@@ -820,13 +829,13 @@ fun HomeScreen(
 
         // Section > Last 7 days
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     text = "Grafik",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = scheme.onBackground,
-                    modifier = Modifier.padding(horizontal = 2.dp),
+                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
 
                 Surface(
@@ -927,7 +936,7 @@ fun HomeScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                TrackifyTextButton(
                     onClick = {
                         pendingDelta = null
                         val nextS = (activeToday.safeDelivered + delta).coerceAtLeast(0)
@@ -943,7 +952,7 @@ fun HomeScreen(
                 ) { Text("Ya, perbarui") }
             },
             dismissButton = {
-                TextButton(onClick = { pendingDelta = null }) { Text("Batal") }
+                TrackifyTextButton(onClick = { pendingDelta = null }) { Text("Batal") }
             },
         )
     }
@@ -954,7 +963,7 @@ fun HomeScreen(
             title = { Text("Tandai libur hari ini?") },
             text = { Text("Paket dan pengeluaran hari ini akan dikosongkan. Data hari lain tidak berubah.") },
             confirmButton = {
-                TextButton(
+                TrackifyTextButton(
                     onClick = {
                         pendingPause = false
                         onUpdateTodayLog(
@@ -969,7 +978,7 @@ fun HomeScreen(
                 ) { Text("Ya, liburkan") }
             },
             dismissButton = {
-                TextButton(onClick = { pendingPause = false }) { Text("Batal") }
+                TrackifyTextButton(onClick = { pendingPause = false }) { Text("Batal") }
             },
         )
     }

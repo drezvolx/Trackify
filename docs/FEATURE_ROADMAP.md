@@ -119,13 +119,14 @@
 | 14 | Template Notion opsional + multi-foto catatan, DB v8 | Selesai |
 | 15 | Tema gradien monokrom: Royal Charcoal / Pure Charcoal | Selesai |
 | 16 | Typography tebal di judul + gaya khas tiap layout | Selesai |
-| 17 | Tombol outline + spacing/typography konsisten | Rencana |
+| 17 | Tombol outline + spacing/typography konsisten | Selesai |
 | 18 | Tombol update, kredit, folder manajemen, README/docs | Rencana |
 
 Fase 6 menambah `photoPath` pada `saved_locations` lewat `MIGRATION_6_7`. Foto kamera masuk galeri,
 lalu salinan stabil disimpan di `filesDir/location_photos`; preview tampil di editor, detail, dan kartu
 terdekat. Konfirmasi Fase 5 tetap memakai `TrackifyDialog`; tombol aksi cepat dan toggle
 **Masuk/Libur** tidak diubah bentuknya. Pengurutan catatan memakai chip dengan state `rememberSaveable`.
+(Kata "bentuk" di atas berarti label/aksi/state; Fase 17 kemudian menyamakan **styling outline** tombolnya.)
 
 Fase 7 mengganti dua field koordinat dengan satu field **URL Maps**. `MapUrlParser` menangani format
 `@lat,lon`, query `q/query/destination/ll/center`, `!3d...!4d...`, `%2C`, dan `lat,lon` polos;
@@ -176,8 +177,13 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
   tipografi). Empat tampilan koordinat di Lokasi memakai `FontFamily.Monospace`. Blok `HEADING` Catatan di kartu
   pratinjau dan editor memakai `ExtraBold`, paragraf tetap `Normal`. Judul kartu `SemiBold` dan dialog
   `titleMedium` tidak berubah; `ScreenTitle` tetap tanpa subtext.
-- **Fase 17 — Tombol:** komponen tombol dengan outline `1.dp outlineVariant` di kedua tema, skala spacing
-  4/8/12/16/24, shadow diterjemahkan dari CSS ke elevation Compose.
+- **Fase 17 — Tombol (selesai):** `TrackifyButton`, `TrackifyTextButton`, dan `TrackifyIconButton` di
+  `ui/theme/TrackifyButtons.kt` memakai outline `1.dp outlineVariant`, tanpa fill/shadow, di kedua tema.
+  Seluruh tombol Material3 di kelima layar sudah memakai helper itu; tombol aksi berbentuk `Box` ikut diberi
+  border `1.dp outlineVariant` (`hero.outlineVariant` di hero Home). Skala spacing 4/8/12/16/24 dp dipakai
+  untuk padding dan `spacedBy`; `96.dp` clearance bottom nav dan `1.dp` border/divider tetap dikecualikan.
+  Tidak ada nilai `box-shadow` CSS di dokumen/source, jadi elevation sengaja tetap `0.dp` (`tonalElevation = 0.dp`
+  pada `TrackifyDialog`) — desain flat. Label, aksi, state terpilih, dan `96.dp` tidak berubah.
 - **Fase 18 — Update & kredit:** bel di header Home mengecek `GET /repos/drezvolx/Trackify/releases/latest`,
   menampilkan dialog versi + tombol unduh/buka GitHub (alur flexible, tanpa auto-install). Blok Dukungan
   menampilkan versi aplikasi, **Drezvolx**, <https://github.com/drezvolx>, dan

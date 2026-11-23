@@ -39,17 +39,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -79,10 +74,13 @@ import com.blankpages.trackify.domain.MapUrlParser
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.ui.theme.ScreenTitle
+import com.blankpages.trackify.ui.theme.TrackifyButton
 import com.blankpages.trackify.ui.theme.TrackifyCard
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyGradients
+import com.blankpages.trackify.ui.theme.TrackifyIconButton
 import com.blankpages.trackify.ui.theme.TrackifyIcons
+import com.blankpages.trackify.ui.theme.TrackifyTextButton
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -230,10 +228,8 @@ fun LocationsScreen(
                     modifier = Modifier.weight(1f),
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedIconButton(
+                    TrackifyIconButton(
                         onClick = { refreshLocation() },
-                        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.65f)),
-                        shape = RoundedCornerShape(11.dp),
                         modifier = Modifier.size(36.dp),
                     ) {
                         Icon(
@@ -243,10 +239,10 @@ fun LocationsScreen(
                             modifier = Modifier.size(17.dp),
                         )
                     }
-                    Button(
+                    TrackifyButton(
                         onClick = { openEditor(null) },
                         shape = RoundedCornerShape(11.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                         modifier = Modifier.height(36.dp),
                     ) {
                         Icon(TrackifyIcons.Plus, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -258,7 +254,7 @@ fun LocationsScreen(
         }
 
         item(key = "loc_filters") {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 TrackifyCard(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
@@ -275,7 +271,7 @@ fun LocationsScreen(
                                 style = MaterialTheme.typography.labelSmall,
                                 color = scheme.onSurfaceVariant,
                             )
-                            TextButton(
+                            TrackifyTextButton(
                                 onClick = { DeviceLocationSource.openGpsSettings(context) },
                                 contentPadding = PaddingValues(0.dp),
                             ) { Text("Aktifkan GPS", style = MaterialTheme.typography.labelSmall) }
@@ -332,7 +328,7 @@ fun LocationsScreen(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Column(
-                            modifier = Modifier.padding(20.dp),
+                            modifier = Modifier.padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
@@ -356,7 +352,7 @@ fun LocationsScreen(
                                 color = scheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
                             )
-                            Button(
+                            TrackifyButton(
                                 onClick = { openEditor(null) },
                                 shape = RoundedCornerShape(12.dp),
                             ) {
@@ -378,7 +374,7 @@ fun LocationsScreen(
                         Column(
                             modifier = Modifier.padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Text(
                                 text = "Tidak ada lokasi yang cocok.",
@@ -386,7 +382,7 @@ fun LocationsScreen(
                                 fontWeight = FontWeight.SemiBold,
                                 color = scheme.onSurfaceVariant,
                             )
-                            TextButton(
+                            TrackifyTextButton(
                                 onClick = { query = "" },
                             ) {
                                 Text(
@@ -402,7 +398,7 @@ fun LocationsScreen(
 
             else -> {
                 item(key = "loc_nearby") {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -435,7 +431,7 @@ fun LocationsScreen(
                 }
 
                 item(key = "loc_all") {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -473,7 +469,7 @@ fun LocationsScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable { detailEntry = entry }
-                                            .padding(vertical = 11.dp),
+                                            .padding(vertical = 12.dp),
                                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
@@ -531,6 +527,7 @@ fun LocationsScreen(
                                                 .size(36.dp)
                                                 .clip(CircleShape)
                                                 .background(scheme.surfaceVariant)
+                                                .border(1.dp, scheme.outlineVariant, CircleShape)
                                                 .clickable { openMapNavigation(context, loc) },
                                             contentAlignment = Alignment.Center,
                                         ) {
@@ -596,22 +593,22 @@ fun LocationsScreen(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(scheme.surfaceVariant)
-                                .padding(10.dp),
+                                .padding(12.dp),
                         ) {
                             Text(target.landmarkNote, style = MaterialTheme.typography.bodySmall)
                         }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        TextButton(
+                        TrackifyTextButton(
                             onClick = {
                                 val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                 cm.setPrimaryClip(ClipData.newPlainText("Koordinat", coordStr))
                                 Toast.makeText(context, "Koordinat disalin", Toast.LENGTH_SHORT).show()
                             },
                         ) { Text("Salin") }
-                        TextButton(onClick = { LocationSharing.share(context, target) }) { Text("Bagikan") }
-                        TextButton(onClick = { openEditor(target) }) { Text("Edit") }
-                        TextButton(
+                        TrackifyTextButton(onClick = { LocationSharing.share(context, target) }) { Text("Bagikan") }
+                        TrackifyTextButton(onClick = { openEditor(target) }) { Text("Edit") }
+                        TrackifyTextButton(
                             onClick = {
                                 pendingDelete = target
                                 detailEntry = null
@@ -621,7 +618,7 @@ fun LocationsScreen(
                 }
             },
             confirmButton = {
-                Button(
+                TrackifyButton(
                     onClick = {
                         openMapNavigation(context, target)
                         detailEntry = null
@@ -629,7 +626,7 @@ fun LocationsScreen(
                 ) { Text("Navigasi ke Google Maps") }
             },
             dismissButton = {
-                TextButton(onClick = { detailEntry = null }) { Text("Tutup") }
+                TrackifyTextButton(onClick = { detailEntry = null }) { Text("Tutup") }
             },
         )
     }
@@ -674,16 +671,17 @@ fun LocationsScreen(
                 )
             },
             confirmButton = {
-                Button(
+                TrackifyButton(
                     onClick = {
                         LocationPhotoStore.delete(target.photoPath)
                         onDeleteLocation(target)
                         pendingDelete = null
                     },
+                    contentColor = scheme.error,
                 ) { Text("Hapus") }
             },
             dismissButton = {
-                TextButton(onClick = { pendingDelete = null }) { Text("Batal") }
+                TrackifyTextButton(onClick = { pendingDelete = null }) { Text("Batal") }
             },
         )
     }
@@ -699,7 +697,7 @@ fun LocationsScreen(
                 )
             },
             confirmButton = {
-                Button(
+                TrackifyButton(
                     onClick = {
                         showPermissionRationale = false
                         DeviceLocationSource.openAppSettings(context)
@@ -707,7 +705,7 @@ fun LocationsScreen(
                 ) { Text("Buka setelan") }
             },
             dismissButton = {
-                TextButton(onClick = { showPermissionRationale = false }) { Text("Nanti") }
+                TrackifyTextButton(onClick = { showPermissionRationale = false }) { Text("Nanti") }
             },
         )
     }
@@ -748,8 +746,8 @@ private fun LocationNearbyCard(
                     )
                 }
                 Row(
-                    modifier = Modifier.padding(10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     entry.second?.let { meters ->
                         Box(
@@ -757,7 +755,7 @@ private fun LocationNearbyCard(
                                 .clip(CircleShape)
                                 .background(scheme.background)
                                 .border(1.dp, scheme.outlineVariant, CircleShape)
-                                .padding(horizontal = 11.dp, vertical = 3.dp),
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
                         ) {
                             Text(
                                 text = TrackifyEngine.formatDistance(meters),
@@ -772,7 +770,7 @@ private fun LocationNearbyCard(
 
             Column(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
                     text = loc.displayTitle(),
@@ -796,7 +794,7 @@ private fun LocationNearbyCard(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(10.dp))
                             .background(scheme.surfaceVariant)
-                            .padding(horizontal = 11.dp, vertical = 8.dp),
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
                     ) {
                         Text(
                             text = loc.landmarkNote,
@@ -810,13 +808,13 @@ private fun LocationNearbyCard(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    OutlinedButton(
+                    TrackifyButton(
                         onClick = onNavigate,
                         shape = RoundedCornerShape(9.dp),
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                         modifier = Modifier
                             .weight(1f)
                             .height(32.dp),
@@ -825,14 +823,14 @@ private fun LocationNearbyCard(
                         Spacer(Modifier.width(4.dp))
                         Text("Rute", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold)
                     }
-                    TextButton(
+                    TrackifyTextButton(
                         onClick = onDetail,
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         modifier = Modifier.defaultMinSize(minWidth = 40.dp, minHeight = 30.dp),
                     ) {
                         Text("Detail", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold)
                     }
-                    IconButton(onClick = onShare, modifier = Modifier.size(30.dp)) {
+                    TrackifyIconButton(onClick = onShare, modifier = Modifier.size(30.dp)) {
                         Icon(
                             TrackifyIcons.ShareNode,
                             contentDescription = "Bagikan",
@@ -933,7 +931,7 @@ private fun LocationEditorDialog(
                     fontWeight = FontWeight.SemiBold,
                 )
                 if (!isNew) {
-                    IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                    TrackifyIconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
                         Icon(
                             TrackifyIcons.Trash,
                             contentDescription = "Hapus",
@@ -947,7 +945,7 @@ private fun LocationEditorDialog(
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 OutlinedTextField(
                     value = name,
@@ -969,7 +967,7 @@ private fun LocationEditorDialog(
                     colors = trackifyFieldColors(),
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = "Foto lokasi",
                         style = MaterialTheme.typography.labelSmall,
@@ -987,16 +985,17 @@ private fun LocationEditorDialog(
                         )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        TextButton(
+                        TrackifyTextButton(
                             onClick = { cameraPermissionLauncher.launch(Manifest.permission.CAMERA) },
                         ) { Text("Ambil foto") }
-                        TextButton(onClick = { galleryLauncher.launch("image/*") }) { Text("Dari galeri") }
+                        TrackifyTextButton(onClick = { galleryLauncher.launch("image/*") }) { Text("Dari galeri") }
                         if (photoPath.isNotBlank()) {
-                            TextButton(
+                            TrackifyTextButton(
                                 onClick = {
                                     LocationPhotoStore.delete(photoPath)
                                     photoPath = ""
                                 },
+                                contentColor = scheme.error,
                             ) { Text("Hapus foto") }
                         }
                     }
@@ -1013,12 +1012,12 @@ private fun LocationEditorDialog(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 if (currentLat != null && currentLon != null) {
-                    TextButton(
+                    TrackifyTextButton(
                         onClick = {
                             mapUrl = "https://www.google.com/maps/search/?api=1&query=" +
                                 String.format(Locale.US, "%.6f,%.6f", currentLat, currentLon)
                         },
-                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                     ) {
                         Text(
                             "Pakai Koordinat GPS Saat Ini",
@@ -1030,13 +1029,13 @@ private fun LocationEditorDialog(
             }
         },
         confirmButton = {
-            Button(
+            TrackifyButton(
                 onClick = {
                     val cleanName = name.trim()
                     val cleanLandmark = landmark.trim()
                     if (cleanName.isBlank() && cleanLandmark.isBlank()) {
                         Toast.makeText(context, "Isi nama penerima atau patokan", Toast.LENGTH_SHORT).show()
-                        return@Button
+                        return@TrackifyButton
                     }
                     val pasted = mapUrl.trim()
                     scope.launch {
@@ -1070,7 +1069,7 @@ private fun LocationEditorDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Batal") }
+            TrackifyTextButton(onClick = onDismiss) { Text("Batal") }
         },
     )
 }

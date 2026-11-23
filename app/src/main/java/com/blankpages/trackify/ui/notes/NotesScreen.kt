@@ -27,19 +27,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -70,10 +65,13 @@ import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.domain.noteTemplates
 import com.blankpages.trackify.ui.locations.LocationPhotoStore
 import com.blankpages.trackify.ui.theme.ScreenTitle
+import com.blankpages.trackify.ui.theme.TrackifyButton
 import com.blankpages.trackify.ui.theme.TrackifyCard
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyGradients
+import com.blankpages.trackify.ui.theme.TrackifyIconButton
 import com.blankpages.trackify.ui.theme.TrackifyIcons
+import com.blankpages.trackify.ui.theme.TrackifyTextButton
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.time.LocalDate
 import kotlinx.coroutines.launch
@@ -123,14 +121,14 @@ fun NotesScreen(
             .fillMaxSize()
             .background(TrackifyGradients.background()),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item(key = "notes_header") {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 2.dp),
+                        .padding(horizontal = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -138,7 +136,7 @@ fun NotesScreen(
                         text = "Catatan",
                         modifier = Modifier.weight(1f),
                     )
-                    TextButton(
+                    TrackifyTextButton(
                         onClick = {
                             selectionMode = !selectionMode
                             selectedIds = emptySet()
@@ -146,7 +144,7 @@ fun NotesScreen(
                     ) {
                         Text(if (selectionMode) "Batal" else "Pilih")
                     }
-                    Button(
+                    TrackifyButton(
                         onClick = {
                             isNewNote = true
                             editingNote = CourierNote(
@@ -156,7 +154,7 @@ fun NotesScreen(
                             )
                         },
                         shape = RoundedCornerShape(11.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                         modifier = Modifier.height(36.dp),
                     ) {
                         Icon(TrackifyIcons.Plus, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -177,7 +175,7 @@ fun NotesScreen(
 
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
@@ -242,7 +240,7 @@ fun NotesScreen(
                     )
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("Semua", "Aktif", "Selesai").forEachIndexed { idx, label ->
                         FilterChip(
                             selected = filterMode == idx,
@@ -267,7 +265,7 @@ fun NotesScreen(
 
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
@@ -298,8 +296,8 @@ fun NotesScreen(
                 }
 
                 if (selectionMode) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        TextButton(
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TrackifyTextButton(
                             onClick = {
                                 val today = LocalDate.now().toString()
                                 selectedNotes.forEach { note ->
@@ -314,9 +312,10 @@ fun NotesScreen(
                             },
                             enabled = selectedIds.isNotEmpty(),
                         ) { Text("Tandai selesai") }
-                        TextButton(
+                        TrackifyTextButton(
                             onClick = { showBulkDeleteConfirm = true },
                             enabled = selectedIds.isNotEmpty(),
+                            contentColor = scheme.error,
                         ) { Text("Hapus (${selectedIds.size})") }
                     }
                 }
@@ -349,7 +348,7 @@ fun NotesScreen(
                         }
                     },
                     borderColor = if (note.isPinned) scheme.primary else scheme.outlineVariant,
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -401,7 +400,7 @@ fun NotesScreen(
                         }
 
                         if (!selectionMode) {
-                            IconButton(
+                            TrackifyIconButton(
                                 onClick = {
                                     onSaveNote(
                                         note.copy(isPinned = !note.isPinned),
@@ -429,7 +428,7 @@ fun NotesScreen(
                         NoteBlocks.parse(note.content).take(4)
                     }
                     if (previewBlocks.isNotEmpty()) {
-                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             previewBlocks.forEach { block ->
                                 val mark = if (block.checked) "[x]" else "[ ]"
                                 val rendered = when (block.type) {
@@ -457,7 +456,7 @@ fun NotesScreen(
 
                     val cardPhotos = notePhotos[note.id].orEmpty().take(perf.maxPreviewItems)
                     if (cardPhotos.isNotEmpty()) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             cardPhotos.forEach { path ->
                                 val bitmap = remember(path) { LocationPhotoStore.load(path, perf) }
                                 if (bitmap != null) {
@@ -488,9 +487,9 @@ fun NotesScreen(
                             modifier = Modifier.weight(1f),
                         )
                         if (linkedLoc != null) {
-                            TextButton(
+                            TrackifyTextButton(
                                 onClick = { openNoteLocationMap(context, linkedLoc) },
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                                 modifier = Modifier.defaultMinSize(minWidth = 36.dp, minHeight = 28.dp),
                             ) {
                                 Text(
@@ -530,21 +529,18 @@ fun NotesScreen(
             title = { Text("Hapus catatan terpilih?") },
             text = { Text("${selectedIds.size} catatan akan dihapus permanen.") },
             confirmButton = {
-                Button(
+                TrackifyButton(
                     onClick = {
                         selectedNotes.forEach(onDeleteNote)
                         showBulkDeleteConfirm = false
                         selectionMode = false
                         selectedIds = emptySet()
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = scheme.error,
-                        contentColor = scheme.onError,
-                    ),
+                    contentColor = scheme.error,
                 ) { Text("Hapus permanen") }
             },
             dismissButton = {
-                TextButton(onClick = { showBulkDeleteConfirm = false }) { Text("Batal") }
+                TrackifyTextButton(onClick = { showBulkDeleteConfirm = false }) { Text("Batal") }
             },
         )
     }
@@ -638,7 +634,7 @@ private fun NoteEditorDialog(
             ) {
                 Text(if (isNew) "Catatan Baru" else "Edit Catatan", fontWeight = FontWeight.SemiBold)
                 if (!isNew) {
-                    IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                    TrackifyIconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
                         Icon(
                             TrackifyIcons.Trash,
                             contentDescription = "Hapus",
@@ -652,7 +648,7 @@ private fun NoteEditorDialog(
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 OutlinedTextField(
                     value = title,
@@ -672,7 +668,7 @@ private fun NoteEditorDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     listOf(
                         "Teks" to NoteBlock.Type.PARAGRAPH,
@@ -700,7 +696,7 @@ private fun NoteEditorDialog(
                 blocks.forEachIndexed { index, block ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.Top,
                     ) {
                         when (block.type) {
@@ -708,7 +704,7 @@ private fun NoteEditorDialog(
                                 text = "#",
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.ExtraBold),
                                 color = scheme.primary,
-                                modifier = Modifier.padding(top = 14.dp),
+                                modifier = Modifier.padding(top = 16.dp),
                             )
 
                             NoteBlock.Type.BULLET -> Text(
@@ -747,7 +743,7 @@ private fun NoteEditorDialog(
                             colors = trackifyFieldColors(),
                             modifier = Modifier.weight(1f),
                         )
-                        IconButton(
+                        TrackifyIconButton(
                             onClick = { if (blocks.size > 1) blocks.removeAt(index) },
                             modifier = Modifier.size(32.dp),
                         ) {
@@ -760,7 +756,7 @@ private fun NoteEditorDialog(
                         }
                     }
                 }
-                TextButton(onClick = { blocks.add(NoteBlock(NoteBlock.Type.PARAGRAPH, "", blocks.size)) }) {
+                TrackifyTextButton(onClick = { blocks.add(NoteBlock(NoteBlock.Type.PARAGRAPH, "", blocks.size)) }) {
                     Text("+ Tambah blok")
                 }
                 Text(
@@ -769,7 +765,7 @@ private fun NoteEditorDialog(
                     color = scheme.onSurfaceVariant,
                 )
                 if (photoPaths.isNotEmpty()) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         photoPaths.forEachIndexed { index, path ->
                             val bitmap = remember(path) { LocationPhotoStore.load(path, perf) }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -783,12 +779,12 @@ private fun NoteEditorDialog(
                                         contentScale = ContentScale.Crop,
                                     )
                                 }
-                                TextButton(
+                                TrackifyTextButton(
                                     onClick = {
                                         LocationPhotoStore.delete(path)
                                         photoPaths = photoPaths.filterIndexed { i, _ -> i != index }
                                     },
-                                    contentPadding = PaddingValues(horizontal = 2.dp, vertical = 0.dp),
+                                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
                                 ) {
                                     Text("Hapus", style = MaterialTheme.typography.labelSmall)
                                 }
@@ -797,12 +793,12 @@ private fun NoteEditorDialog(
                     }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(
+                    TrackifyButton(
                         onClick = ::openCamera,
                         enabled = photoPaths.size < MAX_PHOTOS_PER_NOTE,
                         shape = RoundedCornerShape(10.dp),
                     ) { Text("Ambil foto", style = MaterialTheme.typography.labelSmall) }
-                    OutlinedButton(
+                    TrackifyButton(
                         onClick = { galleryLauncher.launch("image/*") },
                         enabled = photoPaths.size < MAX_PHOTOS_PER_NOTE,
                         shape = RoundedCornerShape(10.dp),
@@ -826,7 +822,7 @@ private fun NoteEditorDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         FilterChip(
                             selected = linkedId == null,
@@ -866,7 +862,7 @@ private fun NoteEditorDialog(
             }
         },
         confirmButton = {
-            Button(
+            TrackifyButton(
                 onClick = {
                     val savedContent = NoteBlocks.serialize(blocks)
                     val contentChanged = title.trim() != initial.title.trim() ||
@@ -889,7 +885,7 @@ private fun NoteEditorDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Batal") }
+            TrackifyTextButton(onClick = onDismiss) { Text("Batal") }
         },
     )
 }

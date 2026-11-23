@@ -4,6 +4,41 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 17: tombol outline & spacing konsisten
+
+### Ditambahkan
+
+- `ui/theme/TrackifyButtons.kt`: tiga helper bersama — `TrackifyButton`, `TrackifyTextButton`, dan
+  `TrackifyIconButton`. Semuanya memakai `BorderStroke(1.dp, scheme.outlineVariant)`, container transparan,
+  dan tanpa shadow. Helper menerima `contentColor` sehingga aksi destruktif tetap memakai `scheme.error`
+  tanpa mengubah fill tombol.
+- Border `1.dp outlineVariant` ditambahkan ke tombol aksi berbentuk `Box` di Home, Rekap, Lokasi, dan Setelan;
+  tombol di hero Home memakai `hero.outlineVariant` agar tetap kontras di atas gradien.
+
+### Diubah
+
+- Seluruh pemakaian langsung `Button`, `OutlinedButton`, `TextButton`, `IconButton`, dan `OutlinedIconButton`
+  di Home/Rekap/Lokasi/Catatan/Setelan diganti helper Trackify. Kontrak grep: `DIRECT_BUTTONS=0`,
+  `TRACKIFY_BUTTONS=66`.
+- Spacing padding/`spacedBy`/`PaddingValues` dinormalisasi ke skala 4/8/12/16/24 dp. `96.dp` bottom clearance,
+  `1.dp` border/divider, dan ukuran ikon tidak disentuh. Tidak ada `outlineVariant.copy(alpha = ...)` lagi.
+- `TrackifyCard`, `TrackifyDialog`, `Scaffold`, bottom nav, `ScreenTitle`, gradien, dan `96.dp` tidak berubah.
+  Kata "bentuk tombol tidak diubah" di catatan Fase 6 kini dibaca sebagai label/aksi/state, bukan styling;
+  Fase 17 secara eksplisit mengubah styling outline sesuai persetujuan roadmap.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **30/30** tes, 0 failure.
+- Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`,
+  `DIRECT_BUTTONS=0`, `ALPHA_BORDER=0`, `SHADOW=0`, `OFF_SCALE_SPACING=0`; `Scaffold(` hanya di `MainActivity.kt`.
+- Smoke perangkat: kelima tab terbuka; alur Catatan → **Tambah** → editor → **Batal** berhasil; tidak ada
+  `FATAL`/`AndroidRuntime` di logcat.
+- Tentang shadow: tidak ada nilai `box-shadow` CSS yang terdokumentasi di repo, jadi elevation tetap `0.dp`
+  sesuai desain flat; tidak ada `shadow(...)` yang ditambahkan.
+- CI `validate`: _menunggu run_.
+
+---
+
 ## 24 Nov 2026 — Fase 16: typography tebal & angka tabular
 
 ### Ditambahkan
@@ -30,7 +65,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
   `Scaffold(` hanya di `MainActivity.kt`; 4 pemakaian `FontFamily.Monospace` dan 3 token `TabularFigures`.
 - Smoke perangkat: Home, Lokasi, Catatan terbuka tanpa crash; koordinat `-6.390512, 106.866109` dan daftar
   tetap terbaca; logcat tidak ada `FATAL`/`AndroidRuntime`.
-- CI `validate`: _menunggu run_.
+- CI `validate` hijau: run `45253631064` (`0480f1c`).
 
 ---
 

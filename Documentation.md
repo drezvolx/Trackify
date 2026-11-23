@@ -182,6 +182,7 @@ core/data/src/main/java/com/blankpages/trackify/
 - Tema otomatis mengikuti sistem; tidak ada menu `Tampilan` / toggle Dark–White.
 - Orientasi portrait; rotasi otomatis dinonaktifkan.
 - Kartu memakai `TrackifyCard` (20.dp / surface / outlineVariant / padding 16.dp / SemiBold).
+- Tombol memakai `TrackifyButton` / `TrackifyTextButton` / `TrackifyIconButton` (Fase 17): outline `1.dp outlineVariant`, transparan, tanpa shadow; skala spacing 4/8/12/16/24 dp.
 - Semua dialog memakai `TrackifyDialog` (20.dp / `scheme.surface` / `onSurface` / `onSurfaceVariant` / elevation 0 / judul SemiBold), bukan `AlertDialog` default.
 - Konten boleh lewat di belakang outline; padding bawah tiap tab/layar `96.dp`.
 - Fitur pembayaran tunai hilang total dari source aktif.

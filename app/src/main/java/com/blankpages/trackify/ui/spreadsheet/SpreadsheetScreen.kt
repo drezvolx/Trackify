@@ -33,8 +33,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,7 +44,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -76,9 +73,12 @@ import com.blankpages.trackify.domain.WageCalculator
 import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.ui.theme.ScreenTitle
+import com.blankpages.trackify.ui.theme.TrackifyButton
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyGradients
+import com.blankpages.trackify.ui.theme.TrackifyIconButton
 import com.blankpages.trackify.ui.theme.TrackifyIcons
+import com.blankpages.trackify.ui.theme.TrackifyTextButton
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.text.NumberFormat
 import java.time.Instant
@@ -264,7 +264,7 @@ fun SpreadsheetScreen(
             .fillMaxSize()
             .background(TrackifyGradients.background()),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         item {
             Row(
@@ -298,7 +298,7 @@ fun SpreadsheetScreen(
         }
 
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -336,8 +336,8 @@ fun SpreadsheetScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(22.dp),
+                        .padding(horizontal = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp),
                 ) {
                     listOf("Ringkasan", "Grafik").forEachIndexed { idx, title ->
                         val active = subTab == idx
@@ -370,14 +370,14 @@ fun SpreadsheetScreen(
 
         if (subTab == 0) {
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
                         text = "Ringkasan",
                         fontSize = 17.sp,
                         lineHeight = 22.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = scheme.onBackground,
-                        modifier = Modifier.padding(horizontal = 2.dp),
+                        modifier = Modifier.padding(horizontal = 4.dp),
                     )
 
                     SheetCard {
@@ -410,11 +410,11 @@ fun SpreadsheetScreen(
             }
 
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 2.dp),
+                            .padding(horizontal = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -434,7 +434,7 @@ fun SpreadsheetScreen(
                     }
 
                     SheetCard {
-                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             val totalSplit = (abs(gajian1) + abs(gajian2)).coerceAtLeast(1.0)
                             val w1 = (abs(gajian1) / totalSplit).toFloat().coerceIn(0.25f, 0.75f)
                             val w2 = (1f - w1).coerceAtLeast(0.25f)
@@ -502,11 +502,11 @@ fun SpreadsheetScreen(
             }
 
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 2.dp),
+                            .padding(horizontal = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -521,7 +521,7 @@ fun SpreadsheetScreen(
                     }
 
                     SheetCard {
-                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -564,14 +564,14 @@ fun SpreadsheetScreen(
             }
         } else {
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
                         text = "Paket terkirim per hari",
                         fontSize = 17.sp,
                         lineHeight = 22.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = scheme.onBackground,
-                        modifier = Modifier.padding(horizontal = 2.dp),
+                        modifier = Modifier.padding(horizontal = 4.dp),
                     )
 
                     SheetCard {
@@ -580,7 +580,7 @@ fun SpreadsheetScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 20.dp),
+                                    .padding(vertical = 24.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
@@ -594,12 +594,12 @@ fun SpreadsheetScreen(
                             val peakDay = chartSummary.bestDay
                             val daysCount = selectedMonth.lengthOfMonth()
 
-                            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(92.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(3.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     verticalAlignment = Alignment.Bottom,
                                 ) {
                                     for (d in 1..daysCount) {
@@ -681,14 +681,14 @@ fun SpreadsheetScreen(
                     mutableStateOf(activeToday.safeDelivered.toString())
                 }
 
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
                         text = "Hari ini",
                         fontSize = 17.sp,
                         lineHeight = 22.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = scheme.onBackground,
-                        modifier = Modifier.padding(horizontal = 2.dp),
+                        modifier = Modifier.padding(horizontal = 4.dp),
                     )
 
                     SheetCard {
@@ -709,7 +709,7 @@ fun SpreadsheetScreen(
                                     modifier = Modifier
                                         .clip(CircleShape)
                                         .background(scheme.surfaceVariant)
-                                        .padding(2.dp),
+                                        .padding(4.dp),
                                 ) {
                                     listOf(true to "Masuk", false to "Libur").forEach { (stateVal, labelTxt) ->
                                         val sel = activeToday.isWorkingDay == stateVal
@@ -717,6 +717,7 @@ fun SpreadsheetScreen(
                                             modifier = Modifier
                                                 .clip(CircleShape)
                                                 .background(if (sel) scheme.onSurface else Color.Transparent)
+                                                .border(1.dp, scheme.outlineVariant, CircleShape)
                                                 .clickable {
                                                     val next = if (stateVal) {
                                                         activeToday.copy(isWorkingDay = true)
@@ -730,7 +731,7 @@ fun SpreadsheetScreen(
                                                     }.sanitized()
                                                     onUpdateLog(next)
                                                 }
-                                                .padding(horizontal = 12.dp, vertical = 5.dp),
+                                                .padding(horizontal = 12.dp, vertical = 4.dp),
                                         ) {
                                             Text(
                                                 text = labelTxt,
@@ -763,8 +764,9 @@ fun SpreadsheetScreen(
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(12.dp))
                                             .background(scheme.surfaceVariant)
+                                            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(12.dp))
                                             .clickable { onCarryoverYesterday() }
-                                            .padding(vertical = 10.dp, horizontal = 12.dp),
+                                            .padding(vertical = 12.dp, horizontal = 12.dp),
                                         contentAlignment = Alignment.Center,
                                     ) {
                                         Text(
@@ -785,7 +787,7 @@ fun SpreadsheetScreen(
                                             .weight(1f)
                                             .clip(RoundedCornerShape(14.dp))
                                             .background(scheme.surfaceVariant)
-                                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                                            .padding(horizontal = 12.dp, vertical = 12.dp),
                                     ) {
                                         Text(
                                             "Dibawa",
@@ -816,7 +818,7 @@ fun SpreadsheetScreen(
                                             .weight(1f)
                                             .clip(RoundedCornerShape(14.dp))
                                             .background(scheme.surfaceVariant)
-                                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                                            .padding(horizontal = 12.dp, vertical = 12.dp),
                                     ) {
                                         Text(
                                             "Terkirim",
@@ -845,7 +847,7 @@ fun SpreadsheetScreen(
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
                                     listOf("-1", "+1", "+5", "+10", "0").forEach { btnLabel ->
                                         Box(
@@ -853,6 +855,7 @@ fun SpreadsheetScreen(
                                                 .weight(1f)
                                                 .clip(RoundedCornerShape(11.dp))
                                                 .background(scheme.surfaceVariant)
+                                                .border(1.dp, scheme.outlineVariant, RoundedCornerShape(11.dp))
                                                 .clickable {
                                                     val nextS = if (btnLabel == "0") {
                                                         0
@@ -873,7 +876,7 @@ fun SpreadsheetScreen(
                                                         ).sanitized(),
                                                     )
                                                 }
-                                                .padding(vertical = 9.dp),
+                                                .padding(vertical = 8.dp),
                                             contentAlignment = Alignment.Center,
                                         ) {
                                             Text(
@@ -889,7 +892,7 @@ fun SpreadsheetScreen(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(top = 2.dp),
+                                        .padding(top = 4.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
@@ -911,14 +914,14 @@ fun SpreadsheetScreen(
             val rowsCount = (totalCells + 6) / 7
             val todayStr = LocalDate.now().toString()
 
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     text = "Kalender",
                     fontSize = 17.sp,
                     lineHeight = 22.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = scheme.onBackground,
-                    modifier = Modifier.padding(horizontal = 2.dp),
+                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
 
                 SheetCard {
@@ -926,7 +929,7 @@ fun SpreadsheetScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 2.dp),
+                                .padding(bottom = 4.dp),
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
                             listOf("Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min").forEach { dow ->
@@ -1027,11 +1030,11 @@ fun SpreadsheetScreen(
         }
 
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 2.dp),
+                        .padding(horizontal = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -1042,7 +1045,7 @@ fun SpreadsheetScreen(
                         fontWeight = FontWeight.SemiBold,
                         color = scheme.onBackground,
                     )
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         SheetPillAction(
                             text = "Salin",
                             onClick = {
@@ -1062,7 +1065,7 @@ fun SpreadsheetScreen(
                 }
 
                 SheetCard {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1073,7 +1076,7 @@ fun SpreadsheetScreen(
                                     .weight(1f)
                                     .clip(CircleShape)
                                     .background(scheme.surfaceVariant)
-                                    .padding(2.dp),
+                                    .padding(4.dp),
                             ) {
                                 listOf(0 to "Kartu", 1 to "Grid").forEach { (idx, lbl) ->
                                     val sel = viewMode == idx
@@ -1082,8 +1085,9 @@ fun SpreadsheetScreen(
                                             .weight(1f)
                                             .clip(CircleShape)
                                             .background(if (sel) scheme.onSurface else Color.Transparent)
+                                            .border(1.dp, scheme.outlineVariant, CircleShape)
                                             .clickable { viewMode = idx }
-                                            .padding(vertical = 6.dp),
+                                            .padding(vertical = 8.dp),
                                         contentAlignment = Alignment.Center,
                                     ) {
                                         Text(
@@ -1106,6 +1110,7 @@ fun SpreadsheetScreen(
                                     .size(32.dp)
                                     .clip(CircleShape)
                                     .background(if (showSearch) scheme.onSurface else scheme.surfaceVariant)
+                                    .border(1.dp, scheme.outlineVariant, CircleShape)
                                     .clickable {
                                         showSearch = !showSearch
                                         if (!showSearch) searchQuery = ""
@@ -1143,7 +1148,7 @@ fun SpreadsheetScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             listOf("Semua", "Masuk", "Libur", "Sisa").forEachIndexed { idx, chipLabel ->
                                 val active = filterMode == idx
@@ -1151,8 +1156,9 @@ fun SpreadsheetScreen(
                                     modifier = Modifier
                                         .clip(CircleShape)
                                         .background(if (active) scheme.onSurface else scheme.surfaceVariant)
+                                        .border(1.dp, scheme.outlineVariant, CircleShape)
                                         .clickable { filterMode = idx }
-                                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
                                 ) {
                                     Text(
                                         chipLabel,
@@ -1170,9 +1176,9 @@ fun SpreadsheetScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 14.dp),
+                                    .padding(vertical = 16.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
                                 Text(
                                     text = "Belum ada log di $monthLabel. Mulai dari tanggal 1 atau pilih " +
@@ -1181,16 +1187,12 @@ fun SpreadsheetScreen(
                                     color = scheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center,
                                 )
-                                Button(
+                                TrackifyButton(
                                     onClick = {
                                         val d1 = selectedMonth.atDay(1).toString()
                                         editingLog = logsByDate[d1] ?: DailyLog(date = d1, ratePerPackage = defaultRate)
                                     },
                                     shape = RoundedCornerShape(12.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = scheme.onSurface,
-                                        contentColor = scheme.surface,
-                                    ),
                                 ) {
                                     Text("Tambah log", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                                 }
@@ -1199,9 +1201,9 @@ fun SpreadsheetScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 14.dp),
+                                    .padding(vertical = 16.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
                                 Text(
                                     "Tidak ada log yang cocok dengan filter.",
@@ -1236,7 +1238,7 @@ fun SpreadsheetScreen(
                                     ) {
                                         Column(
                                             modifier = Modifier.weight(1f),
-                                            verticalArrangement = Arrangement.spacedBy(2.dp),
+                                            verticalArrangement = Arrangement.spacedBy(4.dp),
                                         ) {
                                             Row(
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1269,7 +1271,7 @@ fun SpreadsheetScreen(
                                                                 Modifier
                                                             },
                                                         )
-                                                        .padding(horizontal = 9.dp, vertical = 2.dp),
+                                                        .padding(horizontal = 8.dp, vertical = 4.dp),
                                                 ) {
                                                     Text(
                                                         text = if (item.isWorkingDay) "Masuk" else "Libur",
@@ -1321,7 +1323,7 @@ fun SpreadsheetScreen(
                             val totN = filteredLogs.sumOf { WageCalculator.netIncomeOf(it, wageMode, flatDailyAmount) }
 
                             Column(modifier = Modifier.fillMaxWidth()) {
-                                Row(modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+                                Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
                                     Text(
                                         "Tgl",
                                         fontSize = 12.sp,
@@ -1372,7 +1374,7 @@ fun SpreadsheetScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable { editingLog = item }
-                                            .padding(vertical = 9.dp),
+                                            .padding(vertical = 8.dp),
                                     ) {
                                         Text(
                                             "$dNum",
@@ -1423,7 +1425,7 @@ fun SpreadsheetScreen(
                                 }
 
                                 HorizontalDivider(thickness = 2.dp, color = scheme.onSurface)
-                                Row(modifier = Modifier.fillMaxWidth().padding(top = 9.dp)) {
+                                Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
                                     Text(
                                         "TOTAL",
                                         fontSize = 12.sp,
@@ -1492,7 +1494,7 @@ fun SpreadsheetScreen(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(
+                TrackifyTextButton(
                     onClick = {
                         val millis = datePickerState.selectedDateMillis
                         if (millis != null) {
@@ -1505,7 +1507,7 @@ fun SpreadsheetScreen(
                     },
                 ) { Text("Pilih") }
             },
-            dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text("Batal") } },
+            dismissButton = { TrackifyTextButton(onClick = { showDatePicker = false }) { Text("Batal") } },
         ) { DatePicker(state = datePickerState) }
     }
 
@@ -1532,19 +1534,15 @@ fun SpreadsheetScreen(
                 }
             },
             confirmButton = {
-                Button(
+                TrackifyButton(
                     onClick = {
                         targetRupiah = draftTarget
                         onUpdateTarget(draftTarget)
                         showTargetSheet = false
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = scheme.onSurface,
-                        contentColor = scheme.surface,
-                    ),
                 ) { Text("Simpan target") }
             },
-            dismissButton = { TextButton(onClick = { showTargetSheet = false }) { Text("Batal") } },
+            dismissButton = { TrackifyTextButton(onClick = { showTargetSheet = false }) { Text("Batal") } },
         )
     }
 
@@ -1570,15 +1568,16 @@ fun SpreadsheetScreen(
             title = { Text("Hapus log?", fontWeight = FontWeight.SemiBold) },
             text = { Text("Log ${target.date} akan dihapus. Tindakan ini tidak bisa dibatalkan.") },
             confirmButton = {
-                Button(
+                TrackifyButton(
                     onClick = {
                         onDeleteLog(target)
                         pendingDeleteLog = null
                     },
+                    contentColor = scheme.error,
                 ) { Text("Hapus") }
             },
             dismissButton = {
-                TextButton(onClick = { pendingDeleteLog = null }) { Text("Batal") }
+                TrackifyTextButton(onClick = { pendingDeleteLog = null }) { Text("Batal") }
             },
         )
     }
@@ -1600,7 +1599,7 @@ private fun SheetCard(content: @Composable ColumnScope.() -> Unit) {
 @Composable
 private fun SheetStatItem(value: String, label: String, large: Boolean = false, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = value,
             fontSize = if (large) 20.sp else 15.sp,
@@ -1629,8 +1628,9 @@ private fun SheetPillAction(text: String, onClick: () -> Unit) {
         modifier = Modifier
             .clip(CircleShape)
             .background(scheme.surfaceVariant)
+            .border(1.dp, scheme.outlineVariant, CircleShape)
             .clickable(onClick = onClick)
-            .padding(horizontal = 13.dp, vertical = 7.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -1703,7 +1703,7 @@ private fun SheetBigNumberInput(value: String, onValueChange: (String) -> Unit) 
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 2.dp),
+            .padding(top = 4.dp),
     )
 }
 
@@ -1747,7 +1747,7 @@ private fun SheetLogEditorDialog(
                 ) {
                     Text("Dibawa", fontSize = 14.sp)
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         SheetPillAction("−") {
@@ -1765,7 +1765,7 @@ private fun SheetLogEditorDialog(
                 ) {
                     Text("Terkirim", fontSize = 14.sp)
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         SheetPillAction("−") { delivered = (delivered - 1).coerceAtLeast(0) }
@@ -1835,7 +1835,7 @@ private fun SheetLogEditorDialog(
             }
         },
         confirmButton = {
-            Button(
+            TrackifyButton(
                 onClick = {
                     val updated = clean.copy(
                         isWorkingDay = isWorking,
@@ -1852,8 +1852,11 @@ private fun SheetLogEditorDialog(
         },
         dismissButton = {
             Row {
-                TextButton(onClick = { onDelete(clean) }) { Text("Hapus") }
-                TextButton(onClick = onDismiss) { Text("Batal") }
+                TrackifyTextButton(
+                    onClick = { onDelete(clean) },
+                    contentColor = MaterialTheme.colorScheme.error,
+                ) { Text("Hapus") }
+                TrackifyTextButton(onClick = onDismiss) { Text("Batal") }
             }
         },
     )

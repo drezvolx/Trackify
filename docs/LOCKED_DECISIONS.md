@@ -911,3 +911,22 @@ User menyetujui judul lebih tebal, angka tabular, dan koordinat monospaced. Kepu
   Penanda `#` ikut `ExtraBold`.
 - Judul kartu tetap `SemiBold`, judul dialog tetap `titleMedium`. Spacing, border, dan bentuk tombol bukan bagian
   Fase 16 (Fase 17). Bottom nav, gradien, tema otomatis, dan orientasi portrait tidak berubah.
+
+### 24 Nov 2026 — Fase 17: tombol outline & spacing
+
+User menyetujui seragamnya tombol dan spacing. Keputusan:
+
+- `ui/theme/TrackifyButtons.kt` adalah sumber token tombol: `TrackifyButton`, `TrackifyTextButton`, dan
+  `TrackifyIconButton`. Semua memakai `BorderStroke(1.dp, scheme.outlineVariant)`, container transparan,
+  dan elevation/shadow `0`. Aksi destruktif memakai `contentColor = scheme.error`, **bukan** fill merah.
+- Pemakaian langsung `Button`, `OutlinedButton`, `TextButton`, `IconButton`, dan `OutlinedIconButton` di lima
+  layar **dilarang** (target grep `DIRECT_BUTTONS=0`). Tombol aksi berbentuk `Box` wajib punya border
+  `1.dp outlineVariant`; di hero Home memakai `hero.outlineVariant`. Dilarang `outlineVariant.copy(alpha = ...)`.
+- Skala spacing hanya **4/8/12/16/24 dp** untuk `padding`, `spacedBy`, dan `PaddingValues`. Pengecualian tetap:
+  `96.dp` bottom clearance (kontrak bottom nav), `1.dp` border/divider, ukuran ikon, dan `0.dp`.
+- Tidak ada nilai `box-shadow` CSS yang terdokumentasi di repo, sehingga terjemahan CSS → elevation Compose
+  ditetapkan **elevation `0.dp`** (flat), termasuk `tonalElevation = 0.dp` pada `TrackifyDialog`.
+  Jangan menambah `shadow(...)` tanpa keputusan baru.
+- Catatan Fase 6 ("tombol aksi cepat dan toggle **Masuk/Libur** tidak diubah bentuknya") kini dibaca sebagai
+  **label, aksi, dan state** yang tidak berubah; styling outline diatur Fase 17. `TrackifyCard`,
+  `TrackifyDialog`, `Scaffold` tunggal, `ScreenTitle`, gradien, dan bottom nav tidak berubah.

@@ -24,18 +24,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -64,10 +60,13 @@ import com.blankpages.trackify.domain.WageCalculator
 import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.ui.theme.ScreenTitle
+import com.blankpages.trackify.ui.theme.TrackifyButton
 import com.blankpages.trackify.ui.theme.TrackifyCard
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyGradients
+import com.blankpages.trackify.ui.theme.TrackifyIconButton
 import com.blankpages.trackify.ui.theme.TrackifyIcons
+import com.blankpages.trackify.ui.theme.TrackifyTextButton
 import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.text.NumberFormat
 import java.time.YearMonth
@@ -155,7 +154,7 @@ fun SettingsScreen(
             .fillMaxSize()
             .background(TrackifyGradients.background()),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         item {
             Row(
@@ -183,13 +182,13 @@ fun SettingsScreen(
 
         // Section > Pay scheme
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     "Skema gaji",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = scheme.onBackground,
-                    modifier = Modifier.padding(horizontal = 2.dp),
+                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -199,7 +198,7 @@ fun SettingsScreen(
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(13.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         MockupStepperRow(
                             title = "Rate per paket",
@@ -254,12 +253,9 @@ fun SettingsScreen(
                                 WageMode.FLAT_DAILY to "Nominal tetap per hari",
                             ).forEach { (mode, label) ->
                                 val selected = wageMode == mode
-                                OutlinedButton(
+                                TrackifyButton(
                                     onClick = { onUpdateWageMode(mode) },
                                     shape = RoundedCornerShape(12.dp),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        containerColor = if (selected) scheme.surfaceVariant else Color.Transparent,
-                                    ),
                                     modifier = Modifier.weight(1f),
                                 ) {
                                     Text(
@@ -295,12 +291,9 @@ fun SettingsScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             WagePeriod.entries.forEach { period ->
                                 val selected = wagePeriod == period
-                                OutlinedButton(
+                                TrackifyButton(
                                     onClick = { onUpdateWagePeriod(period) },
                                     shape = RoundedCornerShape(12.dp),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        containerColor = if (selected) scheme.surfaceVariant else Color.Transparent,
-                                    ),
                                     modifier = Modifier.weight(1f),
                                 ) {
                                     Text(
@@ -368,13 +361,13 @@ fun SettingsScreen(
 
         // Section > Reminders & data
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     "Pengingat",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = scheme.onBackground,
-                    modifier = Modifier.padding(horizontal = 2.dp),
+                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -401,7 +394,7 @@ fun SettingsScreen(
                                 fontSize = 12.sp,
                                 color = scheme.onSurfaceVariant,
                             )
-                            OutlinedButton(
+                            TrackifyButton(
                                 onClick = { showTimePicker = true },
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.padding(top = 8.dp),
@@ -426,13 +419,13 @@ fun SettingsScreen(
         }
 
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     "Data",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = scheme.onBackground,
-                    modifier = Modifier.padding(horizontal = 2.dp),
+                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -442,7 +435,7 @@ fun SettingsScreen(
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(13.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -460,7 +453,7 @@ fun SettingsScreen(
                                     modifier = Modifier
                                         .clip(CircleShape)
                                         .clickable { csvMonthText = csvMonth.minusMonths(1).toString() }
-                                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                                        .padding(horizontal = 12.dp, vertical = 4.dp),
                                 ) {
                                     Text("‹", fontSize = 18.sp, color = scheme.onSurfaceVariant)
                                 }
@@ -469,13 +462,13 @@ fun SettingsScreen(
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = scheme.onSurface,
-                                    modifier = Modifier.padding(horizontal = 6.dp),
+                                    modifier = Modifier.padding(horizontal = 8.dp),
                                 )
                                 Box(
                                     modifier = Modifier
                                         .clip(CircleShape)
                                         .clickable { csvMonthText = csvMonth.plusMonths(1).toString() }
-                                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                                        .padding(horizontal = 12.dp, vertical = 4.dp),
                                 ) {
                                     Text("›", fontSize = 18.sp, color = scheme.onSurfaceVariant)
                                 }
@@ -503,8 +496,9 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .background(scheme.surfaceVariant)
+                                    .border(1.dp, scheme.outlineVariant, CircleShape)
                                     .clickable { csvLauncher.launch("Trackify_Rekap.csv") }
-                                    .padding(horizontal = 13.dp, vertical = 7.dp),
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
                             ) {
                                 Text(
                                     "Ekspor",
@@ -537,8 +531,9 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .background(scheme.surfaceVariant)
+                                    .border(1.dp, scheme.outlineVariant, CircleShape)
                                     .clickable { backupLauncher.launch("Trackify_Backup.json") }
-                                    .padding(horizontal = 13.dp, vertical = 7.dp),
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
                             ) {
                                 Text(
                                     "Backup",
@@ -567,8 +562,9 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .background(scheme.surfaceVariant)
+                                    .border(1.dp, scheme.outlineVariant, CircleShape)
                                     .clickable { showRestoreConfirm = true }
-                                    .padding(horizontal = 13.dp, vertical = 7.dp),
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
                             ) {
                                 Text(
                                     "Pulihkan",
@@ -601,8 +597,9 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .background(scheme.error.copy(alpha = 0.12f))
+                                    .border(1.dp, scheme.outlineVariant, CircleShape)
                                     .clickable { showResetConfirm = true }
-                                    .padding(horizontal = 13.dp, vertical = 7.dp),
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
                             ) {
                                 Text("Hapus", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = scheme.error)
                             }
@@ -614,13 +611,13 @@ fun SettingsScreen(
 
         // Section > Developer support
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     "Dukung",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = scheme.onBackground,
-                    modifier = Modifier.padding(horizontal = 2.dp),
+                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
                 TrackifyCard(onClick = { showQris = true }) {
                     Row(
@@ -659,7 +656,7 @@ fun SettingsScreen(
             title = { Text("Jam pengingat") },
             text = { TimePicker(timeState) },
             confirmButton = {
-                TextButton(
+                TrackifyTextButton(
                     onClick = {
                         onUpdateReminderTime(ReminderTime.of(timeState.hour, timeState.minute))
                         showTimePicker = false
@@ -667,7 +664,7 @@ fun SettingsScreen(
                 ) { Text("Simpan") }
             },
             dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Batal") }
+                TrackifyTextButton(onClick = { showTimePicker = false }) { Text("Batal") }
             },
         )
     }
@@ -683,19 +680,16 @@ fun SettingsScreen(
                 )
             },
             confirmButton = {
-                Button(
+                TrackifyButton(
                     onClick = {
                         showResetConfirm = false
                         onResetData()
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = scheme.error,
-                        contentColor = scheme.onError,
-                    ),
+                    contentColor = scheme.error,
                 ) { Text("Hapus permanen") }
             },
             dismissButton = {
-                TextButton(onClick = { showResetConfirm = false }) { Text("Batal") }
+                TrackifyTextButton(onClick = { showResetConfirm = false }) { Text("Batal") }
             },
         )
     }
@@ -711,7 +705,7 @@ fun SettingsScreen(
                 )
             },
             confirmButton = {
-                Button(
+                TrackifyButton(
                     onClick = {
                         showRestoreConfirm = false
                         restoreLauncher.launch(arrayOf("application/json", "text/*"))
@@ -719,7 +713,7 @@ fun SettingsScreen(
                 ) { Text("Pilih file backup") }
             },
             dismissButton = {
-                TextButton(onClick = { showRestoreConfirm = false }) { Text("Batal") }
+                TrackifyTextButton(onClick = { showRestoreConfirm = false }) { Text("Batal") }
             },
         )
     }
@@ -732,7 +726,7 @@ fun SettingsScreen(
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Image(
                         painter = painterResource(R.drawable.qris_support),
@@ -745,7 +739,7 @@ fun SettingsScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showQris = false }) { Text("Tutup") }
+                TrackifyTextButton(onClick = { showQris = false }) { Text("Tutup") }
             },
         )
     }
@@ -768,7 +762,7 @@ private fun MockupStepperRow(title: String, subtitle: String, valueText: String,
                 .clip(RoundedCornerShape(12.dp))
                 .background(scheme.surfaceVariant)
                 .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
@@ -776,6 +770,7 @@ private fun MockupStepperRow(title: String, subtitle: String, valueText: String,
                     .size(30.dp)
                     .clip(RoundedCornerShape(9.dp))
                     .background(scheme.surface)
+                    .border(1.dp, scheme.outlineVariant, RoundedCornerShape(9.dp))
                     .clickable(onClick = onDec),
                 contentAlignment = Alignment.Center,
             ) {
@@ -794,6 +789,7 @@ private fun MockupStepperRow(title: String, subtitle: String, valueText: String,
                     .size(30.dp)
                     .clip(RoundedCornerShape(9.dp))
                     .background(scheme.surface)
+                    .border(1.dp, scheme.outlineVariant, RoundedCornerShape(9.dp))
                     .clickable(onClick = onInc),
                 contentAlignment = Alignment.Center,
             ) {
