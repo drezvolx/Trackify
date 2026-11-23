@@ -1,0 +1,26 @@
+*.iml
+.gradle
+/.kotlin
+/.idea/
+/local.properties
+local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/app/build
+/core/*/build
+/captures
+.externalNativeBuild
+.cxx
+
+# Snapshot/backup lama dan artefak lokal, bukan source aktif
+/backup_*/
+/trackify_fix/
+build_err.txt
+report.md
+trackify_dump.txt

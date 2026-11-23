@@ -1,0 +1,756 @@
+# Trackify — Kontrak Keputusan Terkunci
+
+> **Status:** Berlaku per **2026-11-23**.  
+> **Sifat dokumen:** Kontrak / *source of truth*. File ini mengunci hasil keputusan yang sudah disetujui user.  
+> **Aturan utama:** Kalau kode dan dokumen ini bertentangan, **jangan menebak**. Stop, laporkan, dan minta keputusan eksplisit sebelum mengubah apa pun.
+
+---
+
+## 0. Aturan Emas (Jangan Dilanggar)
+
+1. **Bottom navigation final sudah disetujui. Jangan diubah** bentuk, warna, inset, animasi, atau strukturnya.
+2. **Fitur COD dilarang total** di source aktif, entity, migrasi, summary, UI, template, dan dokumentasi baru.
+3. **Status bar harus rapi**: konten tidak boleh menyatu dengan bar notifikasi HP.
+4. **Hilt tetap `2.60.1`**. Jangan downgrade.
+5. **Build + 10 tes harus tetap hijau** sebelum perubahan dianggap selesai.
+6. **Setiap perubahan besar wajib backup dulu**, lalu update dokumen ini jika keputusan berubah secara sah.
+7. Workspace **bukan git repo**. Jangan mengira perubahan bisa di-`git checkout`; rollback harus lewat folder backup.
+8. **Header semua tab cukup judul, tanpa subtext**, dan wajib memakai `ScreenTitle` dari `ui/theme/TrackifyTheme.kt`.
+9. **Tema aplikasi wajib mengikuti perangkat otomatis**. Menu pilihan tema manual dilarang.
+10. **Orientasi wajib portrait**. Jangan menghidupkan rotasi otomatis di app.
+
+---
+
+## 1. BOTTOM NAVIGATION — ZONA PALING KRITIS
+
+### 1.1 Lokasi & Identitas
+
+| Item | Nilai tetap |
+|---|---|
+| File utama | `app/src/main/java/com/blankpages/trackify/MainActivity.kt` |
+| Composable | `ReferenceNotchedBottomBar` |
+| Enum tab | `app/src/main/java/com/blankpages/trackify/navigation/TrackifyNavigation.kt` → `TrackifyTab` |
+| Pemanggilan | **Hanya** dari `Scaffold.bottomBar` di `MainActivity.kt` |
+| Modul | **Tetap di `:app`**. Jangan dipindah ke `:feature:*`. |
+
+**Dilarang:**
+- Memindahkan bottom bar ke modul feature.
+- Mengganti ke `NavigationBar`, `BottomNavigation`, `NavigationBarItem`, atau Navigation Component.
+- Menghapus `ReferenceNotchedBottomBar`.
+- Mengubah urutan tab.
+- Mengubah nama/struktur `TrackifyTab` tanpa keputusan eksplisit.
+
+Urutan tab final:
+
+```kotlin
+HOME, REKAP, LOKASI, CATATAN
+```
+
+`TrackifyTab.of(ordinal)` harus tetap fallback ke `HOME`.
+
+---
+
+### 1.2 Konfigurasi Visual Final — JANGAN DIUBAH
+
+Nilai-nilai ini adalah hasil iterasi terakhir dan sudah disetujui user:
+
+```kotlin
+val barHeight: Dp = 64.dp
+val topLift: Dp = 18.dp
+val orbSize: Dp = 46.dp
+val notchRadius: Dp = 30.dp
+val cornerRadiusPx = with(density) { 18.dp.toPx() }
+val strokeWidthPx = with(density) { 1.dp.toPx() }
+val barColor = scheme.background.copy(alpha = 0.72f)
+val borderColor = scheme.outlineVariant
+val outlineColor = scheme.outline
+```
+
+Modifier `Box` bottom bar:
+
+```kotlin
+Modifier
+    .fillMaxWidth()
+    .navigationBarsPadding()
+    .padding(horizontal = 14.dp, vertical = 8.dp)
+    .height(barHeight + topLift)
+    .onSizeChanged { barSize = it }
+    .drawBehind { ... }
+```
+
+Path notch:
+
+```kotlin
+baseRectPath.addRoundRect(
+    RoundRect(
+        rect = Rect(0f, topLiftPx, widthPx, totalHeightPx),
+        cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx)
+    )
+)
+
+scoopPath.addOval(
+    Rect(
+        left = centerXPx - notchRadiusPx,
+        top = topLiftPx - notchRadiusPx * 0.72f,
+        right = centerXPx + notchRadiusPx,
+        bottom = topLiftPx + notchRadiusPx * 1.28f
+    )
+)
+
+notchedBarPath.op(baseRectPath, scoopPath, PathOperation.Difference)
+drawPath(path = notchedBarPath, color = barColor)
+drawPath(path = notchedBarPath, color = borderColor, style = strokeSpec)
+```
+
+**Artinya:**
+- **Outline/notch WAJIB ada.** Jangan hapus stroke `outlineVariant` 1.dp.
+- **Fill dalam outline WAJIB `scheme.background.copy(alpha = 0.72f)`.**
+  - Jangan `Color.Transparent` → user bilang terlalu tipis.
+  - Jangan `Color.Black` / `#141414` solid → itu kotak hitam lama yang sudah dihapus.
+  - Jangan alpha `1f` → bukan desain final.
+- **Area di luar/daerah belakang outline tidak boleh ada container gelap.** Konten layar harus ikut menggambar sampai ke belakang outline.
+- `Scaffold.containerColor` tetap **`scheme.background`**, bukan `Color.Transparent`. Transparent membuat status bar/window background jadi putih.
+
+---
+
+### 1.3 Ikon & Orbit
+
+```kotlin
+animateFloatAsState(
+    targetValue = currentTab.ordinal.toFloat(),
+    animationSpec = spring(
+        dampingRatio = Spring.DampingRatioNoBouncy,
+        stiffness = Spring.StiffnessMedium
+    ),
+    label = "notched_tab_index"
+)
+```
+
+- Orbit mengikuti `animatedIndex`, bukan langsung `currentTab.ordinal`.
+- Orbit: `Surface` `CircleShape`, warna `primary`, `BorderStroke(2.dp, outlineColor)`.
+- Ikon selected: `currentTab.icon`, `onPrimary`, ukuran `21.dp`.
+- Ikon unselected: `tab.icon`, `onSurfaceVariant`, ukuran `21.dp`.
+- `indication = null` pada `clickable` tetap dipertahankan.
+
+**Jangan:**
+- Mengganti spring dengan tween kecepatan tinggi.
+- Mengubah ukuran orbit/ikon.
+- Menambah ripple.
+- Menambah label teks di bawah ikon.
+
+---
+
+### 1.4 Insets & Status Bar — JANGAN DIUBAH
+
+Ini bagian yang pernah bermasalah tiga kali:
+
+1. `contentWindowInsets = WindowInsets(0)` membuat konten naik ke bar notifikasi HP.
+2. `Scaffold(containerColor = Color.Transparent)` membuat area status bar tampak putih.
+3. `SettingsScreen` dirender di luar `Scaffold`, sehingga tidak mendapat inset status bar dan kontennya mulai di `y≈34`.
+
+Konfigurasi final yang WAJIB:
+
+```kotlin
+Scaffold(
+    containerColor = scheme.background,
+    // Status bar tetap dihormati di semua layar, termasuk Settings.
+    // Bottom inset sengaja tidak dipakai supaya konten boleh lewat
+    // di belakang outline bottom bar saat bottom bar ditampilkan.
+    contentWindowInsets = WindowInsets.statusBars,
+    bottomBar = {
+        if (!inSettings) {
+            ReferenceNotchedBottomBar(
+                currentTab = currentTab,
+                onSelectTab = { tabOrdinal = it.ordinal }
+            )
+        }
+    }
+) { padding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                start = padding.calculateStartPadding(LocalLayoutDirection.current),
+                top = padding.calculateTopPadding(),
+                end = padding.calculateEndPadding(LocalLayoutDirection.current)
+            )
+    ) {
+        if (inSettings) {
+            SettingsScreen(...)
+        } else {
+            AnimatedContent(...) { tab -> TabContent(...) }
+        }
+    }
+}
+```
+
+**Aturan:**
+- **Satu `Scaffold` harus membungkus semua layar**, termasuk `SettingsScreen`. Jangan mengembalikan cabang `if (inSettings) ... else Scaffold(...)`.
+- Bottom bar tetap dipanggil dari `Scaffold.bottomBar`, hanya dibuat saat `!inSettings`.
+- `enableEdgeToEdge()` tetap dipakai.
+- `WindowInsets.statusBars` **wajib**.
+- **Jangan** pakai `WindowInsets(0)`.
+- **Jangan** pakai `.padding(padding)` penuh pada `Box` konten, karena itu akan memotong area belakang outline.
+- Padding bawah ditangani oleh masing-masing layar, bukan oleh `Scaffold`.
+
+Padding bawah tiap tab:
+
+| Tab | File | `contentPadding` |
+|---|---|---|
+| Home | `ui/home/HomeScreen.kt` | `bottom = 96.dp` |
+| Rekap | `ui/spreadsheet/SpreadsheetScreen.kt` | `bottom = 96.dp` |
+| Lokasi | `ui/locations/LocationsScreen.kt` | `start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp` |
+| Catatan | `ui/notes/NotesScreen.kt` | `start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp` |
+| Settings | `ui/settings/SettingsScreen.kt` | `bottom = 96.dp`, sekarang tetap dapat inset `statusBars` dari `Scaffold` |
+
+Alasan `96.dp`: konten boleh lewat di belakang outline, tetapi item terakhir tidak boleh tertutup nav.
+
+Verifikasi bounds di emulator (1080x2460): area scroll tiap layar mulai di **`[0,108]`**, termasuk Settings. Sebelum perbaikan, Settings mulai di `[0,0]` dan teks pertama berada di `y≈34`.
+
+---
+
+### 1.5 Riwayat Masalah Bottom Nav (Supaya Tidak Terulang)
+
+| Percobaan | Hasil | Keputusan |
+|---|---|---|
+| Fill `Color.Transparent`, outline dihapus | User: outline jangan dihapus | Kembalikan outline |
+| `Scaffold.containerColor = Color.Transparent` | Area belakang jadi window background putih, status bar kacau | Kembalikan `scheme.background` |
+| `contentWindowInsets = WindowInsets(0)` | Konten nyatu dengan bar notifikasi HP | Ganti ke `WindowInsets.statusBars` |
+| Fill transparan penuh | User: opacity terlalu tipis | `scheme.background.copy(alpha = 0.72f)` |
+| Fill `#141414` solid | User: ada kotak hitam di belakang outline | Dihapus permanen |
+| `SettingsScreen` di luar `Scaffold` | Konten Settings mulai `y≈34`, nyatu dengan status bar | Satu `Scaffold` untuk semua layar; bottom bar kondisional |
+
+**Kesimpulan final:** outline ada, fill 0.72, tidak ada kotak hitam solid, konten lewat di belakang outline, status bar tetap rapi.
+
+---
+
+### 1.6 Cara Verifikasi Bottom Nav
+
+Jangan percaya Apply Changes untuk perubahan `MainActivity`. Apply Changes sering memakai APK lama.
+
+```powershell
+.\gradlew.bat :app:assembleDebug --console=plain
+adb install -r "app\build\outputs\apk\debug\app-debug.apk"
+adb shell am force-stop com.blankpages.trackify
+adb shell monkey -p com.blankpages.trackify -c android.intent.category.LAUNCHER 1
+```
+
+Cek visual:
+- Area status bar berwarna tema (dark: `#0B0B0B`), bukan putih.
+- Konten mulai di bawah status bar (sekitar y≈120 pada emulator 1080x2460).
+- Tidak ada blok `#141414` solid di area bottom bar.
+- Outline melengkung + notch tetap terlihat.
+- Ikon orbit mengikuti tab yang dipilih dengan animasi spring.
+
+Device yang pernah dipakai: `adb-106293736G000270-Avd2mU`.
+
+---
+
+### 1.7 Header / Judul Tab — Hanya Judul
+
+Keputusan final user: **semua header tab hanya menampilkan judul. Subtext dilarang.**
+
+Satu-satunya gaya judul resmi:
+
+```kotlin
+@Composable
+fun ScreenTitle(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        fontSize = 28.sp,
+        lineHeight = 32.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = (-0.6).sp,
+        color = MaterialTheme.colorScheme.onBackground
+    )
+}
+```
+
+Lokasi: `app/src/main/java/com/blankpages/trackify/ui/theme/TrackifyTheme.kt`.
+
+| Layar | File | Judul |
+|---|---|---|
+| Home | `ui/home/HomeScreen.kt` | `Trackify` |
+| Rekap | `ui/spreadsheet/SpreadsheetScreen.kt` | `Rekap` |
+| Lokasi | `ui/locations/LocationsScreen.kt` | `Lokasi` |
+| Catatan | `ui/notes/NotesScreen.kt` | `Catatan` |
+| Settings | `ui/settings/SettingsScreen.kt` | `Setelan` |
+
+**Aturan:**
+- Semua header wajib memanggil `ScreenTitle(text = ...)`.
+- **Jangan** mengembalikan `Text` judul inline dengan `fontSize`/`style` sendiri.
+- **Jangan** menambahkan `Text` subtext di bawah judul, termasuk:
+  - `Pencatatan dan gaji bulanan`
+  - `N rumah tersimpan`
+  - `Trackify 1.0`
+- `MaterialTheme.typography.headlineSmall` tidak dipakai untuk header tab.
+- Perubahan gaya judul dilakukan **hanya** di `ScreenTitle`, bukan per layar.
+
+Verifikasi emulator 1080x2460 setelah perbaikan:
+- `Trackify` → `[45,145][314,248]`
+- `Rekap` → `[45,142][655,245]`
+- `Lokasi` → `[45,153][644,256]`
+- `Catatan` → `[51,153][780,256]`
+- `Setelan` → `[187,145][454,248]`
+
+Kelima judul punya tinggi **103 px**. String subtext di atas tidak ditemukan di UI dump.
+
+---
+
+## 2. ARSITEKTUR & MODUL
+
+### 2.1 Modul Final
+
+```
+settings.gradle.kts
+├── :app
+├── :core:domain
+└── :core:data
+```
+
+**Modul `feature:*` sengaja belum dibuat.** Alasan: bottom bar tetap di `MainActivity`, dan state UI masih dipakai bareng lintas tab. Jangan membuat modul feature hanya untuk "kerapian" tanpa keputusan baru.
+
+### 2.2 Arah Dependensi
+
+```
+:app  ──>  :core:data  ──>  :core:domain
+ : └──────────────────────>  :core:domain
+```
+
+Aturan:
+- `:core:domain` **hanya** `room-common:2.7.1` untuk anotasi model. **Tidak boleh** bergantung ke `room-runtime`.
+- `:core:data` pemilik Room runtime, DAO, database, migrasi, repository, lokasi, notifikasi, dan `AppModule`.
+- `:core:data` **dilarang** mereferensikan `MainActivity`, `R` dari `:app`, atau kelas UI apa pun.
+- `:app` bergantung langsung ke `:core:domain` dan `:core:data`.
+
+### 2.3 Versi & Dependency Kunci
+
+| Komponen | Versi tetap | Catatan |
+|---|---|---|
+| AGP | `9.5.2` | Di `libs.versions.toml` |
+| Kotlin | `2.2.10` | Di `libs.versions.toml` |
+| Compose BOM | `2026.02.01` | Di `libs.versions.toml` |
+| Room | `2.7.1` | `core:data` runtime; `core:domain` annotations only |
+| Hilt | **`2.60.1`** | Root + `app` + `core:data` |
+| KSP | `2.3.13` | Plugin root |
+
+**Penting:** Hilt `2.57.1` gagal dengan error `Android BaseExtension not found` pada AGP `9.5.2`. **Jangan downgrade.**
+
+### 2.4 Hilt
+
+- `TrackifyApp` → `@HiltAndroidApp`.
+- `MainActivity` → `@AndroidEntryPoint`.
+- `TrackifyViewModel` → `@HiltViewModel`.
+- `AppModule` → `core/data/.../di/AppModule.kt`, `@InstallIn(SingletonComponent::class)`.
+- `TrackifyRepository` disuntikkan ke ViewModel.
+
+Jangan kembali ke `viewModels()` manual dengan DAO langsung.
+
+---
+
+## 3. DATA & DOMAIN
+
+### 3.1 Database
+
+- Nama: `trackify_offline_db`.
+- Versi: **`6`**.
+- Migrasi aktif: **`MIGRATION_5_6`**.
+- `exportSchema = false`.
+- Mode WAL aktif: `setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)`.
+- `fallbackToDestructiveMigration(true)` tetap dipakai untuk ketahanan, tapi **bukan alasan untuk menaikkan versi sembarangan**.
+
+`MIGRATION_5_6` menghapus kolom COD dari `daily_logs`. **Jangan menambahkan kolom COD lagi.**
+
+### 3.2 Entity / Model
+
+Tiga entity:
+- `DailyLog` → `daily_logs`
+- `SavedLocation` → `saved_locations`
+- `CourierNote` → `courier_notes`
+
+Field `DailyLog` final:
+
+```
+date, isWorkingDay, packagesCarried, packagesDelivered,
+ratePerPackage, bonus, expense, notes
+```
+
+Tidak ada field COD.
+
+### 3.3 Aturan Domain
+
+- `DailyLog.sanitized()` wajib:
+  - membatasi `packagesDelivered` ≤ `packagesCarried`
+  - mengosongkan paket & pendapatan saat `isWorkingDay == false`
+- `toRupiah()` berada di `core/domain/.../CurrencyFormat.kt` dan memakai `Locale.forLanguageTag("id-ID")`.
+- `Locale.forLanguageTag("id-ID")` juga dipakai di Home, Spreadsheet, Settings, dan Locations.
+- Templat catatan "`Titipan`" dan "`Kendala Kirim`" ada di `core/domain/.../NoteTemplates.kt` + chip di `NotesScreen`.
+
+**Bug historis yang jangan diulang:**
+- `TrackifyApp` harus memanggil `previousHandler?.uncaughtException(...)` setelah logging.
+- Jangan memutasi `overrideTodayLogFlow.value` dari dalam `combine` di `TrackifyViewModel`.
+
+### 3.4 Target
+
+- Source of truth target: `state.settings.targetAmount`.
+- Home, Rekap, dan Settings memakai nilai itu langsung.
+- `targetRupiah` di `SpreadsheetScreen` hanyalah **state lokal untuk sheet edit**, diinisialisasi dari `targetAmount` dan ditulis balik lewat `onUpdateTarget`. Jangan dijadikan source of truth global.
+
+### 3.5 Fungsi Mati yang Sudah Dihapus
+
+Jangan dikembalikan tanpa kebutuhan nyata:
+- `applyAutoBonus`
+- `computeTargetPace`
+- `formatDailyWhatsappReport`
+- `TargetPaceInfo`
+- 8 preferensi lama yang tidak terpakai
+
+---
+
+## 4. FITUR YANG DIKUNCI
+
+### 4.1 COD — DILARANG
+
+COD sudah dihapus total dari:
+- entity `DailyLog`
+- `sanitized()`
+- summary/engine
+- UI
+- template catatan
+- dokumentasi aktif
+- migrasi `MIGRATION_5_6`
+
+Cek wajib:
+
+```powershell
+rg -n "\bCOD\b|codCount|codBonus|cashOnDelivery|CashOnDelivery" app/src core --glob "*.kt"
+```
+
+Hasil harus **kosong**.
+
+> Catatan: backup lama `backup_before_location_screen_20261123_164150` masih berisi COD sebagai snapshot historis. Itu sengaja tidak diubah dan **tidak boleh dipakai sebagai acuan source aktif**.
+
+### 4.2 Pengingat Harian
+
+- Izin: `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`.
+- Channel: `trackify_daily_reminder`.
+- Jam: 20.00, alarm inexact via `setAndAllowWhileIdle`.
+- Receiver: `DailyReminderReceiver`, `BootReminderReceiver`.
+- Karena `:core:data` tidak boleh bergantung ke `:app`:
+  - launcher dibuka lewat `PackageManager.getLaunchIntentForPackage`
+  - ikon notifikasi memakai `android.R.drawable.ic_dialog_info`
+- Jangan mereferensikan `MainActivity` atau `R` dari `:app` di scheduler.
+
+### 4.3 Lokasi Live
+
+- Pakai `LocationManager` / `DeviceLocationSource`.
+- **Jangan** pakai `FusedLocationProviderClient`.
+- Wajib cek: izin, GPS aktif, akurasi, umur fix.
+- Rationale izin permanen harus tetap ada.
+
+### 4.4 Backup / Reset
+
+- Export backup memakai `repository.readBackupSettings()` untuk menyertakan tarif, bonus, target, dan flag pengingat. `themeMode` sengaja tidak diekspor karena tema selalu mengikuti sistem.
+- Schema backup naik ke `6`. Backup schema `5` tetap bisa dibaca; bagian `settings` memakai default jika tidak ada.
+- Import backup memakai `repository.restoreSnapshot(decoded.value)` lalu `repository.restoreBackupSettings(decoded.value.settings)`.
+- `restoreSnapshot` **mengganti penuh** isi tabel (clear dulu, baru isi), bukan menambah.
+- Setelah restore, VM menyegarkan `overrideTodayLogFlow`, `defaultRateFlow`, `settingsFlow`, dan jadwal pengingat.
+- Tombol reset di Settings wajib memanggil `vm.resetAllData { ... }` dari `MainActivity`, bukan hanya `Toast`.
+- `DailyReminderReceiver` wajib membaca `AppPreferences.dailyReminderEnabled` sebelum menjadwalkan ulang.
+- Jika izin notifikasi ditolak, Settings wajib memanggil `onToggleReminder(false)` agar prefs dan UI sinkron.
+
+### 4.5 Tema Otomatis & Orientasi
+
+Keputusan final user: **tema mengikuti perangkat**, dan **tidak ada menu pilihan tema**.
+
+Aturan:
+
+- `MainActivity` memanggil `TrackifyTheme { ... }` **tanpa argumen**.
+- `TrackifyTheme` memakai default `isSystemInDarkTheme()` dari Compose.
+- `enableEdgeToEdge()` dipanggil **satu kali**, tanpa argumen, sehingga `SystemBarStyle.auto` mengikuti night mode sistem.
+- **Dilarang** mengembalikan:
+  - menu **Tampilan** / toggle **Dark**–**White** di Settings;
+  - parameter `isDarkTheme` / `onToggleTheme` di `SettingsScreen`;
+  - `setDarkTheme()` di `TrackifyViewModel`;
+  - `setThemeMode()` di `TrackifyRepository`;
+  - pemakaian `state.settings.themeMode` untuk menentukan tema.
+- `themeMode` di `AppSettings` / `TrackifySettings` / `AppPreferences` hanya **legacy untuk kompatibilitas backup**. Jangan dipakai untuk UI.
+- Window background XML mengikuti sistem:
+  - `res/values/themes.xml` → parent `android:Theme.Material.Light.NoActionBar`, background `#FFF5F5F5`.
+  - `res/values-night/themes.xml` → parent `android:Theme.Material.NoActionBar`, background `#FF0B0B0B`.
+- Activity tidak perlu override `@style/Theme.Trackify`; cukup di level application.
+- Rotasi otomatis dimatikan lewat `android:screenOrientation="portrait"` pada `MainActivity` di `AndroidManifest.xml`.
+- `tools:ignore="LockedOrientationActivity"` dipakai agar lint tidak menganggap portrait sebagai masalah.
+
+Verifikasi emulator (1080x2460):
+
+| Mode sistem | Status bar | Background | Surface kartu |
+|---|---|---|---|
+| Light | `(245,245,245)` | `(245,245,245)` | `(255,255,255)` |
+| Dark | `(11,11,11)` | `(11,11,11)` | `(20,20,20)` |
+
+UI dump Settings: `Tampilan`, `Tema`, `Dark`, dan `White` tidak ditemukan. `Setelan` tetap ada.
+
+`dumpsys activity activities` menunjukkan `requestedOrientation=SCREEN_ORIENTATION_PORTRAIT`.
+
+### 4.6 Kartu & Tipografi
+
+Kartu standar ada di `ui/theme/TrackifyComponents.kt` sebagai `TrackifyCard`.
+
+Token final:
+
+- bentuk `RoundedCornerShape(20.dp)`
+- warna `scheme.surface`
+- border `BorderStroke(1.dp, scheme.outlineVariant)`
+- padding konten `16.dp`
+- judul kartu `FontWeight.SemiBold`
+- judul layar tetap `FontWeight.Bold` lewat `ScreenTitle`
+
+`TrackifyCard` sekarang dipakai untuk:
+- kartu kosong dan kartu catatan di `NotesScreen`;
+- kartu filter GPS di `LocationsScreen`.
+
+Kartu lain yang sudah mengikuti token yang sama (Home, Rekap, Settings, daftar Lokasi, kartu Nearby) tidak perlu diubah bentuknya. Untuk kartu baru, wajib pakai `TrackifyCard`.
+
+Jangan memakai:
+- `outlineVariant.copy(alpha = 0.55f/0.6f)` untuk border kartu;
+- `RoundedCornerShape(8.dp/11.dp/14.dp/16.dp)` untuk kartu utama;
+- `FontWeight.Bold` untuk judul kartu.
+
+### 4.7 Dialog
+
+Semua dialog wajib memakai `TrackifyDialog` dari `ui/theme/TrackifyComponents.kt`.
+
+Token final (sama dengan `TrackifyCard`):
+
+- bentuk `RoundedCornerShape(20.dp)`
+- `containerColor = scheme.surface`
+- `titleContentColor = scheme.onSurface`
+- `textContentColor = scheme.onSurfaceVariant`
+- `tonalElevation = 0.dp`
+- judul dialog `FontWeight.SemiBold`
+
+Alasan: default `AlertDialog` Material3 memakai `surfaceContainer`, sehingga warnanya beda dengan kartu `scheme.surface` di layar. User mengeluhkan hal ini pada dialog `+` di Lokasi dan Catatan.
+
+`TrackifyDialog` sekarang dipakai untuk:
+- dialog editor Lokasi (baru/edit), detail Lokasi, dan konfirmasi hapus Lokasi;
+- dialog editor Catatan (baru/edit) dan konfirmasi hapus Catatan.
+
+Dilarang memakai `AlertDialog(` langsung di file UI. Jika butuh dialog baru, tambahkan lewat `TrackifyDialog`. `DialogProperties` diimpor dari `androidx.compose.ui.window.DialogProperties` (bukan `material3`).
+
+Pengecualian: `DatePickerDialog` dari Material3 tetap memakai komponen bawaan karena API warnanya tidak stabil di Compose BOM `2026.02.01`. Ini bukan dialog buatan app dan tidak dipakai di tombol `+`.
+
+Catatan token: `AlertDialog` tidak menerima border, jadi `TrackifyDialog` memakai **warna dan shape** `TrackifyCard`, bukan border `outlineVariant`-nya.
+
+### 4.8 Flag simpan Lokasi & hasil uji perangkat
+
+Flag `isEdit` yang dikirim dari `LocationsScreen` ke `vm.saveLocation(location, isEdit)` wajib:
+
+```kotlin
+onSaveLocation(saved, editingTarget != null)
+```
+
+Jangan pakai `editingTarget == null`. Bug ini pernah membuat lokasi **baru** memanggil `dao.updateLocation()` (0 baris) sehingga tidak pernah masuk DB. Lokasi **existing** harus tetap memanggil `updateLocation`; lokasi baru memanggil `insertLocation`.
+
+Uji langsung di emulator `adb-106293736G000270-Avd2mU` (1080x2460), 23 Nov 2026:
+
+| Alur | Hasil |
+|---|---|
+| Dialog `+` Lokasi & Catatan, light | container `#FFFFFF` = `scheme.surface` light, background `#F5F5F5` |
+| Dialog `+` Lokasi & Catatan, dark | container `#141414` = `scheme.surface` dark, background `#0B0B0B` |
+| Tambah Catatan `TESTNOTE123` | masuk `courier_notes.id=2`, tetap ada setelah force-stop |
+| Edit Catatan | via `Edit Catatan` → `Simpan` |
+| Hapus Catatan | icon `Hapus` di editor, row hilang dari UI dan DB |
+| Tambah Lokasi `TESTLOKASI7` | masuk `saved_locations.id=2` setelah perbaikan flag, persist setelah restart |
+| Edit Lokasi | nama berubah jadi `TESTLOKASI7EDIT` di UI dan DB (`id=2`) |
+| Hapus Lokasi | lewat `Detail` → `Hapus`, UI dan DB kembali 1 lokasi |
+| Quick action `+1 Pkt` | tidak mengubah angka karena log hari ini sudah `54/54`; sesuai batas `packagesDelivered <= packagesCarried` |
+| Backup | `/sdcard/Download/Trackify_Backup.json`, schema `6`, 9 log / 1 lokasi / 1 catatan + prefs (rate 1800, bonus 0, target 4.000.000, reminder false) |
+| Reset | `Hapus permanen` mengosongkan semua tabel dan `shared_prefs`; UI balik ke default |
+| Restore | DB kembali 9/1/1 dan prefs kembali 1800/0/4.000.000/false |
+| Restore full-replace | catatan `STALENOTE` yang ditambahkan setelah backup hilang setelah restore |
+
+Catatan uji: saat keyboard terbuka, tombol dialog bergeser ke atas (mis. `Simpan lokasi` dari `y≈1748` ke `y≈1431`). Selalu `uiautomator dump` terbaru sebelum tap. Row **Hapus** di Settings juga perlu di-scroll ke atas jika berada dekat navigation bar.
+
+---
+
+## 5. FILE KRITIS
+
+| File | Kenapa krit |
+|---|---|
+| `app/src/main/java/com/blankpages/trackify/MainActivity.kt` | Bottom nav final, Scaffold insets, status bar |
+| `app/src/main/java/com/blankpages/trackify/navigation/TrackifyNavigation.kt` | `TrackifyTab` + urutan tab |
+| `app/src/main/java/com/blankpages/trackify/ui/theme/TrackifyTheme.kt` | `ScreenTitle`: satu-satunya gaya header tab; tema sistem otomatis |
+| `app/src/main/java/com/blankpages/trackify/ui/theme/TrackifyComponents.kt` | `TrackifyCard` + `TrackifyDialog`: token kartu & dialog tunggal |
+| `app/src/main/res/values/themes.xml` | Window background light |
+| `app/src/main/res/values-night/themes.xml` | Window background dark |
+| `app/src/main/java/com/blankpages/trackify/ui/locations/LocationsScreen.kt` | Padding bawah 96.dp + kartu Lokasi |
+| `app/src/main/java/com/blankpages/trackify/ui/notes/NotesScreen.kt` | Padding bawah 96.dp |
+| `app/src/main/java/com/blankpages/trackify/ui/home/HomeScreen.kt` | Target + padding bawah |
+| `app/src/main/java/com/blankpages/trackify/ui/spreadsheet/SpreadsheetScreen.kt` | Target local draft + padding bawah |
+| `app/src/main/java/com/blankpages/trackify/ui/settings/SettingsScreen.kt` | Target + reset/backup + padding bawah |
+| `app/src/main/java/com/blankpages/trackify/ui/TrackifyViewModel.kt` | State UI bersama + Hilt VM |
+| `app/src/main/java/com/blankpages/trackify/TrackifyApp.kt` | `@HiltAndroidApp` + crash handler |
+| `app/src/main/AndroidManifest.xml` | Izin, receiver, dan orientasi portrait |
+| `app/build.gradle.kts` | Hilt 2.60.1 + modul internal |
+| `build.gradle.kts` | Plugin Hilt/KSP |
+| `settings.gradle.kts` | Daftar modul |
+| `gradle/libs.versions.toml` | Versi AGP/Kotlin/Compose |
+| `core/domain/src/main/java/.../Models.kt` | Entity tanpa COD |
+| `core/domain/src/main/java/.../TrackifyEngine.kt` | Logika murni + backup CSV/JSON |
+| `core/domain/src/main/java/.../CurrencyFormat.kt` | `toRupiah()` |
+| `core/data/src/main/java/.../TrackifyDatabase.kt` | DAO, DB v6, `MIGRATION_5_6` |
+| `core/data/src/main/java/.../TrackifyRepository.kt` | Repository + `restoreSnapshot` |
+| `core/data/src/main/java/.../di/AppModule.kt` | Hilt providers |
+| `app/src/test/java/com/blankpages/trackify/TrackifyEngineTest.kt` | 10 tes yang harus lulus |
+
+---
+
+## 6. CHECKLIST SEBELUM & SESUDAH EDIT
+
+### Sebelum edit
+- [ ] Baca file aktual dulu. Sering terjadi reset eksternal pada `MainActivity.kt`, `LocationsScreen.kt`, dan `NotesScreen.kt`.
+- [ ] Pastikan tidak menyentuh konfigurasi bottom nav di §1.
+- [ ] Pastikan semua header memakai `ScreenTitle` dan tidak ada subtext (§1.7).
+- [ ] Pastikan tidak ada menu tema manual dan orientasi tetap portrait (§4.5).
+- [ ] Kartu baru wajib memakai `TrackifyCard` (§4.6).
+- [ ] Dialog baru wajib memakai `TrackifyDialog`, tidak `AlertDialog` langsung (§4.7).
+- [ ] Pastikan flag simpan Lokasi memakai `editingTarget != null` (§4.8).
+- [ ] Buat backup jika perubahan menyentuh source/build files.
+
+### Sesudah edit
+- [ ] Jalankan verifikasi di §7.
+- [ ] Pastikan grep COD kosong.
+- [ ] Pastikan bottom nav masih sesuai §1.
+- [ ] Pastikan judul seragam dan subtext tidak kembali (§1.7).
+- [ ] Pastikan tema berubah saat `cmd uimode night yes/no` dan Settings tanpa `Tampilan` (§4.5).
+- [ ] Pastikan `requestedOrientation=SCREEN_ORIENTATION_PORTRAIT` (§4.5).
+- [ ] Update dokumen ini jika ada keputusan baru yang disetujui.
+
+---
+
+## 7. PERINTAH VERIFIKASI WAJIB
+
+```powershell
+.\gradlew.bat :app:assembleDebug --console=plain
+.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest --console=plain
+```
+
+Expected:
+- `BUILD SUCCESSFUL`
+- **10/10 tes lulus**
+- 0 warning compiler
+
+Cek COD:
+
+```powershell
+rg -n "\bCOD\b|codCount|codBonus|cashOnDelivery|CashOnDelivery" app/src core --glob "*.kt"
+```
+
+Expected: tidak ada output.
+
+Cek subtext header:
+
+```powershell
+rg -n "Pencatatan dan gaji bulanan|rumah tersimpan|Trackify 1\\.0" app/src --glob "*.kt"
+```
+
+Expected: tidak ada output.
+
+Cek tema manual & rotasi:
+
+```powershell
+rg -n "Tampilan|onToggleTheme|isDarkTheme|setDarkTheme|setThemeMode|state\.settings\.themeMode" app/src --glob "*.kt"
+adb shell dumpsys activity activities | Select-String "requestedOrientation=SCREEN_ORIENTATION_PORTRAIT"
+```
+
+Expected: grep kosong, orientation portrait.
+
+Cek tema otomatis:
+
+```powershell
+adb shell cmd uimode night no
+adb shell am force-stop com.blankpages.trackify
+adb shell monkey -p com.blankpages.trackify -c android.intent.category.LAUNCHER 1
+adb shell cmd uimode night yes
+adb shell am force-stop com.blankpages.trackify
+adb shell monkey -p com.blankpages.trackify -c android.intent.category.LAUNCHER 1
+```
+
+Expected: light `#F5F5F5`/`#FFFFFF`, dark `#0B0B0B`/`#141414`.
+
+Install & cek visual:
+
+```powershell
+adb install -r "app\build\outputs\apk\debug\app-debug.apk"
+adb shell am force-stop com.blankpages.trackify
+adb shell monkey -p com.blankpages.trackify -c android.intent.category.LAUNCHER 1
+```
+
+---
+
+## 8. BACKUP & ROLLBACK
+
+### 8.1 Baseline Terkunci
+
+Folder backup sumber final saat kontrak ini dibuat:
+
+```
+backup_locked_contract_20261123_180100
+```
+
+Isi: `app/src/main`, `app/src/test`, `core/domain/src`, `core/data/src`, `gradle/`, `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`, `Documentation.md`, `report.md`.
+
+Ini adalah baseline kontrak sebelum perubahan Scaffold.
+
+**Baseline final saat ini:**
+
+```
+backup_before_dialog_theme_db_20261123_183117
+```
+
+Folder ini dibuat sebelum perubahan `TrackifyDialog`, normalisasi tema dialog Lokasi/Catatan, dan audit koneksi database. Ini adalah titik rollback terbaik untuk kondisi **final saat ini**.
+
+`backup_before_theme_consistency_20261123_181640` tetap dipakai sebagai baseline sebelum perubahan tema otomatis, penghapusan menu Tampilan, penguncian portrait, dan normalisasi kartu.
+
+`backup_before_header_consistency_20261123_181140` tetap dipakai sebagai baseline sebelum perubahan header.
+`backup_before_scaffold_consistency_20261123_180650` tetap dipakai sebagai baseline sebelum perubahan Scaffold.
+
+### 8.2 Backup Historis Lain
+
+| Folder | Catatan |
+|---|---|
+| `backup_before_fix_20261123_161935` | Pra-perbaikan bug awal |
+| `backup_before_location_screen_20261123_164150` | **Masih mengandung COD sebagai snapshot historis** |
+| `backup_before_folder_restructure_20261123_170037` | Sebelum restructure folder |
+| `backup_before_full_cleanup_20261123_170654` | Sebelum cleanup besar |
+| `backup_before_multimodule_20261123_172331` | Sebelum multi-modul |
+
+**Peringatan:** rollback ke backup lama bisa mengembalikan COD dan/atau struktur single-module. Jangan lakukan rollback penuh tanpa menyadari konsekuensinya.
+
+### 8.3 Prosedur Rollback Aman
+
+1. Stop Gradle / tutup IDE sync.
+2. Salin folder backup yang dimaksud ke lokasi sementara.
+3. Bandingkan file yang akan ditimpa.
+4. Timpa hanya file yang memang perlu dikembalikan.
+5. Jalankan ulang §7.
+6. Verifikasi visual bottom nav di emulator/HP.
+
+---
+
+## 9. PERUBAHAN KONTRAK
+
+Kalau user menyetujui perubahan desain/arsitektur baru:
+
+1. Update kode.
+2. Buat backup baru dengan pola `backup_locked_contract_<tanggal>_<jam>`.
+3. Update dokumen ini pada bagian yang relevan.
+4. Tambahkan catatan di §1.5 atau §9 berisi alasan perubahan.
+5. Jalankan ulang §7.
+
+**Tanpa langkah di atas, perubahan dianggap tidak sah.**
