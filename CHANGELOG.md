@@ -4,6 +4,28 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 10: engine performa & profil perangkat
+
+### Ditambahkan
+
+- `core:domain`: `PerformanceTier` (`LOW`/`BALANCED`/`HIGH`), `PerformanceConfig`, dan `PerformancePolicy` — aturan murni Kotlin yang memetakan tier ke batas ukuran foto, kualitas JPEG, ukuran preview, interval GPS, jarak minimum GPS, dan batas jumlah preview. Tidak ada import Android di sini, jadi bisa diuji tanpa emulator.
+- `core:data`: `DevicePerformance` membaca `ActivityManager.isLowRamDevice`, `Runtime.maxMemory()`, dan `Build.VERSION.SDK_INT` **sekali** lalu meng-cache hasilnya. Tidak ada pengaturan manual; profil dihitung otomatis dari perangkat.
+- `PerformancePolicyTest` (4 tes) menguji sample size pangkat dua, urutan tier, dan konsistensi batas preview.
+
+### Diubah
+
+- `LocationPhotoStore.persist()` kini menerima `PerformanceConfig`: foto dibaca sekali sebagai byte, ukuran dibaca dari bounds, lalu di-decode dengan `inSampleSize` dan dikompres dengan kualitas sesuai tier. Foto lama tetap terbaca; hanya foto baru yang melalui downsample.
+- `LocationPhotoStore.load()` memakai `maxPreviewDimension`, sehingga preview kartu/detail tidak menyimpan bitmap penuh di memory.
+- `DeviceLocationSource.startContinuous()` memakai `gpsIntervalMillis` dan `gpsMinDistanceMeters` dari profil, menggantikan hardcode `5_000L / 10f`. Permintaan satu fix (`requestFresh`) sengaja tidak diubah agar tetap responsif.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **18/18** tes (baseline 14 + 4 tes performa).
+- Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`.
+- Smoke perangkat: membuka Lokasi memunculkan `GPS live: -6,36243, 106,86367 • Akurasi ±3 m`; memilih foto dari galeri memunculkan tombol **Hapus foto** (persist berhasil), foto tersimpan setelah `Simpan perubahan`, lalu dihapus kembali untuk membersihkan data uji. Tidak ada `FATAL EXCEPTION`/`OutOfMemory`.
+
+---
+
 ## 24 Nov 2026 — Fase 9: input paket pakai teks
 
 ### Ditambahkan
@@ -19,6 +41,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan 14/14 tes.
 - Smoke test perangkat: mengetik `12` dibawa + `7` dikirim menghasilkan `7 dari 12 paket` (58%, Rp12.600); input `3` dibawa + `9` dikirim ter-clamp menjadi `dari 3 paket`; data uji dikembalikan ke `0 dari 0 paket`.
+- CI `validate` hijau: run `45232043597` (`baf47d2`).
 
 ---
 

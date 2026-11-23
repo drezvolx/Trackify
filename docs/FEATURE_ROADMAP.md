@@ -112,7 +112,7 @@
 | 7 | Input URL Maps (panjang + short link), hapus sistem tag | Selesai |
 | 8 | Catatan ala Notion lite: blok teks + checklist | Selesai |
 | 9 | Input paket Dibawa/Dikirim pakai teks | Selesai |
-| 10 | Engine performa & device profile untuk perangkat low-end | Rencana |
+| 10 | Engine performa & device profile untuk perangkat low-end | Selesai |
 | 11 | Flow gajian & periode yang bisa diatur user | Rencana |
 | 12 | Jam notifikasi bisa diatur user | Rencana |
 | 13 | Lokasi murni + bagikan foto & teks | Rencana |
@@ -142,9 +142,9 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
 
 ### Rencana lanjutan yang sudah dipetakan (Fase 10–18)
 
-- **Fase 10 — Performa:** `DeviceProfile` membaca `isLowRamDevice`, API level, dan memori sekali saat start,
-  lalu `PerformanceConfig` mengatur downsample foto, interval GPS, throttle recompute, dan batas preview.
-  Tidak mengubah aturan domain.
+- **Fase 10 — Performa (selesai):** `DevicePerformance` membaca `isLowRamDevice`, API level, dan memori sekali
+  saat start, lalu `PerformancePolicy` memetakannya ke `PerformanceConfig`. Config mengatur downsample foto,
+  kualitas JPEG, ukuran preview, interval/jarak GPS, dan batas jumlah preview. Tidak mengubah aturan domain.
 - **Fase 11 — Gaji & periode:** `AppPreferences` menyimpan `wageMode` (`tarif per paket` / `nominal tetap per hari`),
   nominal, `wagePeriod` (`Harian`/`Mingguan`/`Bulanan`), dan tanggal gajian. Default lama dipertahankan,
   sehingga data existing tidak berubah. Semua setting menjadi milik user.

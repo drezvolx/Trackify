@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import com.blankpages.trackify.data.location.DeviceLocationSource
 import com.blankpages.trackify.data.location.MapLinkResolver
+import com.blankpages.trackify.data.performance.DevicePerformance
 import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.MapUrlParser
 import com.blankpages.trackify.domain.SavedLocation
@@ -105,6 +106,7 @@ fun LocationsScreen(
 ) {
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
+    val perf = DevicePerformance.config(context)
 
     var query by rememberSaveable { mutableStateOf("") }
     var currentLat by remember { mutableStateOf<Double?>(null) }
@@ -194,7 +196,7 @@ fun LocationsScreen(
         if (!permissionGranted) {
             onDispose {}
         } else {
-            val stopUpdates = DeviceLocationSource.startContinuous(context) { loc ->
+            val stopUpdates = DeviceLocationSource.startContinuous(context, perf) { loc ->
                 gpsEnabled = DeviceLocationSource.isGpsEnabled(context)
                 applyFix(loc)
             }
@@ -584,7 +586,7 @@ fun LocationsScreen(
     detailEntry?.let { entry ->
         val target = entry.first
         val coordStr = String.format(Locale.US, "%.6f, %.6f", target.latitude, target.longitude)
-        val detailPhoto = remember(target.photoPath) { LocationPhotoStore.load(target.photoPath) }
+        val detailPhoto = remember(target.photoPath) { LocationPhotoStore.load(target.photoPath, perf) }
         TrackifyDialog(
             onDismissRequest = { detailEntry = null },
             title = {
@@ -751,9 +753,10 @@ private fun LocationNearbyCard(
     onShare: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
+    val perf = DevicePerformance.config(LocalContext.current)
     val loc = entry.first
     val coordText = String.format(Locale.US, "%.6f, %.6f", loc.latitude, loc.longitude)
-    val nearPhoto = remember(loc.photoPath) { LocationPhotoStore.load(loc.photoPath) }
+    val nearPhoto = remember(loc.photoPath) { LocationPhotoStore.load(loc.photoPath, perf) }
 
     Surface(
         modifier = Modifier.width(310.dp),
@@ -907,6 +910,7 @@ private fun LocationEditorDialog(
 ) {
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
+    val perf = DevicePerformance.config(context)
     var name by remember(initial.id, isNew) { mutableStateOf(initial.customerName) }
     var landmark by remember(initial.id, isNew) { mutableStateOf(initial.landmarkNote) }
     var mapUrl by remember(initial.id, isNew) {
@@ -922,14 +926,14 @@ private fun LocationEditorDialog(
     var photoPath by remember(initial.id, isNew) { mutableStateOf(initial.photoPath) }
     var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
     val scope = rememberCoroutineScope()
-    val photoBitmap = remember(photoPath) { LocationPhotoStore.load(photoPath) }
+    val photoBitmap = remember(photoPath) { LocationPhotoStore.load(photoPath, perf) }
 
     val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
             LocationPhotoStore.finalizeGalleryImage(context, pendingCameraUri)
             pendingCameraUri?.let { uri ->
                 scope.launch {
-                    val saved = LocationPhotoStore.persist(context, uri)
+                    val saved = LocationPhotoStore.persist(context, uri, perf)
                     if (saved != null) {
                         photoPath = saved
                     } else {
@@ -957,7 +961,7 @@ private fun LocationEditorDialog(
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
             scope.launch {
-                val saved = LocationPhotoStore.persist(context, uri)
+                val saved = LocationPhotoStore.persist(context, uri, perf)
                 if (saved != null) {
                     photoPath = saved
                 } else {

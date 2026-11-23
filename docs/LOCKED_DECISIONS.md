@@ -792,3 +792,11 @@ User meminta jumlah paket **Dibawa** dan **Dikirim** bisa diketik, bukan hanya d
 `-1/+1/+5/+10`. Keputusan: tombol lama tetap dipertahankan sebagai pelengkap; field teks memakai keyboard
 numerik dan tombol **Simpan paket**. Aturan domain tidak berubah — `DailyLog.sanitized()` tetap membatasi
 `packagesDelivered ≤ packagesCarried`, termasuk saat user mengetik angka lebih besar dari jumlah dibawa.
+
+### 24 Nov 2026 — Fase 10: performa otomatis, tanpa toggle
+
+Profil perangkat ditentukan otomatis dari `isLowRamDevice`, `Runtime.maxMemory()`, dan API level, lalu
+dihitung sekali dan di-cache. Tidak ada pengaturan manual dan tidak ada perubahan aturan domain. Foto baru
+di-downsample sesuai tier sebelum disimpan; preview memakai batas lebih kecil. GPS kontinu memakai interval
+dan jarak minimum dari config, sedangkan `requestFresh()` sengaja tetap segera agar tombol refresh responsif.
+Keputusan ini juga menyiapkan batas jumlah preview yang akan dipakai foto catatan di Fase 14.

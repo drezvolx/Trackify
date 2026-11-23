@@ -10,6 +10,8 @@ import android.os.Environment
 import android.provider.MediaStore
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import com.blankpages.trackify.domain.PerformanceConfig
+import com.blankpages.trackify.domain.PerformancePolicy
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.Dispatchers
@@ -39,31 +41,54 @@ object LocationPhotoStore {
         }
     }
 
-    suspend fun persist(context: Context, source: Uri): String? = withContext(Dispatchers.IO) {
-        runCatching {
-            val stream = context.contentResolver.openInputStream(source)
-            if (stream == null) {
-                null
-            } else {
-                val bitmap = stream.use { BitmapFactory.decodeStream(it) }
-                if (bitmap == null) {
-                    null
-                } else {
-                    val dir = File(context.filesDir, "location_photos").apply { mkdirs() }
-                    val file = File(dir, "loc_${System.currentTimeMillis()}.jpg")
-                    FileOutputStream(file).use { output ->
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, output)
-                    }
-                    file.absolutePath
+    /**
+     * Foto dibaca sekali sebagai byte (JPEG sudah terkompresi), lalu di-decode dua kali:
+     * sekadar untuk ukuran, lalu dengan [PerformancePolicy.sampleSize] sesuai profil perangkat.
+     * Ini menghindari bitmap penuh di memory saat perangkat low-RAM.
+     */
+    suspend fun persist(context: Context, source: Uri, config: PerformanceConfig): String? =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val bytes = context.contentResolver.openInputStream(source)?.use { it.readBytes() }
+                    ?: return@runCatching null
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+                if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@runCatching null
+                val sample = PerformancePolicy.sampleSize(
+                    bounds.outWidth,
+                    bounds.outHeight,
+                    config.maxPhotoDimension,
+                )
+                val bitmap = BitmapFactory.decodeByteArray(
+                    bytes,
+                    0,
+                    bytes.size,
+                    BitmapFactory.Options().apply { inSampleSize = sample },
+                ) ?: return@runCatching null
+                val dir = File(context.filesDir, "location_photos").apply { mkdirs() }
+                val file = File(dir, "loc_${System.currentTimeMillis()}.jpg")
+                FileOutputStream(file).use { output ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, config.photoQuality, output)
                 }
-            }
-        }.getOrNull()
-    }
+                file.absolutePath
+            }.getOrNull()
+        }
 
-    fun load(path: String): ImageBitmap? = if (path.isBlank()) {
-        null
-    } else {
-        runCatching { BitmapFactory.decodeFile(path)?.asImageBitmap() }.getOrNull()
+    fun load(path: String, config: PerformanceConfig): ImageBitmap? {
+        if (path.isBlank()) return null
+        return runCatching {
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(path, bounds)
+            val sample = PerformancePolicy.sampleSize(
+                bounds.outWidth,
+                bounds.outHeight,
+                config.maxPreviewDimension,
+            )
+            BitmapFactory.decodeFile(
+                path,
+                BitmapFactory.Options().apply { inSampleSize = sample },
+            )?.asImageBitmap()
+        }.getOrNull()
     }
 
     fun delete(path: String?) {

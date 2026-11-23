@@ -14,6 +14,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import androidx.core.content.ContextCompat
+import com.blankpages.trackify.domain.PerformanceConfig
 
 /**
  * Satu-satunya tempat yang berbicara langsung ke [LocationManager].
@@ -121,7 +122,7 @@ object DeviceLocationSource {
 
     /** Updates berkelanjutan selama layar lokasi aktif. Returns fungsi untuk berhenti. */
     @SuppressLint("MissingPermission")
-    fun startContinuous(context: Context, onResult: (Location) -> Unit): () -> Unit {
+    fun startContinuous(context: Context, config: PerformanceConfig, onResult: (Location) -> Unit): () -> Unit {
         val mgr = manager(context)
         val provider = bestProvider(context)
         if (!hasPermission(context) || mgr == null || provider == null) return {}
@@ -135,7 +136,13 @@ object DeviceLocationSource {
             override fun onProviderDisabled(provider: String) = Unit
         }
         runCatching {
-            mgr.requestLocationUpdates(provider, 5_000L, 10f, listener, Looper.getMainLooper())
+            mgr.requestLocationUpdates(
+                provider,
+                config.gpsIntervalMillis,
+                config.gpsMinDistanceMeters,
+                listener,
+                Looper.getMainLooper(),
+            )
         }
         lastKnown(context)?.let(onResult)
         return { runCatching { mgr.removeUpdates(listener) } }
