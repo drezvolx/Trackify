@@ -100,7 +100,7 @@ fun LocationsScreen(
     locations: List<SavedLocation>,
     onSaveLocation: (SavedLocation, Boolean) -> Unit,
     onDeleteLocation: (SavedLocation) -> Unit,
-    onQuickDelivered: (Int) -> Unit = {},
+    onQuickDelivered: (Int) -> Boolean = { true },
     onCreateLinkedNote: (CourierNote) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -118,6 +118,7 @@ fun LocationsScreen(
     var detailEntry by remember { mutableStateOf<Pair<SavedLocation, Double?>?>(null) }
     var editingTarget by remember { mutableStateOf<SavedLocation?>(null) }
     var showEditor by remember { mutableStateOf(false) }
+    var pendingDelete by remember { mutableStateOf<SavedLocation?>(null) }
 
     val tags = listOf("Semua", "Langganan", "Titip", "Biasa")
 
@@ -470,8 +471,12 @@ fun LocationsScreen(
                                     onNavigate = { openMapNavigation(context, entry.first) },
                                     onDetail = { detailEntry = entry },
                                     onDelivered = {
-                                        onQuickDelivered(1)
-                                        Toast.makeText(context, "+1 Terkirim", Toast.LENGTH_SHORT).show()
+                                        val changed = onQuickDelivered(1)
+                                        Toast.makeText(
+                                            context,
+                                            if (changed) "+1 Terkirim" else "Paket sudah mencapai batas",
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
                                     },
                                     onNote = { createLinkedNote(entry.first) },
                                     onShare = {
@@ -654,7 +659,7 @@ fun LocationsScreen(
                         TextButton(onClick = { openEditor(target) }) { Text("Edit") }
                         TextButton(
                             onClick = {
-                                onDeleteLocation(target)
+                                pendingDelete = target
                                 detailEntry = null
                             },
                         ) { Text("Hapus") }
@@ -697,9 +702,33 @@ fun LocationsScreen(
                 editingTarget = null
             },
             onDelete = {
-                onDeleteLocation(base)
+                pendingDelete = base
                 showEditor = false
                 editingTarget = null
+            },
+        )
+    }
+
+    pendingDelete?.let { target ->
+        TrackifyDialog(
+            onDismissRequest = { pendingDelete = null },
+            title = { Text("Hapus lokasi?", fontWeight = FontWeight.SemiBold) },
+            text = {
+                Text(
+                    "Lokasi ${target.displayTitle()} akan dihapus. Catatan yang tertaut tetap tersimpan " +
+                        "tanpa tautan lokasi.",
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteLocation(target)
+                        pendingDelete = null
+                    },
+                ) { Text("Hapus") }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelete = null }) { Text("Batal") }
             },
         )
     }

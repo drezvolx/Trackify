@@ -1,5 +1,6 @@
 package com.blankpages.trackify.data
 
+import androidx.room.Transaction
 import com.blankpages.trackify.data.local.AppPreferences
 import com.blankpages.trackify.data.local.TrackifyDao
 import com.blankpages.trackify.domain.BackupPayload
@@ -79,7 +80,11 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
         if (isEdit) dao.updateLocation(location) else dao.insertLocation(location)
     }
 
-    suspend fun deleteLocation(location: SavedLocation) = dao.deleteLocation(location)
+    @Transaction
+    suspend fun deleteLocation(location: SavedLocation) {
+        dao.unlinkNotesFromLocation(location.id)
+        dao.deleteLocation(location)
+    }
     suspend fun upsertNote(note: CourierNote) = dao.upsertNote(note)
     suspend fun deleteNote(note: CourierNote) = dao.deleteNote(note)
 

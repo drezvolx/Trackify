@@ -138,6 +138,7 @@ fun SpreadsheetScreen(
     var searchQuery by remember { mutableStateOf("") }
 
     var editingLog by remember { mutableStateOf<DailyLog?>(null) }
+    var pendingDeleteLog by remember { mutableStateOf<DailyLog?>(null) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTargetSheet by remember { mutableStateOf(false) }
     var targetRupiah by remember(targetAmount) { mutableDoubleStateOf(targetAmount) }
@@ -1528,8 +1529,27 @@ fun SpreadsheetScreen(
                 editingLog = null
             },
             onDelete = { target ->
-                onDeleteLog(target)
+                pendingDeleteLog = target
                 editingLog = null
+            },
+        )
+    }
+
+    pendingDeleteLog?.let { target ->
+        TrackifyDialog(
+            onDismissRequest = { pendingDeleteLog = null },
+            title = { Text("Hapus log?", fontWeight = FontWeight.SemiBold) },
+            text = { Text("Log ${target.date} akan dihapus. Tindakan ini tidak bisa dibatalkan.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteLog(target)
+                        pendingDeleteLog = null
+                    },
+                ) { Text("Hapus") }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeleteLog = null }) { Text("Batal") }
             },
         )
     }

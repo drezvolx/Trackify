@@ -21,6 +21,15 @@ import androidx.core.content.ContextCompat
  */
 object DeviceLocationSource {
 
+    // Location > Only use fixes that are recent and accurate enough for distance sorting.
+    private const val MAX_FIX_ACCURACY_METERS = 200f
+    private const val MAX_FIX_AGE_MILLIS = 60_000L
+
+    private fun isUsable(location: Location): Boolean {
+        val age = System.currentTimeMillis() - location.time
+        return location.accuracy <= MAX_FIX_ACCURACY_METERS && age <= MAX_FIX_AGE_MILLIS
+    }
+
     fun hasPermission(context: Context): Boolean =
         ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
             PackageManager.PERMISSION_GRANTED ||
@@ -68,6 +77,7 @@ object DeviceLocationSource {
         var best: Location? = null
         for (provider in mgr.getProviders(true)) {
             val loc = runCatching { mgr.getLastKnownLocation(provider) }.getOrNull() ?: continue
+            if (!isUsable(loc)) continue
             if (best == null || loc.accuracy < best.accuracy) best = loc
         }
         return best
@@ -91,7 +101,10 @@ object DeviceLocationSource {
             onResult(result)
         }
         listener = object : LocationListener {
-            override fun onLocationChanged(location: Location) = finish(location)
+            override fun onLocationChanged(location: Location) {
+                // Location > Keep listening when a fix is stale or too inaccurate.
+                if (isUsable(location)) finish(location)
+            }
             override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
             override fun onProviderEnabled(provider: String) = Unit
             override fun onProviderDisabled(provider: String) = finish(null)
@@ -114,7 +127,9 @@ object DeviceLocationSource {
         if (!hasPermission(context) || mgr == null || provider == null) return {}
 
         val listener = object : LocationListener {
-            override fun onLocationChanged(location: Location) = onResult(location)
+            override fun onLocationChanged(location: Location) {
+                if (isUsable(location)) onResult(location)
+            }
             override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) = Unit
             override fun onProviderEnabled(provider: String) = Unit
             override fun onProviderDisabled(provider: String) = Unit

@@ -45,6 +45,7 @@ app/build/outputs/apk/debug/app-debug.apk
 
 - [Documentation.md](Documentation.md) — gambaran proyek dan detail fitur.
 - [docs/LOCKED_DECISIONS.md](docs/LOCKED_DECISIONS.md) — keputusan yang tidak boleh diubah, terutama bottom navigation dan tema.
+- [docs/FEATURE_ROADMAP.md](docs/FEATURE_ROADMAP.md) — pemetaan fitur dan rencana pengembangan lanjutan.
 - [License.md](License.md) — lisensi penggunaan dan syarat atribusi.
 
 > Baca `LOCKED_DECISIONS.md` sebelum mengubah UI, arsitektur, atau build file.

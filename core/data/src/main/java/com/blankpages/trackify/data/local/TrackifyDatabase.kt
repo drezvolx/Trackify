@@ -44,6 +44,9 @@ interface TrackifyDao {
     @Delete
     suspend fun deleteLocation(location: SavedLocation)
 
+    @Query("UPDATE courier_notes SET linkedLocationId = NULL WHERE linkedLocationId = :locationId")
+    suspend fun unlinkNotesFromLocation(locationId: Int)
+
     @Query("SELECT * FROM saved_locations ORDER BY id DESC")
     fun getAllLocations(): Flow<List<SavedLocation>>
 

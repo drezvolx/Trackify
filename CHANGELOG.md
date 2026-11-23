@@ -4,6 +4,27 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Fase 1 pengembangan fitur & peta jalan
+
+### Ditambahkan
+
+- `docs/FEATURE_ROADMAP.md`: pemetaan kondisi aktual dan usulan pengembangan per tab, lengkap dengan rencana tiga fase dan batasan kontrak. Tautannya juga ditambahkan ke `README.md`.
+
+### Diperbaiki
+
+- `DeviceLocationSource` kini menolak fix GPS yang lebih tua dari 60 detik atau memiliki akurasi lebih dari 200 m, baik untuk `lastKnown`, `requestFresh`, maupun update berkelanjutan.
+- Menghapus lokasi memakai transaksi Room: `linkedLocationId` pada catatan dikosongkan lebih dulu agar tombol Rute tidak mengacu ke data yang sudah hilang.
+- Konfirmasi hapus lokasi dan hapus log kini lewat `TrackifyDialog`, menggantikan aksi langsung tanpa konfirmasi.
+- `incrementTodayDelivered` mengembalikan `Boolean`; toast `+1 Pkt` hanya muncul saat jumlah benar-benar berubah.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` `BUILD SUCCESSFUL`; 14/14 tes lulus.
+- Grep COD, subtext header, dan tema manual tetap kosong.
+- Backup sebelum perubahan: `backup_before_feature_phase1_20261123_213934`.
+
+---
+
 ## 23 Nov 2026 — Perbaikan CI
 
 ### Diperbaiki
