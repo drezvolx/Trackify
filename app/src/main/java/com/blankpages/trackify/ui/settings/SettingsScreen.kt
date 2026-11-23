@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -41,13 +43,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blankpages.trackify.R
 import com.blankpages.trackify.data.notification.DailyReminderScheduler
 import com.blankpages.trackify.ui.theme.ScreenTitle
+import com.blankpages.trackify.ui.theme.TrackifyCard
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 import java.text.NumberFormat
@@ -89,6 +95,7 @@ fun SettingsScreen(
     var remVal by rememberSaveable(dailyReminderEnabled) { mutableStateOf(dailyReminderEnabled) }
     var showResetConfirm by remember { mutableStateOf(false) }
     var showRestoreConfirm by remember { mutableStateOf(false) }
+    var showQris by remember { mutableStateOf(false) }
     var csvMonthText by rememberSaveable { mutableStateOf(YearMonth.now().toString()) }
     val csvMonth = runCatching { YearMonth.parse(csvMonthText) }.getOrDefault(YearMonth.now())
 
@@ -473,6 +480,41 @@ fun SettingsScreen(
                 }
             }
         }
+
+        // Section > Developer support
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    "Dukung",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = scheme.onBackground,
+                    modifier = Modifier.padding(horizontal = 2.dp),
+                )
+                TrackifyCard(onClick = { showQris = true }) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Dukung dev",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = scheme.onSurface,
+                            )
+                            Text(
+                                "Scan QRIS untuk mendukung pengembangan Trackify",
+                                fontSize = 12.sp,
+                                color = scheme.onSurfaceVariant,
+                            )
+                        }
+                        Text("›", fontSize = 20.sp, color = scheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
     }
 
     if (showResetConfirm) {
@@ -523,6 +565,38 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showRestoreConfirm = false }) { Text("Batal") }
+            },
+        )
+    }
+
+    if (showQris) {
+        TrackifyDialog(
+            onDismissRequest = { showQris = false },
+            title = { Text("Dukung dev") },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.qris_support),
+                        contentDescription = "Kode QRIS untuk dukung pengembangan",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        contentScale = ContentScale.Fit,
+                    )
+                    Text(
+                        "Terima kasih kalau mau bantu biar Trackify terus berkembang.",
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showQris = false }) { Text("Tutup") }
             },
         )
     }

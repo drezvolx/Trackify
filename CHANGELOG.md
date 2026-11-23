@@ -4,6 +4,22 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 23 Nov 2026 — Dukung dev via QRIS
+
+### Ditambahkan
+
+- Setelan: seksi **Dukung** berisi kartu **Dukung dev** memakai `TrackifyCard`; saat ditekan membuka `TrackifyDialog` berisi gambar QRIS.
+- Aset `app/src/main/res/drawable/qris_support.jpg` (JPEG 1136×1600) berasal dari gambar yang dikirim user.
+- Dialog menampilkan QRIS dengan `ContentScale.Fit` pada tinggi `300.dp` agar tidak terpotong, plus tombol **Tutup**.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan 14/14 tes.
+- Tidak menambah tab navigasi, header tetap `ScreenTitle`, dan larangan fitur pembayaran tunai tetap berlaku.
+- Smoke test perangkat: seksi **Dukung** dan kartu **Dukung dev** muncul di bawah **Data**; menekan kartu membuka dialog berisi gambar QRIS dan tombol **Tutup**.
+
+---
+
 ## 23 Nov 2026 — Penghapusan jejak fitur pembayaran tunai
 
 ### Ditambahkan
