@@ -17,9 +17,11 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
@@ -67,15 +69,21 @@ class TrackifyViewModel @Inject constructor(
         )
     }
 
+    // Satu snapshot untuk startup: hindari membaca SharedPreferences berulang kali.
+    private val initialSettings = readSettings()
+    private val initialDefaultRate = repository.defaultRate
+
     init {
-        // Pastikan alarm pengingat tetap terpasang setelah aplikasi dibuka ulang.
-        DailyReminderScheduler.schedule(app, repository.readSettings().dailyReminderEnabled)
+        // Jadwalkan alarm di worker supaya binder call tidak mem-blok frame pertama.
+        viewModelScope.launch(Dispatchers.Default) {
+            DailyReminderScheduler.schedule(app, initialSettings.dailyReminderEnabled)
+        }
     }
 
     private val currentDateFlow = MutableStateFlow(LocalDate.now().toString())
     private val selectedMonthFlow = MutableStateFlow(YearMonth.now())
-    private val defaultRateFlow = MutableStateFlow(repository.defaultRate)
-    private val settingsFlow = MutableStateFlow(readSettings())
+    private val defaultRateFlow = MutableStateFlow(initialDefaultRate)
+    private val settingsFlow = MutableStateFlow(initialSettings)
     private val overrideTodayLogFlow = MutableStateFlow<DailyLog?>(null)
 
     private val todayDbLogFlow: Flow<DailyLog> = currentDateFlow
@@ -151,12 +159,12 @@ class TrackifyViewModel @Inject constructor(
             notes = notesList,
             activeNotesCount = activeNotes
         )
-    }.stateIn(
+    }.flowOn(Dispatchers.Default).stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = TrackifyUiState(
-            defaultRate = repository.defaultRate,
-            settings = readSettings()
+            defaultRate = initialDefaultRate,
+            settings = initialSettings
         )
     )
 
@@ -195,7 +203,9 @@ class TrackifyViewModel @Inject constructor(
     fun setDailyReminder(enabled: Boolean) {
         repository.setDailyReminder(enabled)
         settingsFlow.value = settingsFlow.value.copy(dailyReminderEnabled = enabled)
-        DailyReminderScheduler.schedule(getApplication(), enabled)
+        viewModelScope.launch(Dispatchers.Default) {
+            DailyReminderScheduler.schedule(getApplication(), enabled)
+        }
     }
 
     // ---------- log harian ----------
@@ -330,10 +340,12 @@ class TrackifyViewModel @Inject constructor(
                     overrideTodayLogFlow.value = null
                     defaultRateFlow.value = repository.defaultRate
                     settingsFlow.value = readSettings()
-                    DailyReminderScheduler.schedule(
-                        getApplication(),
-                        repository.readSettings().dailyReminderEnabled
-                    )
+                    withContext(Dispatchers.Default) {
+                        DailyReminderScheduler.schedule(
+                            getApplication(),
+                            settingsFlow.value.dailyReminderEnabled
+                        )
+                    }
                     onResult("Restore JSON berhasil (${decoded.value.logs.size} log)")
                 }
                 is EngineResult.Err -> onResult("Restore gagal: ${decoded.message}")
@@ -349,7 +361,12 @@ class TrackifyViewModel @Inject constructor(
                 overrideTodayLogFlow.value = null
                 defaultRateFlow.value = repository.defaultRate
                 settingsFlow.value = readSettings()
-                DailyReminderScheduler.schedule(getApplication(), repository.readSettings().dailyReminderEnabled)
+                withContext(Dispatchers.Default) {
+                    DailyReminderScheduler.schedule(
+                        getApplication(),
+                        settingsFlow.value.dailyReminderEnabled
+                    )
+                }
             }.onSuccess {
                 onResult("Semua data lokal berhasil dihapus")
             }.onFailure { err ->

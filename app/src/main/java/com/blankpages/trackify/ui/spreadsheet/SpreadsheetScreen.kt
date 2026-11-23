@@ -6,6 +6,7 @@ import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.domain.toRupiah
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyDialog
+import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 
 import android.content.ClipData
@@ -27,10 +28,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -255,7 +252,7 @@ fun SpreadsheetScreen(
                 ) {
                     SheetCircleIconButton(onClick = { onShiftMonth(-1L) }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            imageVector = TrackifyIcons.ChevronLeft,
                             contentDescription = "Bulan sebelumnya",
                             tint = scheme.onSurface,
                             modifier = Modifier.size(20.dp)
@@ -274,7 +271,7 @@ fun SpreadsheetScreen(
 
                     SheetCircleIconButton(onClick = { onShiftMonth(1L) }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            imageVector = TrackifyIcons.ChevronRight,
                             contentDescription = "Bulan berikutnya",
                             tint = scheme.onSurface,
                             modifier = Modifier.size(20.dp)
@@ -959,7 +956,7 @@ fun SpreadsheetScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Search,
+                                    imageVector = TrackifyIcons.Search,
                                     contentDescription = "Cari",
                                     tint = if (showSearch) scheme.surface else scheme.onSurface,
                                     modifier = Modifier.size(16.dp)
@@ -974,6 +971,7 @@ fun SpreadsheetScreen(
                                 placeholder = { Text("Cari tanggal, misal 12 Nov", fontSize = 13.sp, color = scheme.onSurfaceVariant) },
                                 singleLine = true,
                                 shape = RoundedCornerShape(12.dp),
+                                colors = trackifyFieldColors(),
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
@@ -1382,10 +1380,10 @@ private fun SheetLogEditorDialog(
                         }
                     }
                 }
-                OutlinedTextField(value = rateText, onValueChange = { rateText = it.filter { ch -> ch.isDigit() } }, label = { Text("Tarif / Paket (Rp)") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                OutlinedTextField(value = bonusText, onValueChange = { bonusText = it.filter { ch -> ch.isDigit() } }, label = { Text("Bonus (Rp)") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                OutlinedTextField(value = expenseText, onValueChange = { expenseText = it.filter { ch -> ch.isDigit() } }, label = { Text("Potongan (Rp)") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                OutlinedTextField(value = noteText, onValueChange = { noteText = it }, label = { Text("Catatan") }, singleLine = true)
+                OutlinedTextField(value = rateText, onValueChange = { rateText = it.filter { ch -> ch.isDigit() } }, label = { Text("Tarif / Paket (Rp)") }, singleLine = true, shape = RoundedCornerShape(12.dp), colors = trackifyFieldColors(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                OutlinedTextField(value = bonusText, onValueChange = { bonusText = it.filter { ch -> ch.isDigit() } }, label = { Text("Bonus (Rp)") }, singleLine = true, shape = RoundedCornerShape(12.dp), colors = trackifyFieldColors(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                OutlinedTextField(value = expenseText, onValueChange = { expenseText = it.filter { ch -> ch.isDigit() } }, label = { Text("Potongan (Rp)") }, singleLine = true, shape = RoundedCornerShape(12.dp), colors = trackifyFieldColors(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                OutlinedTextField(value = noteText, onValueChange = { noteText = it }, label = { Text("Catatan") }, singleLine = true, shape = RoundedCornerShape(12.dp), colors = trackifyFieldColors())
             }
         },
         confirmButton = {

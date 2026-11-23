@@ -1,7 +1,10 @@
 package com.blankpages.trackify
 
+import com.blankpages.trackify.domain.BackupPayload
+import com.blankpages.trackify.domain.BackupSettings
 import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.DailyLog
+import com.blankpages.trackify.domain.EngineResult
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.toMonthlySummary
 import com.blankpages.trackify.domain.TrackifyEngine
@@ -30,6 +33,11 @@ class TrackifyEngineTest {
         bonus = bonus,
         expense = expense
     )
+
+    private fun <T> EngineResult<T>.unwrap(): T = when (this) {
+        is EngineResult.Ok -> value
+        is EngineResult.Err -> throw AssertionError(message)
+    }
 
     @Test
     fun sanitized_clampsDeliveredToCarried() {
@@ -125,5 +133,96 @@ class TrackifyEngineTest {
         assertTrue(lines.first().startsWith("Tanggal,Status,Paket_Dibawa"))
         assertTrue(lines.last().startsWith("TOTAL_BULAN,-,"))
         assertTrue(lines.last().contains("20000"))
+    }
+
+    @Test
+    fun backupRoundTrip_preservesDataAndSettings() {
+        val payload = BackupPayload(
+            logs = listOf(log("2026-11-01", carried = 10, delivered = 8, rate = 2000.0)),
+            locations = listOf(SavedLocation(1, "Dekat", "Warung", -6.2, 106.8)),
+            notes = listOf(
+                CourierNote(
+                    id = 2,
+                    title = "Titipan",
+                    content = "Rumah A",
+                    isPinned = true,
+                    updatedAt = "2026-11-01",
+                    linkedLocationId = 1
+                )
+            ),
+            settings = BackupSettings(
+                defaultRate = 1800.0,
+                defaultBonus = 0.0,
+                targetAmount = 4_000_000.0,
+                dailyReminderEnabled = false
+            )
+        )
+
+        val raw = TrackifyEngine.encodeBackup("2026-11-23", payload).unwrap()
+        val decoded = TrackifyEngine.decodeBackup(raw, "2026-11-23").unwrap()
+
+        assertFalse(raw.contains("themeMode"))
+        assertEquals(1, decoded.logs.size)
+        assertEquals("2026-11-01", decoded.logs.first().date)
+        assertEquals(1, decoded.locations.size)
+        assertEquals("Dekat", decoded.locations.first().customerName)
+        assertEquals(1, decoded.notes.size)
+        assertEquals(1, decoded.notes.first().linkedLocationId)
+        assertEquals(1800.0, decoded.settings.defaultRate, 0.0)
+        assertEquals(4_000_000.0, decoded.settings.targetAmount, 0.0)
+        assertFalse(decoded.settings.dailyReminderEnabled)
+    }
+
+    @Test
+    fun decodeBackup_rejectsForeignHeader() {
+        val raw = """{"app":"AplikasiLain","schema":6,"daily_logs":[]}"""
+
+        val result = TrackifyEngine.decodeBackup(raw, "2026-11-23")
+
+        assertTrue(result is EngineResult.Err)
+        assertTrue((result as EngineResult.Err).message.contains("Header"))
+    }
+
+    @Test
+    fun decodeBackup_oldSchemaUsesDefaultSettings() {
+        val raw = """
+            {
+              "app": "Trackify",
+              "schema": 5,
+              "exportedAt": "2026-11-23",
+              "daily_logs": [],
+              "saved_locations": [],
+              "courier_notes": []
+            }
+        """.trimIndent()
+
+        val decoded = TrackifyEngine.decodeBackup(raw, "2026-11-23").unwrap()
+
+        assertEquals(2500.0, decoded.settings.defaultRate, 0.0)
+        assertEquals(3_600_000.0, decoded.settings.targetAmount, 0.0)
+        assertTrue(decoded.settings.dailyReminderEnabled)
+    }
+
+    @Test
+    fun decodeBackup_clampsDeliveredToCarried() {
+        val raw = """
+            {
+              "app": "Trackify",
+              "schema": 6,
+              "daily_logs": [
+                {
+                  "date": "2026-11-01",
+                  "isWorkingDay": true,
+                  "packagesCarried": 5,
+                  "packagesDelivered": 99
+                }
+              ]
+            }
+        """.trimIndent()
+
+        val decoded = TrackifyEngine.decodeBackup(raw, "2026-11-23").unwrap()
+
+        assertEquals(5, decoded.logs.first().packagesCarried)
+        assertEquals(5, decoded.logs.first().packagesDelivered)
     }
 }

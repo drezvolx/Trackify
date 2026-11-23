@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -102,5 +104,20 @@ fun TrackifyDialog(
         textContentColor = scheme.onSurfaceVariant,
         tonalElevation = 0.dp,
         properties = properties
+    )
+}
+
+/**
+ * Warna standar field Trackify.
+ *
+ * Memakai `outlineVariant` untuk border focused dan unfocused supaya semua field
+ * mengikuti token kartu/dialog, bukan default Material3 yang memakai `outline`.
+ */
+@Composable
+fun trackifyFieldColors(): TextFieldColors {
+    val scheme = MaterialTheme.colorScheme
+    return OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = scheme.outlineVariant,
+        unfocusedBorderColor = scheme.outlineVariant
     )
 }

@@ -5,6 +5,7 @@ import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.domain.noteTemplates
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyCard
+import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 
@@ -92,6 +93,7 @@ fun NotesScreen(
                     placeholder = { Text("Cari catatan") },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
+                    colors = trackifyFieldColors(),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -329,7 +331,8 @@ private fun NoteEditorDialog(
                     onValueChange = { title = it },
                     label = { Text("Judul") },
                     singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = trackifyFieldColors(),
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
@@ -338,7 +341,8 @@ private fun NoteEditorDialog(
                     label = { Text("Isi") },
                     minLines = 3,
                     maxLines = 6,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = trackifyFieldColors(),
                     modifier = Modifier.fillMaxWidth()
                 )
                 Row(

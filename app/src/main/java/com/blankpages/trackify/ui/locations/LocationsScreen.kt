@@ -4,6 +4,7 @@ import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyCard
+import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyIcons
 
@@ -33,8 +34,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -296,6 +295,7 @@ fun LocationsScreen(
                     placeholder = { Text("Cari nama atau patokan") },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
+                    colors = trackifyFieldColors(),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -348,7 +348,7 @@ fun LocationsScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.LocationOn,
+                                    imageVector = TrackifyIcons.MapPin,
                                     contentDescription = null,
                                     tint = scheme.onSurfaceVariant
                                 )
@@ -906,7 +906,8 @@ private fun LocationEditorDialog(
                     label = { Text("Nama / Tujuan") },
                     placeholder = { Text("Nama penerima") },
                     singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = trackifyFieldColors(),
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
@@ -915,7 +916,8 @@ private fun LocationEditorDialog(
                     label = { Text("Patokan / Catatan") },
                     placeholder = { Text("Contoh: dekat warung, titip satpam") },
                     maxLines = 2,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = trackifyFieldColors(),
                     modifier = Modifier.fillMaxWidth()
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -925,7 +927,8 @@ private fun LocationEditorDialog(
                         label = { Text("Latitude") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = trackifyFieldColors(),
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
@@ -934,7 +937,8 @@ private fun LocationEditorDialog(
                         label = { Text("Longitude") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = trackifyFieldColors(),
                         modifier = Modifier.weight(1f)
                     )
                 }
