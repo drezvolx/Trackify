@@ -23,11 +23,14 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -42,19 +45,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.blankpages.trackify.R
 import com.blankpages.trackify.data.notification.DailyReminderScheduler
+import com.blankpages.trackify.domain.WageCalculator
+import com.blankpages.trackify.domain.WageMode
+import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyCard
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyIcons
+import com.blankpages.trackify.ui.theme.trackifyFieldColors
 import java.text.NumberFormat
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -75,11 +84,19 @@ fun SettingsScreen(
     defaultBonus: Double = 0.0,
     targetAmount: Double = 3_600_000.0,
     dailyReminderEnabled: Boolean = true,
+    wageMode: WageMode = WageMode.PER_PACKAGE,
+    flatDailyAmount: Double = 2_500.0,
+    wagePeriod: WagePeriod = WagePeriod.MONTHLY,
+    paydayDate: Int = 25,
     onBack: () -> Unit,
     onUpdateRate: (Double) -> Unit,
     onUpdateBonus: (Double) -> Unit = {},
     onUpdateTarget: (Double) -> Unit = {},
     onToggleReminder: (Boolean) -> Unit = {},
+    onUpdateWageMode: (WageMode) -> Unit = {},
+    onUpdateFlatDailyAmount: (Double) -> Unit = {},
+    onUpdateWagePeriod: (WagePeriod) -> Unit = {},
+    onUpdatePaydayDate: (Int) -> Unit = {},
     onExportCsv: (Uri, YearMonth, (String) -> Unit) -> Unit = { _, _, _ -> },
     onBackupData: (Uri, (String) -> Unit) -> Unit = { _, _ -> },
     onRestoreData: (Uri, (String) -> Unit) -> Unit = { _, _ -> },
@@ -91,6 +108,8 @@ fun SettingsScreen(
     var rateVal by rememberSaveable(defaultRate) { mutableDoubleStateOf(defaultRate) }
     var bonusVal by rememberSaveable(defaultBonus) { mutableDoubleStateOf(defaultBonus) }
     var targetVal by rememberSaveable(targetAmount) { mutableDoubleStateOf(targetAmount) }
+    var flatText by rememberSaveable(flatDailyAmount) { mutableStateOf(flatDailyAmount.toLong().toString()) }
+    var paydayText by rememberSaveable(paydayDate) { mutableStateOf(paydayDate.toString()) }
     var remVal by rememberSaveable(dailyReminderEnabled) { mutableStateOf(dailyReminderEnabled) }
     var showResetConfirm by remember { mutableStateOf(false) }
     var showRestoreConfirm by remember { mutableStateOf(false) }
@@ -213,6 +232,99 @@ fun SettingsScreen(
                                 targetVal += 100_000.0
                                 onUpdateTarget(targetVal)
                             },
+                        )
+                        HorizontalDivider(thickness = 1.dp, color = scheme.outlineVariant)
+                        Text(
+                            text = "Mode pendapatan",
+                            fontSize = 12.sp,
+                            color = scheme.onSurfaceVariant,
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf(
+                                WageMode.PER_PACKAGE to "Tarif per paket",
+                                WageMode.FLAT_DAILY to "Nominal tetap per hari",
+                            ).forEach { (mode, label) ->
+                                val selected = wageMode == mode
+                                OutlinedButton(
+                                    onClick = { onUpdateWageMode(mode) },
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        containerColor = if (selected) scheme.surfaceVariant else Color.Transparent,
+                                    ),
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(
+                                        label,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                        color = if (selected) scheme.onSurface else scheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                        if (wageMode == WageMode.FLAT_DAILY) {
+                            OutlinedTextField(
+                                value = flatText,
+                                onValueChange = { value ->
+                                    flatText = value.filter { it.isDigit() }
+                                    flatText.toDoubleOrNull()?.let(onUpdateFlatDailyAmount)
+                                },
+                                label = { Text("Nominal per hari") },
+                                prefix = { Text("Rp ") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = trackifyFieldColors(),
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                        Text(
+                            text = "Periode tampilan",
+                            fontSize = 12.sp,
+                            color = scheme.onSurfaceVariant,
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            WagePeriod.entries.forEach { period ->
+                                val selected = wagePeriod == period
+                                OutlinedButton(
+                                    onClick = { onUpdateWagePeriod(period) },
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        containerColor = if (selected) scheme.surfaceVariant else Color.Transparent,
+                                    ),
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(
+                                        WageCalculator.labelOf(period),
+                                        fontSize = 12.sp,
+                                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                        color = if (selected) scheme.onSurface else scheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                        if (wagePeriod == WagePeriod.MONTHLY) {
+                            OutlinedTextField(
+                                value = paydayText,
+                                onValueChange = { value ->
+                                    val digits = value.filter { it.isDigit() }.take(2)
+                                    paydayText = digits
+                                    digits.toIntOrNull()?.coerceIn(1, 31)?.let(onUpdatePaydayDate)
+                                },
+                                label = { Text("Tanggal gajian") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = trackifyFieldColors(),
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                        Text(
+                            text = "Periode ${WageCalculator.labelOf(wagePeriod)} • " +
+                                "target ${WageCalculator.targetForPeriod(targetVal, wagePeriod).setIdr()} • " +
+                                "gajian tanggal $paydayDate",
+                            fontSize = 11.sp,
+                            color = scheme.onSurfaceVariant,
                         )
                         HorizontalDivider(thickness = 1.dp, color = scheme.outlineVariant)
                         Row(

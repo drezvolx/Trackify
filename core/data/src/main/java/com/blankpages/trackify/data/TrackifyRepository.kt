@@ -8,6 +8,8 @@ import com.blankpages.trackify.domain.BackupSettings
 import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.DailyLog
 import com.blankpages.trackify.domain.SavedLocation
+import com.blankpages.trackify.domain.WageMode
+import com.blankpages.trackify.domain.WagePeriod
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +19,10 @@ data class TrackifySettings(
     val defaultBonus: Double = 0.0,
     val targetAmount: Double = 3_600_000.0,
     val dailyReminderEnabled: Boolean = true,
+    val wageMode: WageMode = WageMode.PER_PACKAGE,
+    val flatDailyAmount: Double = 2_500.0,
+    val wagePeriod: WagePeriod = WagePeriod.MONTHLY,
+    val paydayDate: Int = 25,
 )
 
 /**
@@ -37,6 +43,10 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
         defaultBonus = prefs.defaultBonusAmount,
         targetAmount = prefs.monthlyTargetAmount,
         dailyReminderEnabled = prefs.dailyReminderEnabled,
+        wageMode = prefs.wageMode,
+        flatDailyAmount = prefs.flatDailyAmount,
+        wagePeriod = prefs.wagePeriod,
+        paydayDate = prefs.paydayDate,
     )
 
     fun setDefaultRate(value: Double) {
@@ -55,12 +65,32 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
         prefs.dailyReminderEnabled = value
     }
 
+    fun setWageMode(value: WageMode) {
+        prefs.wageMode = value
+    }
+
+    fun setFlatDailyAmount(value: Double) {
+        prefs.flatDailyAmount = value
+    }
+
+    fun setWagePeriod(value: WagePeriod) {
+        prefs.wagePeriod = value
+    }
+
+    fun setPaydayDate(value: Int) {
+        prefs.paydayDate = value
+    }
+
     /** Dipakai VM saat menyusun backup JSON. */
     fun readBackupSettings() = BackupSettings(
         defaultRate = defaultRate,
         defaultBonus = prefs.defaultBonusAmount,
         targetAmount = prefs.monthlyTargetAmount,
         dailyReminderEnabled = prefs.dailyReminderEnabled,
+        wageMode = prefs.wageMode,
+        flatDailyAmount = prefs.flatDailyAmount,
+        wagePeriod = prefs.wagePeriod,
+        paydayDate = prefs.paydayDate,
     )
 
     /** Dipakai VM saat memulihkan backup JSON. */
@@ -69,6 +99,10 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
         prefs.defaultBonusAmount = settings.defaultBonus
         prefs.monthlyTargetAmount = settings.targetAmount
         prefs.dailyReminderEnabled = settings.dailyReminderEnabled
+        prefs.wageMode = settings.wageMode
+        prefs.flatDailyAmount = settings.flatDailyAmount
+        prefs.wagePeriod = settings.wagePeriod
+        prefs.paydayDate = settings.paydayDate
     }
 
     fun resetPreferences() = prefs.resetAll()

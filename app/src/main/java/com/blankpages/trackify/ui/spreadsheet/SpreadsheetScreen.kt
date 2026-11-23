@@ -72,6 +72,9 @@ import com.blankpages.trackify.domain.DailyLog
 import com.blankpages.trackify.domain.MonthlySummary
 import com.blankpages.trackify.domain.PeriodBreakdown
 import com.blankpages.trackify.domain.TrackifyEngine
+import com.blankpages.trackify.domain.WageCalculator
+import com.blankpages.trackify.domain.WageMode
+import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyIcons
@@ -130,6 +133,9 @@ fun SpreadsheetScreen(
     monthlyLogs: List<DailyLog>,
     summary: MonthlySummary,
     targetAmount: Double = 3_600_000.0,
+    wageMode: WageMode = WageMode.PER_PACKAGE,
+    flatDailyAmount: Double = 2_500.0,
+    wagePeriod: WagePeriod = WagePeriod.MONTHLY,
     onUpdateTarget: (Double) -> Unit = {},
     onShiftMonth: (Long) -> Unit,
     onCarryoverYesterday: () -> Unit,
@@ -181,11 +187,8 @@ fun SpreadsheetScreen(
         monthlyLogs.associate { it.date to it.sanitized() }
     }
 
-    val grossTotal = remember(monthlyLogs) {
-        monthlyLogs.sumOf { raw ->
-            val l = raw.sanitized()
-            if (l.isWorkingDay) TrackifyEngine.grossIncomeOf(l) else 0.0
-        }
+    val grossTotal = remember(monthlyLogs, wageMode, flatDailyAmount) {
+        monthlyLogs.sumOf { raw -> WageCalculator.grossIncomeOf(raw, wageMode, flatDailyAmount) }
     }
 
     val expenseTotal = remember(monthlyLogs) {
@@ -195,19 +198,19 @@ fun SpreadsheetScreen(
         }
     }
 
-    val p1Net = remember(monthlyLogs) {
+    val p1Net = remember(monthlyLogs, wageMode, flatDailyAmount) {
         monthlyLogs.sumOf { raw ->
             val l = raw.sanitized()
             val d = l.date.takeLast(2).toIntOrNull() ?: 1
-            if (l.isWorkingDay && d <= 15) l.netIncome else 0.0
+            if (l.isWorkingDay && d <= 15) WageCalculator.netIncomeOf(l, wageMode, flatDailyAmount) else 0.0
         }
     }
 
-    val p2Net = remember(monthlyLogs) {
+    val p2Net = remember(monthlyLogs, wageMode, flatDailyAmount) {
         monthlyLogs.sumOf { raw ->
             val l = raw.sanitized()
             val d = l.date.takeLast(2).toIntOrNull() ?: 1
-            if (l.isWorkingDay && d > 15) l.netIncome else 0.0
+            if (l.isWorkingDay && d > 15) WageCalculator.netIncomeOf(l, wageMode, flatDailyAmount) else 0.0
         }
     }
 
@@ -530,7 +533,7 @@ fun SpreadsheetScreen(
                                     color = scheme.onSurface,
                                 )
                                 Text(
-                                    text = "dari ${targetRupiah.formatIdr()}",
+                                    text = "dari ${targetRupiah.formatIdr()} • ${WageCalculator.labelOf(wagePeriod)}",
                                     fontSize = 12.sp,
                                     color = scheme.onSurfaceVariant,
                                 )
@@ -1297,7 +1300,11 @@ fun SpreadsheetScreen(
                                             )
                                         }
                                         Text(
-                                            text = if (item.isWorkingDay) item.netIncome.formatIdr() else "Rp0",
+                                            text = WageCalculator.netIncomeOf(
+                                                item,
+                                                wageMode,
+                                                flatDailyAmount,
+                                            ).formatIdr(),
                                             fontSize = 15.sp,
                                             fontWeight = FontWeight.SemiBold,
                                             color = scheme.onSurface,
@@ -1310,7 +1317,7 @@ fun SpreadsheetScreen(
                             val totS = filteredLogs.sumOf { if (it.isWorkingDay) it.safeDelivered else 0 }
                             val totR = filteredLogs.sumOf { if (it.isWorkingDay) it.remainingPackages else 0 }
                             val totE = filteredLogs.sumOf { if (it.isWorkingDay) it.expense else 0.0 }
-                            val totN = filteredLogs.sumOf { if (it.isWorkingDay) it.netIncome else 0.0 }
+                            val totN = filteredLogs.sumOf { WageCalculator.netIncomeOf(it, wageMode, flatDailyAmount) }
 
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Row(modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
@@ -1401,7 +1408,11 @@ fun SpreadsheetScreen(
                                             modifier = Modifier.weight(1f),
                                         )
                                         Text(
-                                            item.netIncome.formatCompactK(),
+                                            WageCalculator.netIncomeOf(
+                                                item,
+                                                wageMode,
+                                                flatDailyAmount,
+                                            ).formatCompactK(),
                                             fontSize = 12.sp,
                                             color = scheme.onSurface,
                                             textAlign = TextAlign.End,

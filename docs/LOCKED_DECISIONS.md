@@ -800,3 +800,19 @@ dihitung sekali dan di-cache. Tidak ada pengaturan manual dan tidak ada perubaha
 di-downsample sesuai tier sebelum disimpan; preview memakai batas lebih kecil. GPS kontinu memakai interval
 dan jarak minimum dari config, sedangkan `requestFresh()` sengaja tetap segera agar tombol refresh responsif.
 Keputusan ini juga menyiapkan batas jumlah preview yang akan dipakai foto catatan di Fase 14.
+
+### 24 Nov 2026 — Fase 11: mode gaji & periode milik user
+
+User meminta cara hitung gaji dan periode tampilan bisa diatur, bukan hardcode. Keputusan:
+
+- Default tetap **Tarif per paket** (`WageMode.PER_PACKAGE`) dan **Bulanan** (`WagePeriod.MONTHLY`),
+  tanggal gajian `25`, nominal tetap harian `Rp2.500`. Data lama otomatis mempertahankan perilaku lama.
+- Mode **Nominal tetap per hari** (`FLAT_DAILY`) menghitung `nominal + bonus − pengeluaran` untuk hari kerja,
+  tanpa mengubah `DailyLog`, `sanitized()`, atau schema DB. Hari libur tetap `Rp0`.
+- Periode hanya mengubah **label, agregat, dan pembagian target** di Home/Rekap: harian `target/30`,
+  mingguan `target/4`, bulanan `target` penuh. Tanggal gajian hanya dipakai sebagai label di mode Bulanan,
+  bukan penjadwalan notifikasi baru.
+- Backup JSON schema `7` tetap, tetapi bagian `settings` kini berisi `wageMode`, `flatDailyAmount`,
+  `wagePeriod`, dan `paydayDate`. Backup lama tanpa kunci itu dibaca dengan default di atas.
+- Tidak ada kolom DB baru, tidak ada migrasi, dan tidak ada perubahan pada bottom nav, header, tema,
+  atau token UI lain.

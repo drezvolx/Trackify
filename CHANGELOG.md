@@ -4,6 +4,28 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Fase 11: flow gajian & periode bisa diatur user
+
+### Ditambahkan
+
+- `core:domain`: `WageMode` (`PER_PACKAGE` / `FLAT_DAILY`), `WagePeriod` (`DAILY` / `WEEKLY` / `MONTHLY`), dan `WageCalculator` untuk menghitung pendapatan, agregat periode, target periode, dan label. Fungsi murni, tanpa Android.
+- `AppPreferences` + `TrackifySettings` + `AppSettings` menyimpan mode, nominal tetap harian, periode, dan tanggal gajian. Default: **Tarif per paket + Bulanan + tanggal 25 + nominal Rp2.500**, sehingga data lama tidak berubah.
+- Setelan → **Skema gaji** menambah pilihan mode (outline button), field **Nominal per hari** (hanya muncul di mode nominal tetap), pilihan periode Harian/Mingguan/Bulanan, dan field **Tanggal gajian** (hanya muncul di Bulanan). Ringkasan otomatis menampilkan `Periode … • target … • gajian tanggal …`.
+- Backup JSON menyimpan keempat nilai baru di `settings`; backup schema lama tanpa kunci ini tetap diterima dengan default.
+
+### Diubah
+
+- Ringkasan Home dan Rekap memakai kalkulator gaji baru. Mode nominal tetap menghitung `hari kerja × nominal + bonus − pengeluaran` tanpa mengubah `DailyLog` atau schema DB.
+- Home menampilkan `Target ${periode}`; progres dan agregat mengikuti periode yang dipilih. Rekap menampilkan label periode di samping target.
+- `WageSettingsTest` (4 tes) mengecek mode lama, mode nominal tetap, ringkasan, dan pembagian target periode.
+
+### Verifikasi
+
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **22/22** tes (baseline 14 + 4 performa + 4 gaji).
+- Smoke perangkat: mengubah ke **Nominal tetap per hari** membuat `Bersih hari ini` menjadi Rp2.500 walau 0 paket; memilih **Mingguan** mengubah label Home jadi `Target Mingguan` dengan target Rp1.000.000 (4M/4); pengaturan dikembalikan ke `Tarif per paket + Bulanan` dan Home kembali ke `Target Bulanan 67%`.
+
+---
+
 ## 24 Nov 2026 — Fase 10: engine performa & profil perangkat
 
 ### Ditambahkan
@@ -23,6 +45,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **18/18** tes (baseline 14 + 4 tes performa).
 - Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`.
 - Smoke perangkat: membuka Lokasi memunculkan `GPS live: -6,36243, 106,86367 • Akurasi ±3 m`; memilih foto dari galeri memunculkan tombol **Hapus foto** (persist berhasil), foto tersimpan setelah `Simpan perubahan`, lalu dihapus kembali untuk membersihkan data uji. Tidak ada `FATAL EXCEPTION`/`OutOfMemory`.
+- CI `validate` hijau: run `45233578272` (`d81a819`).
 
 ---
 

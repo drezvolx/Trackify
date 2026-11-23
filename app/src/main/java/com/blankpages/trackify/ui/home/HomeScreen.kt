@@ -51,6 +51,9 @@ import androidx.compose.ui.unit.sp
 import com.blankpages.trackify.domain.DailyLog
 import com.blankpages.trackify.domain.MonthlySummary
 import com.blankpages.trackify.domain.SavedLocation
+import com.blankpages.trackify.domain.WageCalculator
+import com.blankpages.trackify.domain.WageMode
+import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyIcons
@@ -79,6 +82,10 @@ fun HomeScreen(
     summary: MonthlySummary,
     savedLocations: List<SavedLocation>,
     targetAmount: Double = 3_600_000.0,
+    wageMode: WageMode = WageMode.PER_PACKAGE,
+    flatDailyAmount: Double = 2_500.0,
+    wagePeriod: WagePeriod = WagePeriod.MONTHLY,
+    paydayDate: Int = 25,
     onOpenSettings: () -> Unit,
     onOpenRekap: () -> Unit,
     onOpenLocations: () -> Unit,
@@ -97,18 +104,18 @@ fun HomeScreen(
         0.0
     }
 
-    val p1Net = remember(monthlyLogs) {
+    val p1Net = remember(monthlyLogs, wageMode, flatDailyAmount) {
         monthlyLogs.sumOf { raw ->
             val l = raw.sanitized()
             val d = l.date.takeLast(2).toIntOrNull() ?: 1
-            if (l.isWorkingDay && d <= 15) l.netIncome else 0.0
+            if (l.isWorkingDay && d <= 15) WageCalculator.netIncomeOf(l, wageMode, flatDailyAmount) else 0.0
         }
     }
-    val p2Net = remember(monthlyLogs) {
+    val p2Net = remember(monthlyLogs, wageMode, flatDailyAmount) {
         monthlyLogs.sumOf { raw ->
             val l = raw.sanitized()
             val d = l.date.takeLast(2).toIntOrNull() ?: 1
-            if (l.isWorkingDay && d > 15) l.netIncome else 0.0
+            if (l.isWorkingDay && d > 15) WageCalculator.netIncomeOf(l, wageMode, flatDailyAmount) else 0.0
         }
     }
     val gajian1 = p1Net * 0.5
@@ -120,8 +127,12 @@ fun HomeScreen(
         0
     }
 
-    val targetPct = if (targetAmount > 0.0) {
-        ((summary.totalNetIncome / targetAmount) * 100.0).roundToInt().coerceIn(0, 100)
+    val periodTargetAmount = WageCalculator.targetForPeriod(targetAmount, wagePeriod)
+    val periodIncome = remember(monthlyLogs, todayObj, wageMode, flatDailyAmount, wagePeriod) {
+        WageCalculator.incomeForPeriod(monthlyLogs, todayObj, wageMode, flatDailyAmount, wagePeriod)
+    }
+    val targetPct = if (periodTargetAmount > 0.0) {
+        ((periodIncome / periodTargetAmount) * 100.0).roundToInt().coerceIn(0, 100)
     } else {
         0
     }
@@ -335,7 +346,7 @@ fun HomeScreen(
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = activeToday.netIncome.homeIdr(),
+                                text = WageCalculator.netIncomeOf(activeToday, wageMode, flatDailyAmount).homeIdr(),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = scheme.onSurface,
@@ -596,7 +607,7 @@ fun HomeScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                             ) {
                                 Text(
-                                    text = "Target",
+                                    text = "Target ${WageCalculator.labelOf(wagePeriod)}",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = scheme.onSurface,
@@ -608,6 +619,12 @@ fun HomeScreen(
                                     color = scheme.onSurface,
                                 )
                             }
+                            Text(
+                                text = "${periodIncome.homeIdr()} dari ${periodTargetAmount.homeIdr()}" +
+                                    if (wagePeriod == WagePeriod.MONTHLY) " • gajian tgl $paydayDate" else "",
+                                fontSize = 11.sp,
+                                color = scheme.onSurfaceVariant,
+                            )
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()

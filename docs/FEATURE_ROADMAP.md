@@ -113,7 +113,7 @@
 | 8 | Catatan ala Notion lite: blok teks + checklist | Selesai |
 | 9 | Input paket Dibawa/Dikirim pakai teks | Selesai |
 | 10 | Engine performa & device profile untuk perangkat low-end | Selesai |
-| 11 | Flow gajian & periode yang bisa diatur user | Rencana |
+| 11 | Flow gajian & periode yang bisa diatur user | Selesai |
 | 12 | Jam notifikasi bisa diatur user | Rencana |
 | 13 | Lokasi murni + bagikan foto & teks | Rencana |
 | 14 | Template Notion opsional + multi-foto catatan, DB v8 | Rencana |
@@ -145,9 +145,11 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
 - **Fase 10 — Performa (selesai):** `DevicePerformance` membaca `isLowRamDevice`, API level, dan memori sekali
   saat start, lalu `PerformancePolicy` memetakannya ke `PerformanceConfig`. Config mengatur downsample foto,
   kualitas JPEG, ukuran preview, interval/jarak GPS, dan batas jumlah preview. Tidak mengubah aturan domain.
-- **Fase 11 — Gaji & periode:** `AppPreferences` menyimpan `wageMode` (`tarif per paket` / `nominal tetap per hari`),
-  nominal, `wagePeriod` (`Harian`/`Mingguan`/`Bulanan`), dan tanggal gajian. Default lama dipertahankan,
-  sehingga data existing tidak berubah. Semua setting menjadi milik user.
+- **Fase 11 — Gaji & periode (selesai):** `AppPreferences` menyimpan `wageMode` (`tarif per paket` /
+  `nominal tetap per hari`), nominal harian, `wagePeriod` (`Harian`/`Mingguan`/`Bulanan`), dan tanggal gajian.
+  `WageCalculator` (domain murni) menghitung pendapatan per hari, ringkasan, agregat periode, dan target periode.
+  Default **Tarif per paket + Bulanan + tanggal 25 + Rp2.500** dipertahankan sehingga data lama tidak berubah.
+  Semua setting menjadi milik user; backup JSON ikut menyimpan keempat nilai itu. Tidak ada migrasi DB.
 - **Fase 12 — Notifikasi:** jam pengingat pindah dari konstanta `20.00` ke prefs + `TimePicker`;
   izin `POST_NOTIFICATIONS` diminta saat user mengaktifkan.
 - **Fase 13 — Lokasi & bagikan:** aksi **+1 Pkt** dan **Catat** dihapus dari kartu/detail. Tombol **Bagikan**

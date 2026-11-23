@@ -14,7 +14,9 @@ import com.blankpages.trackify.domain.EngineResult
 import com.blankpages.trackify.domain.MonthlySummary
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.TrackifyEngine
-import com.blankpages.trackify.domain.toMonthlySummary
+import com.blankpages.trackify.domain.WageMode
+import com.blankpages.trackify.domain.WagePeriod
+import com.blankpages.trackify.domain.toWageSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import java.time.YearMonth
@@ -41,6 +43,10 @@ data class AppSettings(
     val defaultBonus: Double = 0.0,
     val targetAmount: Double = 3_600_000.0,
     val dailyReminderEnabled: Boolean = true,
+    val wageMode: WageMode = WageMode.PER_PACKAGE,
+    val flatDailyAmount: Double = 2_500.0,
+    val wagePeriod: WagePeriod = WagePeriod.MONTHLY,
+    val paydayDate: Int = 25,
 )
 
 @Immutable
@@ -72,6 +78,10 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
             defaultBonus = saved.defaultBonus,
             targetAmount = saved.targetAmount,
             dailyReminderEnabled = saved.dailyReminderEnabled,
+            wageMode = saved.wageMode,
+            flatDailyAmount = saved.flatDailyAmount,
+            wagePeriod = saved.wagePeriod,
+            paydayDate = saved.paydayDate,
         )
     }
 
@@ -141,16 +151,17 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         val month = args[1] as YearMonth
         val today = args[2] as DailyLog
 
+        val settings = args[6] as AppSettings
+
         @Suppress("UNCHECKED_CAST")
         val logs = (args[3] as List<DailyLog>).map { it.sanitized() }
-        val sum = logs.toMonthlySummary()
+        val sum = logs.toWageSummary(settings.wageMode, settings.flatDailyAmount)
 
         @Suppress("UNCHECKED_CAST")
         val locs = args[4] as List<SavedLocation>
 
         @Suppress("UNCHECKED_CAST")
         val notesList = args[5] as List<CourierNote>
-        val settings = args[6] as AppSettings
 
         @Suppress("UNCHECKED_CAST")
         val nowLogs = (args[7] as List<DailyLog>).map { it.sanitized() }
@@ -169,7 +180,7 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
             monthlyLogs = logs,
             summary = sum,
             currentMonthLogs = nowLogs,
-            currentMonthSummary = nowLogs.toMonthlySummary(),
+            currentMonthSummary = nowLogs.toWageSummary(settings.wageMode, settings.flatDailyAmount),
             locations = locs,
             notes = notesList,
             activeNotesCount = activeNotes,
@@ -221,6 +232,26 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         viewModelScope.launch(Dispatchers.Default) {
             DailyReminderScheduler.schedule(getApplication(), enabled)
         }
+    }
+
+    fun updateWageMode(mode: WageMode) {
+        repository.setWageMode(mode)
+        settingsFlow.value = settingsFlow.value.copy(wageMode = mode)
+    }
+
+    fun updateFlatDailyAmount(value: Double) {
+        repository.setFlatDailyAmount(value)
+        settingsFlow.value = settingsFlow.value.copy(flatDailyAmount = repository.readSettings().flatDailyAmount)
+    }
+
+    fun updateWagePeriod(period: WagePeriod) {
+        repository.setWagePeriod(period)
+        settingsFlow.value = settingsFlow.value.copy(wagePeriod = period)
+    }
+
+    fun updatePaydayDate(value: Int) {
+        repository.setPaydayDate(value)
+        settingsFlow.value = settingsFlow.value.copy(paydayDate = repository.readSettings().paydayDate)
     }
 
     // Section > Daily logs

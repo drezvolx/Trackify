@@ -27,6 +27,10 @@ data class BackupSettings(
     val defaultBonus: Double = 0.0,
     val targetAmount: Double = 3_600_000.0,
     val dailyReminderEnabled: Boolean = true,
+    val wageMode: WageMode = WageMode.PER_PACKAGE,
+    val flatDailyAmount: Double = 2_500.0,
+    val wagePeriod: WagePeriod = WagePeriod.MONTHLY,
+    val paydayDate: Int = 25,
 )
 
 data class BackupPayload(
@@ -369,6 +373,10 @@ object TrackifyEngine {
                     put("defaultBonus", payload.settings.defaultBonus)
                     put("targetAmount", payload.settings.targetAmount)
                     put("dailyReminderEnabled", payload.settings.dailyReminderEnabled)
+                    put("wageMode", payload.settings.wageMode.name)
+                    put("flatDailyAmount", payload.settings.flatDailyAmount)
+                    put("wagePeriod", payload.settings.wagePeriod.name)
+                    put("paydayDate", payload.settings.paydayDate)
                 },
             )
             put(
@@ -481,6 +489,14 @@ object TrackifyEngine {
                 defaultBonus = settingsObj.optDouble("defaultBonus", 0.0).coerceAtLeast(0.0),
                 targetAmount = settingsObj.optDouble("targetAmount", 3_600_000.0).coerceAtLeast(0.0),
                 dailyReminderEnabled = settingsObj.optBoolean("dailyReminderEnabled", true),
+                wageMode = runCatching {
+                    WageMode.valueOf(settingsObj.optString("wageMode", WageMode.PER_PACKAGE.name))
+                }.getOrDefault(WageMode.PER_PACKAGE),
+                flatDailyAmount = settingsObj.optDouble("flatDailyAmount", 2_500.0).coerceAtLeast(0.0),
+                wagePeriod = runCatching {
+                    WagePeriod.valueOf(settingsObj.optString("wagePeriod", WagePeriod.MONTHLY.name))
+                }.getOrDefault(WagePeriod.MONTHLY),
+                paydayDate = settingsObj.optInt("paydayDate", 25).coerceIn(1, 31),
             )
         }
         BackupPayload(logs, locs, notes, settings)
