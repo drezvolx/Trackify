@@ -87,4 +87,11 @@ object TrackifyColors {
 
     val InverseLine: Color
         @Composable get() = colorResource(R.color.trackify_inverse_line)
+
+    /**
+     * Mask ikon dengan alpha penuh. RGB nilai ini tidak pernah tampil: `Icon` menimpa path
+     * lewat `tint`, tetapi path butuh alpha 1 supaya tint punya area untuk diwarnai.
+     * Disimpan di facade supaya tidak ada literal warna di `TrackifyIcons.kt`.
+     */
+    val IconMask: Color = Color.White
 }

@@ -4,6 +4,43 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Semua ikon tampil lagi (mask alpha ikon)
+
+### Diubah
+
+- `ui/theme/TrackifyIcons.kt`: `coolicon()` kembali memberi `fill` solid pada tiap path. Saat unifikasi warna,
+  `fill = SolidColor(Color.Black)` dihapus sehingga path memakai `Color.Unspecified` (alpha 0). Karena `Icon`
+  mewarnai lewat `ColorFilter.tint`, path transparan tetap tak terlihat berapapun `tint`-nya — itulah sebabnya
+  **semua** ikon (header, bottom nav, pin, dll.) hilang.
+- `ui/theme/TrackifyColors.kt`: mask opaque `IconMask` disimpan di facade warna. Tidak ada literal warna di
+  `TrackifyIcons.kt`; RGB mask selalu ditimpa `tint`, jadi tidak menambah warna UI baru.
+- `ui/locations/LocationsScreen.kt`: ikon **Plus** di header dan **CompassArrow** pada tombol **Rute** memakai
+  `tint = scheme.onSurface`, mengikuti teks `TrackifyButton`.
+- `ui/notes/NotesScreen.kt`: ikon **Plus** di header **Tambah** juga memakai `tint = scheme.onSurface`.
+- `ui/theme/TrackifyButtons.kt`: `TrackifyButton` membungkus konten dengan
+  `CompositionLocalProvider(LocalContentColor provides contentColor)` supaya ikon turunan mengikuti
+  `contentColor` (termasuk override hero).
+- `docs/LOCKED_DECISIONS.md` (§4.9, §9): aturan permanen — path ikon wajib punya mask opaque dari facade,
+  dan setiap `Icon(...)` wajib `tint` eksplisit. `LocalContentColor` hanya pengaman.
+- Tidak ada token warna baru di `colors.xml`, ikon Coolicons tetap `fill/round`, bentuk tombol tidak berubah,
+  versi (`2` / `1.1`), tag, dan rilis tidak berubah.
+
+### Verifikasi
+
+- ktlint `1.8.0` untuk seluruh `*.kt`/`*.kts` (kecuali `backup*/`, `trackify_fix/`, `**/build/**`): exit `0`.
+- `.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest --no-configuration-cache --console=plain`:
+  `BUILD SUCCESSFUL`; `SUITES=7 TESTS=36 FAILURES=0 ERRORS=0 SKIPPED=0`.
+- Grep kontrak & theme guard lokal: `RAW_COLOR=0`, `XML_HEX=0`, `CONTRACT=0`, `NON_NEUTRAL_TOTAL=0`.
+- Smoke TECNO LH7n (Android 14), overlay `com.hoffnung` di-force-stop, APK debug terpasang:
+  - Catatan terang: ikon **Plus** `dark=144/2856` (`min=22`), **Pilih catatan** `164/2704`, **Pin** `708/2116`,
+    ikon bottom nav `3466/4641` — semuanya sebelumnya `dark=0`.
+  - Catatan gelap: ikon yang sama punya `bright=142/2856`, `163/2704`, `701/2116`, dan `3450/4641`.
+  - Lokasi terang: ikon **Rute** `dark=447/3111`, **GPS** `693/2401`, **Plus** `144/3213`, **Bagikan**
+    `499/1936`.
+- CI `validate`: (diisi setelah push).
+
+---
+
 ## 24 Nov 2026 — Kontras teks & ikon mengikuti latar kartu/hero
 
 ### Diubah

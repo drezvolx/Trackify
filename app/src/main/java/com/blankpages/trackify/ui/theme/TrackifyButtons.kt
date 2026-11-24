@@ -54,7 +54,11 @@ fun TrackifyButton(
             disabledContentColor = disabledContentColor,
         ),
         contentPadding = contentPadding,
-        content = content,
+        content = buttonContent@{
+            CompositionLocalProvider(LocalContentColor provides contentColor) {
+                this@buttonContent.content()
+            }
+        },
     )
 }
 

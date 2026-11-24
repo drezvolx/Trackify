@@ -644,8 +644,12 @@ baik di UI lama maupun UI baru.** Ini kontrak permanen, bukan preferensi sementa
 - Turunan transparan diperbolehkan **hanya** dari warna bertema, misalnya
   `scheme.background.copy(alpha = 0.72f)` pada bottom nav (sudah dikunci di §1.2). Dilarang memakai
   `Color.Transparent` mentah di helper tombol, Home, atau Rekap; memakai `TrackifyColors.Transparent`.
-- `TrackifyIcons` tidak menuliskan warna sama sekali: canvas default `ImageVector` selalu ditimpa `tint`
-  saat dirender. Dilarang menambah `SolidColor(Color.Black)` atau warna lain di file ikon.
+- `TrackifyIcons` tidak menuliskan literal warna: path memakai mask opaque `TrackifyColors.IconMask` dari
+  facade. RGB mask selalu ditimpa `tint`, tetapi alpha 1 wajib ada supaya `ColorFilter.tint` punya area
+  untuk diwarnai. Tanpa mask ini semua ikon jadi transparan (path `Color.Unspecified` alpha 0).
+- Setiap pemanggilan `Icon(...)` di UI wajib menyebut `tint` dengan token skema/hero yang sesuai latarnya.
+  `TrackifyButton`/`TrackifyTextButton`/`TrackifyIconButton` juga menyediakan `LocalContentColor` sebagai
+  pengaman, tetapi ikon tanpa `tint` eksplisit pernah hilang dan dilarang dipakai sebagai satu-satunya jalan.
 - CI `validate` menjalankan **Theme color guard**: grep literal warna di Kotlin di luar facade, grep hex di
   XML di luar `colors.xml`, dan pemeriksaan spread RGB tiap token. Gate lokal wajib sama hijau sebelum commit.
 
@@ -1085,3 +1089,22 @@ Keputusan lanjutan dari kontrak §4.9:
 - `FilterChip` Catatan menetapkan `selectedLeadingIconColor`/`selectedTrailingIconColor = onPrimary` agar
   ikon centang tidak hilang saat suatu hari ditambahkan.
 - Tidak ada token hex baru, tidak ada ikon baru, dan tidak ada perubahan versi (`2` / `1.1`), tag, atau rilis.
+
+### 24 Nov 2026 — Semua ikon tampil lagi (mask alpha ikon)
+
+User melaporkan "iconnya pada hilang". Smoke perangkat membuktikan yang hilang bukan hanya ikon tombol,
+melainkan **semua** ikon: header, bottom nav, pin, dan ikon kartu.
+
+- `TrackifyIcons.coolicon()` kembali memakai `fill = SolidColor(TrackifyColors.IconMask)`. Sebelumnya `fill`
+  dihapus untuk mematuhi theme guard, sehingga path memakai `Color.Unspecified` dengan alpha 0. `Icon`
+  mewarnai lewat `ColorFilter.tint`, jadi path transparan tetap tak terlihat berapapun `tint`-nya.
+- `IconMask` disimpan di facade `TrackifyColors.kt` (bukan literal di file ikon). Nilainya hanya mask alpha;
+  RGB tidak pernah tampil karena ditimpa `tint`, jadi tidak ada warna UI baru.
+- Ikon **Plus** di header Lokasi/Catatan dan **CompassArrow** pada tombol **Rute** kini memakai
+  `tint = scheme.onSurface`, mengikuti teks `TrackifyButton`.
+- `TrackifyButton` membungkus `content` dengan `CompositionLocalProvider(LocalContentColor provides
+  contentColor)` supaya ikon turunan tetap mengikuti `contentColor` (termasuk override hero).
+- Aturan permanen di §4.9: path ikon wajib mask opaque dari facade dan semua `Icon(...)` wajib `tint`
+  eksplisit; `LocalContentColor` hanya pengaman.
+- Tidak ada token warna baru di `colors.xml`, ikon Coolicons tetap `fill/round`, tidak ada perubahan versi,
+  tag, atau rilis.

@@ -167,6 +167,7 @@ fun NotesScreen(
                         Icon(
                             imageVector = TrackifyIcons.Plus,
                             contentDescription = null,
+                            tint = scheme.onSurface,
                             modifier = Modifier.size(16.dp),
                         )
                         Spacer(modifier = Modifier.width(4.dp))

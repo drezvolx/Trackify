@@ -245,7 +245,12 @@ fun LocationsScreen(
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                         modifier = Modifier.height(36.dp),
                     ) {
-                        Icon(TrackifyIcons.Plus, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(
+                            TrackifyIcons.Plus,
+                            contentDescription = null,
+                            tint = scheme.onSurface,
+                            modifier = Modifier.size(16.dp),
+                        )
                         Spacer(Modifier.width(4.dp))
                         Text("Tambah", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                     }
@@ -823,7 +828,12 @@ private fun LocationNearbyCard(
                             .weight(1f)
                             .height(32.dp),
                     ) {
-                        Icon(TrackifyIcons.CompassArrow, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Icon(
+                            TrackifyIcons.CompassArrow,
+                            contentDescription = null,
+                            tint = scheme.onSurface,
+                            modifier = Modifier.size(14.dp),
+                        )
                         Spacer(Modifier.width(4.dp))
                         Text("Rute", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold)
                     }
