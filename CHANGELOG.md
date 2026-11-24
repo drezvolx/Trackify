@@ -55,7 +55,8 @@ Perubahan ini belum menaikkan versi, membuat tag, atau menerbitkan rilis.
 - Grep kontrak & theme guard lokal: `CONTRACT=0`, `RAW_COLOR=0`, `XML_HEX=0`, `NON_NEUTRAL_TOTAL=0`.
 - Smoke TECNO LH7n (Android 14), APK debug: terang `#F1F1F1` vs gelap `#1E1F22`, teks Home identik;
   ikon dan bottom nav terbaca; format Bagikan Lokasi 4 baris dijaga `LocationShareTextTest`.
-- CI `validate`: akan dicatat setelah commit/push. Belum ada rilis baru untuk perubahan ini.
+- CI `validate`: run `45452004850` (`commit 3b139d5`) hijau — job `validate` ber-conclusion `success`.
+- Belum ada tag atau rilis baru untuk perubahan ini.
 
 ---
 
