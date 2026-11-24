@@ -4,6 +4,22 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Rilis patch v1.1.1 (perbaikan ikon)
+
+### Diubah
+
+- `app/build.gradle.kts`: `versionCode = 3`, `versionName = "1.1.1"` (sebelumnya `2` / `"1.1"`). Ini membuka
+  pengecualian eksplisit dari user terhadap kontrak versi sebelumnya; tag dan rilis `v1.0.0`/`v1.1.0` tidak
+  diubah.
+- Tag `v1.1.1` dan GitHub Release **Trackify v1.1.1** dibuat dari commit versi ini dengan aset APK.
+- `docs/LOCKED_DECISIONS.md` (§2.3, §9): versi patch dan rilis baru dicatat sebagai amandemen kontrak.
+
+### Verifikasi
+
+- (Diisi setelah gate, tag, dan rilis selesai.)
+
+---
+
 ## 24 Nov 2026 — Semua ikon tampil lagi (mask alpha ikon)
 
 ### Diubah

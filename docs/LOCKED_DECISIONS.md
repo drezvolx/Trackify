@@ -335,6 +335,7 @@ Aturan:
 
 | Komponen | Versi tetap | Catatan |
 |---|---|---|
+| Aplikasi | `versionCode = 3` / `versionName = "1.1.1"` | Patch ikon; amandemen kontrak 24 Nov 2026 |
 | AGP | `9.5.2` | Di `libs.versions.toml` |
 | Kotlin | `2.2.10` | Di `libs.versions.toml` |
 | Compose BOM | `2026.02.01` | Di `libs.versions.toml` |
@@ -1108,3 +1109,12 @@ melainkan **semua** ikon: header, bottom nav, pin, dan ikon kartu.
   eksplisit; `LocalContentColor` hanya pengaman.
 - Tidak ada token warna baru di `colors.xml`, ikon Coolicons tetap `fill/round`, tidak ada perubahan versi,
   tag, atau rilis.
+
+### 24 Nov 2026 — Rilis patch v1.1.1 (amandemen versi)
+
+Atas permintaan eksplisit user, kontrak versi yang sebelumnya dikunci dibuka **hanya untuk patch ini**:
+
+- `versionCode = 3`, `versionName = "1.1.1"` menggantikan `2` / `"1.1"`.
+- Tag dan rilis baru `v1.1.1` diterbitkan dengan aset `.apk`. Tag/release `v1.0.0` dan `v1.1.0` tidak diubah.
+- Pengecheck pembaruan memakai `ReleaseVersion`, jadi `v1.1.1` dianggap lebih baru dari `v1.1.0`.
+- Versi berikutnya tetap memerlukan keputusan eksplisit; amandemen ini tidak otomatis mengizinkan bump lain.
