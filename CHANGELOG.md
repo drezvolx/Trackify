@@ -22,9 +22,15 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 - ktlint `1.8.0` exit `0`; `.\gradlew.bat :app:assembleDebug :app:assembleRelease :app:testDebugUnitTest
   --no-configuration-cache --console=plain`: `BUILD SUCCESSFUL`; `SUITES=9 TESTS=47 FAILURES=0 ERRORS=0 SKIPPED=0`.
-- CI `validate`: akan dicatat setelah push commit versi.
-- Tag, GitHub Release, dan aset APK: akan dicatat setelah diterbitkan. Aset tetap memakai debug keystore
-  karena belum ada keystore rilis resmi.
+- CI `validate`: run `45454757407` (`commit e9c0ea1`) hijau — job `validate` ber-conclusion `success`.
+- Tag `v1.2.0` → `e9c0ea1`; GitHub Release **Trackify v1.2.0** diterbitkan
+  (<https://github.com/drezvolx/Trackify/releases/tag/v1.2.0>, release id `457146477`). Aset
+  `Trackify-v1.2.0.apk` (asset id `788281881`, `2.419.390` byte, SHA-256
+  `88C5834CB9DAA2208736C9E78334F88F2CC04634439761B77BA9B146933F3922`) tersedia di
+  <https://github.com/drezvolx/Trackify/releases/download/v1.2.0/Trackify-v1.2.0.apk>.
+- `GET releases/latest` mengembalikan `v1.2.0`. Tag dan rilis `v1.0.0`, `v1.1.0`, dan `v1.1.1` tidak diubah.
+- Aset ditandatangani dengan debug keystore karena belum ada keystore rilis resmi; `versionCode=4` dan
+  `versionName=1.2.0` terverifikasi di perangkat.
 
 ---
 

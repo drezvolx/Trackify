@@ -1149,3 +1149,12 @@ Trackify Performance Governor (TPG) mengikuti prinsip
 - Perubahan TPG awalnya belum dirilis; setelah keputusan eksplisit user, dirilis sebagai `v1.2.0`
   (`versionCode = 4`). Tag dan rilis `v1.1.1` tidak diubah.
 - Atas keputusan yang sama: DB tetap v8 (tidak ada amandemen v9), dan aturan autobackup masih ditunda.
+
+### 25 Nov 2026 — Rilis minor v1.2.0
+
+- Atas keputusan eksplisit user, versi naik ke `versionCode = 4` / `versionName = "1.2.0"` dan tag
+  `v1.2.0` dibuat dari commit `e9c0ea1`.
+- GitHub Release **Trackify v1.2.0** dan aset `Trackify-v1.2.0.apk` diterbitkan; aset memakai debug
+  keystore karena belum ada keystore rilis resmi.
+- Tag dan rilis `v1.0.0`, `v1.1.0`, `v1.1.1` tidak diubah; `releases/latest` sekarang `v1.2.0`.
+- Rilis berikutnya tetap memerlukan keputusan eksplisit; keputusan v1.2.0 tidak otomatis mengizinkan bump lain.
