@@ -4,7 +4,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
-## 24 Nov 2026 — Rilis patch v1.1.1 (perbaikan ikon)
+## 25 Nov 2026 — Rilis patch v1.1.1 (perbaikan ikon)
 
 ### Diubah
 
@@ -16,7 +16,19 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ### Verifikasi
 
-- (Diisi setelah gate, tag, dan rilis selesai.)
+- ktlint `1.8.0` exit `0`; `.\gradlew.bat :app:assembleDebug :app:assembleRelease :app:testDebugUnitTest
+  --no-configuration-cache --console=plain`: `BUILD SUCCESSFUL`; `SUITES=7 TESTS=36 FAILURES=0 ERRORS=0 SKIPPED=0`.
+- Grep kontrak & theme guard lokal: `RAW_COLOR=0`, `XML_HEX=0`, `CONTRACT=0`, `NON_NEUTRAL_TOTAL=0`.
+- Smoke APK release di TECNO LH7n (Android 14): terpasang dengan `versionCode=3`, `versionName=1.1.1`;
+  ikon header, bottom nav, dan Pin terbaca. Aset ditandatangani dengan debug keystore karena belum ada
+  keystore rilis resmi.
+- CI `validate`: run `45442775137` (`#42`, commit `9c03593`) hijau — job `validate` ber-conclusion `success`.
+- Tag `v1.1.1` dari commit `9c03593` dan GitHub Release **Trackify v1.1.1** diterbitkan
+  (<https://github.com/drezvolx/Trackify/releases/tag/v1.1.1>, release id `457070418`). Aset
+  `Trackify-v1.1.1.apk` (asset id `788052950`, `2.403.006` byte, SHA-256
+  `6AD81560CD07909AA01AC4C4791F1E76C520C354D1742DF5C1BA41475C169488`) tersedia di
+  <https://github.com/drezvolx/Trackify/releases/download/v1.1.1/Trackify-v1.1.1.apk>.
+- `GET releases/latest` mengembalikan `v1.1.1`. Tag dan rilis `v1.0.0`/`v1.1.0` tidak diubah.
 
 ---
 

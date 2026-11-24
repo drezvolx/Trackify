@@ -335,7 +335,7 @@ Aturan:
 
 | Komponen | Versi tetap | Catatan |
 |---|---|---|
-| Aplikasi | `versionCode = 3` / `versionName = "1.1.1"` | Patch ikon; amandemen kontrak 24 Nov 2026 |
+| Aplikasi | `versionCode = 3` / `versionName = "1.1.1"` | Patch ikon; amandemen kontrak 25 Nov 2026 |
 | AGP | `9.5.2` | Di `libs.versions.toml` |
 | Kotlin | `2.2.10` | Di `libs.versions.toml` |
 | Compose BOM | `2026.02.01` | Di `libs.versions.toml` |
@@ -1110,7 +1110,7 @@ melainkan **semua** ikon: header, bottom nav, pin, dan ikon kartu.
 - Tidak ada token warna baru di `colors.xml`, ikon Coolicons tetap `fill/round`, tidak ada perubahan versi,
   tag, atau rilis.
 
-### 24 Nov 2026 — Rilis patch v1.1.1 (amandemen versi)
+### 25 Nov 2026 — Rilis patch v1.1.1 (amandemen versi)
 
 Atas permintaan eksplisit user, kontrak versi yang sebelumnya dikunci dibuka **hanya untuk patch ini**:
 
