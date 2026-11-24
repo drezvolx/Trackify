@@ -4,6 +4,53 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Kontras teks & ikon mengikuti latar kartu/hero
+
+### Diubah
+
+- `ui/home/HomeScreen.kt`: field `Dibawa`/`Dikirim` dan tombol **Simpan paket** di hero memakai token `hero.*`
+  (`heroFieldColors`, `contentColor`, `borderColor`, `disabledContentColor`), bukan warna skema global yang gelap
+  di atas gradien gelap. Placeholder "LOK" di kartu lokasi terdekat kini `onSurface`.
+- `ui/theme/TrackifyComponents.kt`: `trackifyFieldColors()` mengoverride teks, label, placeholder, cursor,
+  selection, dan border. Karena Material3 proyek belum punya argumen `selectionHandleColor`, selection memakai
+  `TextSelectionColors`. Komentar `HeroInk` dikoreksi jadi "terang di kedua tema".
+- `ui/theme/TrackifyButtons.kt`: `TrackifyButton`/`TrackifyTextButton` menerima `borderColor` dan
+  `disabledContentColor`; `TrackifyIconButton` menerima `contentColor`/`borderColor` serta menyediakan
+  `LocalContentColor`. Disabled content tidak lagi memakai alpha 0.6 yang kontrasnya rendah.
+- `ui/locations/LocationsScreen.kt`: catatan pada dialog detail memakai `onSurface` (sebelumnya mewarisi
+  `onSurfaceVariant` dari `TrackifyDialog`), inisial nama di daftar juga `onSurface`.
+- `ui/spreadsheet/SpreadsheetScreen.kt`: label toggle Masuk/Libur, Dibawa/Terkirim, segmen Kartu/Grid, dan chip
+  filter tak terpilih memakai `onSurface` di atas `surfaceVariant`. Batang grafik non-puncak memakai
+  `onSurfaceVariant` supaya tidak setipis latar kartu; progress bar tetap `surfaceVariant`.
+- `ui/notes/NotesScreen.kt`: `FilterChip` menetapkan `selectedLeadingIconColor`/`selectedTrailingIconColor`
+  ke `onPrimary` supaya ikon centang tidak mengikuti warna container.
+- Tidak ada perubahan pada bottom nav, `ScreenTitle`, gradien, token `colors.xml`, bentuk kartu/dialog,
+  ikon Coolicons, versi (`2` / `1.1`), tag, atau rilis.
+
+### Verifikasi
+
+- ktlint `1.8.0` untuk seluruh `*.kt`/`*.kts` (kecuali `backup*/`, `trackify_fix/`, `**/build/**`): exit `0`.
+- `.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest --no-configuration-cache --console=plain`:
+  `BUILD SUCCESSFUL`; `SUITES=7 TESTS=36 FAILURES=0 ERRORS=0 SKIPPED=0`.
+- Grep kontrak & theme guard lokal: `RAW_COLOR=0`, `XML_HEX=0`, `CONTRACT=0`, `NON_NEUTRAL_TOTAL=0`.
+- Smoke TECNO LH7n (Android 14), overlay `com.hoffnung` di-force-stop, APK debug terpasang:
+  - Hero Home terang/gelap: **Simpan paket** `BRIGHT=300/1960` / `305/1960`, **Dibawa** `157/1357` /
+    `160/1357`, **Dikirim** `134/1265` / `135/1265` — tidak ada lagi teks gelap di hero gelap.
+  - Rekap terang: chip tak terpilih **Grid**, **Masuk**, **Libur**, **Sisa** punya `DARK=97/928`, `164/1537`,
+    `94/1160`, `103/986`; mode gelap punya `BRIGHT=110/928`, `194/1537`, `104/1160`, `119/986`.
+  - Catatan di dialog detail Lokasi (diuji dengan patokan sementara, lalu dikembalikan kosong):
+    `DARK=261/2046` di tema terang; inisial **K/A** di daftar Lokasi: terang `DARK=26/200`, `10/110`,
+    gelap `BRIGHT=31/200`, `13/110`.
+  - Batang grafik Rekap terang kini punya piksel menengah (`lt150-lt80=895`) yang sebelumnya menyatu dengan
+    latar `surfaceVariant`.
+- CI `validate`: menyusul setelah push; akan dicatat pada commit dokumentasi berikutnya.
+
+### Catatan
+
+- Perubahan ini tidak menaikkan versi serta tidak membuat tag/rilis baru. Tag dan rilis `v1.0.0`/`v1.1.0` utuh.
+
+---
+
 ## 24 Nov 2026 — Header Catatan rapi & sumber warna tunggal (tanpa warna di luar tema)
 
 ### Diubah

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -124,12 +125,28 @@ fun TrackifyDialog(
  *
  * Memakai `outlineVariant` untuk border focused dan unfocused supaya semua field
  * mengikuti token kartu/dialog, bukan default Material3 yang memakai `outline`.
+ * Parameter warna bisa dioverride untuk latar kustom (mis. hero Home) agar teks,
+ * label, placeholder, cursor, selection, dan border tetap terbaca.
  */
 @Composable
-fun trackifyFieldColors(): TextFieldColors {
-    val scheme = MaterialTheme.colorScheme
-    return OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = scheme.outlineVariant,
-        unfocusedBorderColor = scheme.outlineVariant,
-    )
-}
+fun trackifyFieldColors(
+    borderColor: Color = MaterialTheme.colorScheme.outlineVariant,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    secondaryColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+): TextFieldColors = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = contentColor,
+    unfocusedTextColor = contentColor,
+    disabledTextColor = contentColor.copy(alpha = 0.6f),
+    focusedLabelColor = secondaryColor,
+    unfocusedLabelColor = secondaryColor,
+    focusedPlaceholderColor = secondaryColor,
+    unfocusedPlaceholderColor = secondaryColor,
+    cursorColor = contentColor,
+    selectionColors = TextSelectionColors(
+        handleColor = contentColor,
+        backgroundColor = contentColor.copy(alpha = 0.4f),
+    ),
+    focusedBorderColor = borderColor,
+    unfocusedBorderColor = borderColor,
+    disabledBorderColor = borderColor.copy(alpha = 0.6f),
+)

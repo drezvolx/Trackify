@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.dp
 /**
  * Tombol aksi Trackify (Fase 17): outline `1.dp outlineVariant` di kedua tema,
  * tanpa fill dan tanpa shadow. Skala spacing memakai 4/8/12/16/24 dp.
+ * `contentColor`/`borderColor`/`disabledContentColor` bisa dioverride untuk latar kustom (mis. hero).
  */
 @Composable
 fun TrackifyButton(
@@ -34,20 +37,21 @@ fun TrackifyButton(
     shape: Shape = RoundedCornerShape(12.dp),
     contentPadding: PaddingValues = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    borderColor: Color = MaterialTheme.colorScheme.outlineVariant,
+    disabledContentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val scheme = MaterialTheme.colorScheme
     OutlinedButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
         shape = shape,
-        border = BorderStroke(1.dp, scheme.outlineVariant),
+        border = BorderStroke(1.dp, borderColor),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = TrackifyColors.Transparent,
             disabledContainerColor = TrackifyColors.Transparent,
             contentColor = contentColor,
-            disabledContentColor = scheme.onSurfaceVariant.copy(alpha = 0.6f),
+            disabledContentColor = disabledContentColor,
         ),
         contentPadding = contentPadding,
         content = content,
@@ -62,6 +66,8 @@ fun TrackifyTextButton(
     enabled: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    borderColor: Color = MaterialTheme.colorScheme.outlineVariant,
+    disabledContentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     content: @Composable RowScope.() -> Unit,
 ) {
     TrackifyButton(
@@ -71,26 +77,34 @@ fun TrackifyTextButton(
         shape = RoundedCornerShape(8.dp),
         contentPadding = contentPadding,
         contentColor = contentColor,
+        borderColor = borderColor,
+        disabledContentColor = disabledContentColor,
         content = content,
     )
 }
 
-/** Tombol ikon bulat dengan outline yang sama dengan [TrackifyButton]. */
+/**
+ * Tombol ikon bulat dengan outline yang sama dengan [TrackifyButton].
+ * `contentColor` juga disediakan lewat `LocalContentColor` untuk ikon tanpa `tint` eksplisit.
+ */
 @Composable
 fun TrackifyIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier.size(38.dp),
     enabled: Boolean = true,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    borderColor: Color = MaterialTheme.colorScheme.outlineVariant,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val scheme = MaterialTheme.colorScheme
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .background(TrackifyColors.Transparent)
-            .border(1.dp, scheme.outlineVariant, CircleShape)
-            .clickable(enabled = enabled, onClick = onClick),
-        contentAlignment = Alignment.Center,
-        content = content,
-    )
+    CompositionLocalProvider(LocalContentColor provides contentColor) {
+        Box(
+            modifier = modifier
+                .clip(CircleShape)
+                .background(TrackifyColors.Transparent)
+                .border(1.dp, borderColor, CircleShape)
+                .clickable(enabled = enabled, onClick = onClick),
+            contentAlignment = Alignment.Center,
+            content = content,
+        )
+    }
 }

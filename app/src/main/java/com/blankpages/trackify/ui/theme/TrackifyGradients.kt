@@ -37,7 +37,7 @@ object TrackifyGradients {
         TrackifyColors.LightInk,
     )
 
-    /** Warna teks di atas hero gradien (gelap di kedua tema). */
+    /** Warna teks di atas hero gradien (terang di kedua tema). */
     val HeroInk: Color
         @Composable get() = TrackifyColors.Inverse
 

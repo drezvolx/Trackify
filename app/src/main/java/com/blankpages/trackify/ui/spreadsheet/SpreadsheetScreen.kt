@@ -629,7 +629,7 @@ fun SpreadsheetScreen(
                                                     )
                                                     .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
                                                     .background(
-                                                        if (isPeak) scheme.onSurface else scheme.surfaceVariant,
+                                                        if (isPeak) scheme.onSurface else scheme.onSurfaceVariant,
                                                     ),
                                             )
                                         }
@@ -737,7 +737,7 @@ fun SpreadsheetScreen(
                                                 text = labelTxt,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = if (sel) scheme.surface else scheme.onSurfaceVariant,
+                                                color = if (sel) scheme.surface else scheme.onSurface,
                                             )
                                         }
                                     }
@@ -793,7 +793,7 @@ fun SpreadsheetScreen(
                                             "Dibawa",
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Medium,
-                                            color = scheme.onSurfaceVariant,
+                                            color = scheme.onSurface,
                                         )
                                         SheetBigNumberInput(
                                             value = carriedText,
@@ -824,7 +824,7 @@ fun SpreadsheetScreen(
                                             "Terkirim",
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Medium,
-                                            color = scheme.onSurfaceVariant,
+                                            color = scheme.onSurface,
                                         )
                                         SheetBigNumberInput(
                                             value = deliveredText,
@@ -1094,7 +1094,7 @@ fun SpreadsheetScreen(
                                             lbl,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = if (sel) scheme.surface else scheme.onSurfaceVariant,
+                                            color = if (sel) scheme.surface else scheme.onSurface,
                                         )
                                     }
                                 }
@@ -1164,7 +1164,7 @@ fun SpreadsheetScreen(
                                         chipLabel,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = if (active) scheme.surface else scheme.onSurfaceVariant,
+                                        color = if (active) scheme.surface else scheme.onSurface,
                                     )
                                 }
                             }

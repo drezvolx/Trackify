@@ -219,6 +219,8 @@ fun NotesScreen(
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = scheme.primary,
                                 selectedLabelColor = scheme.onPrimary,
+                                selectedLeadingIconColor = scheme.onPrimary,
+                                selectedTrailingIconColor = scheme.onPrimary,
                                 containerColor = scheme.surface,
                                 labelColor = scheme.onSurfaceVariant,
                             ),
@@ -245,6 +247,8 @@ fun NotesScreen(
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = scheme.primary,
                             selectedLabelColor = scheme.onPrimary,
+                            selectedLeadingIconColor = scheme.onPrimary,
+                            selectedTrailingIconColor = scheme.onPrimary,
                             containerColor = scheme.surface,
                             labelColor = scheme.onSurfaceVariant,
                         ),
@@ -267,6 +271,8 @@ fun NotesScreen(
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = scheme.primary,
                                 selectedLabelColor = scheme.onPrimary,
+                                selectedLeadingIconColor = scheme.onPrimary,
+                                selectedTrailingIconColor = scheme.onPrimary,
                                 containerColor = scheme.surface,
                                 labelColor = scheme.onSurfaceVariant,
                             ),
@@ -299,6 +305,8 @@ fun NotesScreen(
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = scheme.primary,
                                 selectedLabelColor = scheme.onPrimary,
+                                selectedLeadingIconColor = scheme.onPrimary,
+                                selectedTrailingIconColor = scheme.onPrimary,
                                 containerColor = scheme.surface,
                                 labelColor = scheme.onSurfaceVariant,
                             ),
@@ -882,6 +890,8 @@ private fun NoteEditorDialog(
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = scheme.primary,
                                 selectedLabelColor = scheme.onPrimary,
+                                selectedLeadingIconColor = scheme.onPrimary,
+                                selectedTrailingIconColor = scheme.onPrimary,
                                 containerColor = scheme.surface,
                                 labelColor = scheme.onSurfaceVariant,
                             ),
@@ -902,6 +912,8 @@ private fun NoteEditorDialog(
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = scheme.primary,
                                     selectedLabelColor = scheme.onPrimary,
+                                    selectedLeadingIconColor = scheme.onPrimary,
+                                    selectedTrailingIconColor = scheme.onPrimary,
                                     containerColor = scheme.surface,
                                     labelColor = scheme.onSurfaceVariant,
                                 ),

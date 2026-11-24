@@ -484,7 +484,7 @@ fun LocationsScreen(
                                                 text = initialCode,
                                                 style = MaterialTheme.typography.labelSmall,
                                                 fontWeight = FontWeight.Bold,
-                                                color = scheme.onSurfaceVariant,
+                                                color = scheme.onSurface,
                                             )
                                         }
 
@@ -595,7 +595,11 @@ fun LocationsScreen(
                                 .background(scheme.surfaceVariant)
                                 .padding(12.dp),
                         ) {
-                            Text(target.landmarkNote, style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                target.landmarkNote,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = scheme.onSurface,
+                            )
                         }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {

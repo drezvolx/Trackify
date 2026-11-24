@@ -252,6 +252,11 @@ fun HomeScreen(
                 outline = TrackifyGradients.HeroLine,
                 outlineVariant = TrackifyGradients.HeroLine,
             )
+            val heroFieldColors = trackifyFieldColors(
+                borderColor = hero.outlineVariant,
+                contentColor = hero.onSurface,
+                secondaryColor = hero.onSurfaceVariant,
+            )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -447,7 +452,7 @@ fun HomeScreen(
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 shape = RoundedCornerShape(12.dp),
-                                colors = trackifyFieldColors(),
+                                colors = heroFieldColors,
                                 modifier = Modifier.weight(1f),
                             )
                             OutlinedTextField(
@@ -457,13 +462,16 @@ fun HomeScreen(
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 shape = RoundedCornerShape(12.dp),
-                                colors = trackifyFieldColors(),
+                                colors = heroFieldColors,
                                 modifier = Modifier.weight(1f),
                             )
                         }
                         TrackifyTextButton(
                             onClick = { commitPackageCounts() },
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                            contentColor = hero.onSurface,
+                            borderColor = hero.outlineVariant,
+                            disabledContentColor = hero.onSurfaceVariant,
                         ) {
                             Text(
                                 text = "Simpan paket",
@@ -765,7 +773,7 @@ fun HomeScreen(
                                     text = "LOK".take(3).uppercase(homeIdLocale),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = scheme.onSurfaceVariant,
+                                    color = scheme.onSurface,
                                 )
                             }
 
@@ -911,7 +919,7 @@ fun HomeScreen(
                                                 when {
                                                     selectedBarIndex == index -> scheme.primary
                                                     isToday -> scheme.onSurface
-                                                    else -> scheme.surfaceVariant
+                                                    else -> scheme.onSurfaceVariant
                                                 },
                                             ),
                                     )

@@ -1064,3 +1064,24 @@ User melaporkan tombol **Pilih** di samping **Tambah** tidak rapi dan meminta au
 - CI `validate` mendapat langkah **Theme color guard**. Aturan ini bersifat permanen untuk UI lama maupun baru.
 - Tidak ada perubahan pada bottom nav, `ScreenTitle`, tema otomatis, orientasi portrait, `TrackifyCard`/
   `TrackifyDialog`, token tombol/spacing, versi, tag, atau rilis.
+
+### 24 Nov 2026 — Kontras teks & ikon mengikuti latar (polish lanjutan)
+
+User meminta warna teks dan ikon menyesuaikan kartu/hero: "masa iya di dalam cardnya textnya ada yg ga keliatan".
+Keputusan lanjutan dari kontrak §4.9:
+
+- Hero Home memakai `hero.*` secara eksplisit untuk **semua** teks, field, dan tombol di atas gradien. Field
+  `Dibawa`/`Dikirim` dan tombol **Simpan paket** tidak boleh mewarisi `onSurface` skema global.
+- `trackifyFieldColors()` mengoverride warna teks, label, placeholder, cursor, selection, dan border. Versi
+  Material3 di proyek belum menerima `selectionHandleColor`, jadi seleksi diatur lewat `TextSelectionColors`.
+- `TrackifyButton`, `TrackifyTextButton`, dan `TrackifyIconButton` menerima `contentColor`/`borderColor`;
+  tombol ikon menyediakan `LocalContentColor`. `disabledContentColor` memakai `onSurfaceVariant` tanpa alpha
+  supaya tidak jadi teks abu transparan. Border tombol tetap `outlineVariant` 1.dp (Fase 17 tidak berubah).
+- Teks di atas `surfaceVariant` wajib `onSurface`, bukan `onSurfaceVariant` (yang hanya 4,41:1 di tema terang).
+  Berlaku untuk placeholder "LOK" (Home), inisial nama (Lokasi), catatan di dialog detail Lokasi, toggle
+  Masuk/Libur, label Dibawa/Terkirim, segmen Kartu/Grid, dan chip filter Rekap.
+- Batang grafik non-unggulan memakai `onSurfaceVariant`; lintasan progress bar tetap `surfaceVariant` karena
+  memang background track.
+- `FilterChip` Catatan menetapkan `selectedLeadingIconColor`/`selectedTrailingIconColor = onPrimary` agar
+  ikon centang tidak hilang saat suatu hari ditambahkan.
+- Tidak ada token hex baru, tidak ada ikon baru, dan tidak ada perubahan versi (`2` / `1.1`), tag, atau rilis.
