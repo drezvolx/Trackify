@@ -36,6 +36,14 @@ jobs:
           echo "369ad2b789f95a011f807e1fcb690ccef80bd7cd014fd139e73ae82dcc0baeab  ktlint.jar" | sha256sum -c -
           java -jar ktlint.jar '**/*.kt' '**/*.kts' '!backup*/**' '!trackify_fix/**' '!**/build/**'
 
+      # Style > Contract > Ikon Coolicons round dan gaya idiomatic tidak boleh regresi.
+      - name: Contract grep
+        shell: bash
+        run: |
+          if grep -RIn --include='*.kt' --include='*.kts' -E '\bsharp\b|Icons\.[A-Z]' app core baselineprofile; then
+            exit 1
+          fi
+
       - name: Build and test
         shell: bash
         run: |

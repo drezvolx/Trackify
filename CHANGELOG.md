@@ -4,6 +4,43 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Ikon Coolicons round, gaya idiomatic terkunci, & Bagikan Lokasi 4 baris
+
+### Diubah
+
+- `app/src/main/java/com/blankpages/trackify/ui/theme/TrackifyIcons.kt`: seluruh ikon aplikasi sekarang memakai
+  SVG Coolicons resmi gaya `fill`, sudut `round`, dari Figma Community `800815864899415771` (diambil lewat repo
+  resmi `krystonschwarze/coolicons`, commit `ce57bcda`). Path SVG diparse dengan `PathParser` Compose. Varian
+  sudut runcing/tajam, ikon Material, dan `painterResource` untuk ikon dilarang. Nama properti lama tetap dipakai
+  sebagai API internal; `PinOutlined` kini memakai `pin-off` agar berbeda dari `PinFilled` (`pin`).
+- `.editorconfig` dan `.github/workflows/ci.yml`: aturan gaya idiomatic ditanam sebagai kontrak — ktlint `1.8.0`
+  wajib exit `0`, format `android_studio` + trailing comma, dan grep kontrak ikon di CI. Dilarang mengubah aturan
+  ini tanpa keputusan baru.
+- `core/domain/src/main/java/com/blankpages/trackify/domain/LocationShareText.kt`: teks Bagikan Lokasi kini
+  tepat 4 baris — `Nama Penerima : …`, `Detail/Patokan : …`, `Maps : …`, `by Trackify.` — tanpa `FOTO`, garis
+  pemisah `-------`, atau baris kosong. KDoc dan `LocationShareTextTest` disamakan; format 7 baris Fase 13
+  dinyatakan digantikan di `docs/LOCKED_DECISIONS.md` dan `docs/FEATURE_ROADMAP.md`.
+- Tidak ada perubahan pada `Scaffold` tunggal, bottom nav, `ScreenTitle`, tema otomatis, orientasi portrait,
+  `TrackifyCard`/`TrackifyDialog`, tombol helper, spacing, versi, tag, atau rilis.
+
+### Verifikasi
+
+- ktlint `1.8.0` untuk seluruh `*.kt`/`*.kts` (kecuali `backup*/`, `trackify_fix/`, `**/build/**`): exit `0`.
+- `.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest --no-configuration-cache --console=plain`: `BUILD SUCCESSFUL`;
+  `TESTS=36 FAILURES=0 ERRORS=0 SKIPPED=0 SUITES=7`.
+- Grep kontrak: `COD_TOKEN=0` (pindaian case-sensitive seluruh berkas; 186 entri APK juga bersih), `SHARP=0`,
+  `DIRECT_ICON=0`, `IMAGE_VECTOR_BUILDER=1`, `SHARP_PATH_REF=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`,
+  `THEME_MANUAL_UI=0`, `DIRECT_BUTTONS=0`, `ALPHA_BORDER=0`, `SHADOW=0`, `IS_PENDING=0`,
+  `OLD_LOCATION_ACTIONS=0`, `OLD_SHARE_OUTPUT=0`; `Scaffold` hanya di `MainActivity.kt`.
+- Smoke perangkat TECNO LH7n (Android 14): overlay `com.hoffnung` di-force-stop, APK debug terpasang. Bottom nav
+  **Home / Rekap / Lokasi / Catatan** dan header Home tampil tanpa crash. Di Lokasi, tombol **Bagikan** membuka
+  chooser dengan preview persis empat baris: `Nama Penerima : Ka Syahri`, `Detail/Patokan : `, `Maps : https://…`,
+  `by Trackify.` — tanpa `FOTO`, garis pemisah, atau baris kosong. Tab Catatan menampilkan kontrol pin; pemilihan
+  `PinFilled`/`PinOutlined` mengikuti `isPinned` di kode.
+- CI `validate`: menunggu run setelah push; id dan hasilnya dicatat setelah hijau.
+
+---
+
 ## 24 Nov 2026 — Perbaikan: kamera berhenti saat ambil foto Lokasi
 
 ### Diubah

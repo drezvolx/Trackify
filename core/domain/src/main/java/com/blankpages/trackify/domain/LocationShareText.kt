@@ -7,12 +7,9 @@ object LocationShareText {
     /**
      * Susunan final yang disetujui:
      * ```
-     * FOTO
-     * -------
      * Nama Penerima : …
      * Detail/Patokan : …
      * Maps : …
-     *
      * by Trackify.
      * ```
      */
@@ -24,12 +21,9 @@ object LocationShareText {
             longitude,
         )
         return listOf(
-            "FOTO",
-            "-------",
             "Nama Penerima : ${customerName.trim()}",
             "Detail/Patokan : ${landmarkNote.trim()}",
             "Maps : $mapsUrl",
-            "",
             "by Trackify.",
         ).joinToString("\n")
     }

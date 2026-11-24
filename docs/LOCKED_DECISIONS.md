@@ -858,7 +858,8 @@ User meminta tab Lokasi fokus ke lokasi. Keputusan:
   `FileProvider` authority `com.blankpages.trackify.fileprovider` (`file_paths.xml`) dengan
   `FLAG_GRANT_READ_URI_PERMISSION`. Tanpa foto, berbagi tetap jalan dengan teks saja.
 - Teks final (diformat di `:core:domain` `LocationShareText`, bisa diuji tanpa Android):
-  `FOTO` / `-------` / `Nama Penerima : …` / `Detail/Patokan : …` / `Maps : …` / baris kosong / `by Trackify.`
+  `Nama Penerima : …` / `Detail/Patokan : …` / `Maps : …` / `by Trackify.` — tepat 4 baris, tanpa header `FOTO`,
+  garis pemisah, atau baris kosong. Keputusan 24 Nov 2026 menggantikan format 7 baris Fase 13.
 - Field `SavedLocation` final tetap `id, customerName, landmarkNote, latitude, longitude, photoPath`.
   Tidak ada migrasi DB, tidak ada izin baru, tidak ada perubahan bottom nav/header/tema/token UI.
 
@@ -955,3 +956,35 @@ User menyetujui penambahan pengecek pembaruan dan kredit. Keputusan:
 - Dokumentasi baru: `docs/credits.md`, `docs/management/README.md`, `docs/management/processes/*.md`,
   `docs/management/templates/release-notes.md`, dan README profesional. Tag `v1.0.0` adalah baseline dan tidak
   boleh diubah saat rilis berikutnya diterbitkan.
+
+### 24 Nov 2026 — Ikon Coolicons round & gaya kode idiomatic
+
+User meminta seluruh ikon aplikasi memakai Coolicons bergaya round dari file Figma yang ditunjuk, tanpa varian
+sudut runcing/tajam, dan menetapkan gaya penulisan kode idiomatic sebagai aturan tetap. Keputusan:
+
+- Sumber ikon adalah Coolicons resmi: Figma Community `800815864899415771`. Karena file Figma tidak bisa dibuka
+  langsung oleh alat, SVG diambil dari repo resmi publisher `krystonschwarze/coolicons` (commit `ce57bcda`),
+  gaya `fill`, sudut `round`. `ui/theme/TrackifyIcons.kt` adalah satu-satunya definisi `ImageVector` aplikasi;
+  path SVG disimpan sebagai `pathData` dan diparse memakai `PathParser` Compose.
+- Dilarang memakai gaya selain `fill`, sudut runcing/tajam, ikon Material bawaan, `painterResource` untuk ikon,
+  atau menambah aset SVG/drawable ikon baru di luar `TrackifyIcons.kt`. Nama properti lama dipertahankan sebagai
+  API internal;
+  perubahan bentuk ikon tidak mengubah label, aksi, atau kontrak navigasi.
+- `PinFilled` memakai `pin`, `PinOutlined` memakai `pin-off` supaya status sematan tetap terbedakan. Alias
+  `Settings`, `AddLocation`, `Navigation`, `Add`, `PinFilled`, dan `TemplateKendala` tetap mengarah ke sumber
+  Coolicons yang sama.
+- Gaya idiomatic ditanam sebagai kontrak yang tidak boleh diubah: ktlint `1.8.0` wajib exit `0` untuk seluruh
+  `*.kt`/`*.kts` (kecuali `backup*/`, `trackify_fix/`, dan `**/build/**`), `.editorconfig` memakai
+  `ktlint_code_style = android_studio` dan trailing comma, panggilan Compose memakai named argument, expression
+  body bila jelas, `val` sebagai default, tanpa wildcard import, dan KDoc ringkas. Dilarang memformat manual yang
+  bertabrakan dengan ktlint.
+- CI `validate` menjalankan ktlint dengan checksum tetap dan grep kontrak ikon. Gate lokal wajib ktlint `0`,
+  `:app:assembleDebug :app:testDebugUnitTest`, grep kontrak, smoke perangkat, dan catatan `CHANGELOG.md`.
+- Perubahan ini tidak menaikkan versi serta tidak membuat tag/rilis baru. Tag dan rilis `v1.0.0`/`v1.1.0` utuh.
+
+### 24 Nov 2026 — Format Bagikan Lokasi disederhanakan
+
+User mengubah `LocationShareText.build` menjadi empat baris: `Nama Penerima : …`, `Detail/Patokan : …`,
+`Maps : …`, dan `by Trackify.`. Header `FOTO`, garis pemisah `-------`, dan baris kosong dihapus total.
+KDoc, `LocationShareTextTest`, `docs/FEATURE_ROADMAP.md`, dan kontrak ini disamakan ke format tersebut.
+Tidak ada perubahan pada `Intent.ACTION_SEND`, lampiran foto, `FileProvider`, atau field `SavedLocation`.

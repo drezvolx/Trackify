@@ -16,12 +16,9 @@ class LocationShareTextTest {
         )
         assertEquals(
             listOf(
-                "FOTO",
-                "-------",
                 "Nama Penerima : Bud",
                 "Detail/Patokan : Depan gang",
                 "Maps : https://www.google.com/maps/search/?api=1&query=-6.200000,106.800000",
-                "",
                 "by Trackify.",
             ).joinToString("\n"),
             text,
@@ -29,12 +26,13 @@ class LocationShareTextTest {
     }
 
     @Test
-    fun buildKeepsEmptyDetailAsEmptyLine() {
+    fun buildKeepsEmptyDetailAsEmptyValue() {
         val text = LocationShareText.build("  ", "", 0.0, 0.0)
         val lines = text.lines()
-        assertEquals("Nama Penerima : ", lines[2])
-        assertEquals("Detail/Patokan : ", lines[3])
-        assertEquals("", lines[5])
-        assertEquals("by Trackify.", lines[6])
+        assertEquals(4, lines.size)
+        assertEquals("Nama Penerima : ", lines[0])
+        assertEquals("Detail/Patokan : ", lines[1])
+        assertEquals("Maps : https://www.google.com/maps/search/?api=1&query=0.000000,0.000000", lines[2])
+        assertEquals("by Trackify.", lines[3])
     }
 }

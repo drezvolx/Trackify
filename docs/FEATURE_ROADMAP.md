@@ -160,8 +160,8 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
 - **Fase 13 — Lokasi & bagikan (selesai):** aksi **+1 Pkt** dan **Catat** dihapus dari kartu Nearby beserta
   callback dan VM `incrementTodayDelivered`. Tombol **Bagikan** (kartu dan detail) mengirim foto dari
   `filesDir/location_photos` lewat `FileProvider` plus teks persis:
-  `FOTO / ------- / Nama Penerima : … / Detail/Patokan : … / Maps : … / (baris kosong) / by Trackify.`
-  Tidak ada kolom DB, izin, atau field `SavedLocation` baru.
+  `Nama Penerima : … / Detail/Patokan : … / Maps : … / by Trackify.` (4 baris; format lama dengan `FOTO`,
+  garis pemisah, dan baris kosong sudah digantikan). Tidak ada kolom DB, izin, atau field `SavedLocation` baru.
 - **Fase 14 — Catatan (selesai):** template Notion bersifat opsional; chip **Kosong** membuka editor blank.
   Foto catatan didukung hingga 5 foto per catatan lewat entity `NotePhoto` / tabel `note_photos` dan
   `MIGRATION_7_8` (DB versi **8**). Foto disalin ke `filesDir/note_photos` dengan awalan `note_` dan dihapus
@@ -192,6 +192,13 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
   <https://discord.com/users/1182612195419369562>. Dokumentasi: `docs/credits.md`, struktur nested
   `docs/management/{README.md,processes/,templates/}`, dan README profesional. Izin `INTERNET` di kontrak §4.3
   diperluas untuk GET rilis ini; data aplikasi tidak dikirim.
+- **Ikon & gaya kode (selesai):** seluruh `TrackifyIcons` sekarang memakai SVG Coolicons resmi gaya `fill`,
+  sudut `round`, dari Figma Community `800815864899415771` (diambil lewat repo resmi publisher). Varian sudut
+  runcing/tajam dan ikon Material dilarang. Gaya kode idiomatic dikunci lewat `.editorconfig`, ktlint `1.8.0`
+  exit `0`, named argument Compose, `val` by default, tanpa wildcard import, dan KDoc ringkas.
+- **Bagikan Lokasi diperbarui (selesai):** teks `LocationShareText.build` kini tepat empat baris —
+  `Nama Penerima : …`, `Detail/Patokan : …`, `Maps : …`, `by Trackify.` — tanpa `FOTO`, garis pemisah, atau
+  baris kosong. KDoc dan `LocationShareTextTest` disamakan.
 
 Tiap fase wajib: backup sebelum edit → ktlint exit 0 → `:app:assembleDebug :app:testDebugUnitTest` hijau
-→ semua tes lulus (baseline 30) → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.
+→ semua tes lulus (baseline 36) → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.

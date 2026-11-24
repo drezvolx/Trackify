@@ -10,6 +10,7 @@ indent_style = space
 indent_size = 4
 max_line_length = 120
 
+# Kontrak gaya idiomatic Trackify: aturan di bawah tidak boleh diubah tanpa keputusan baru.
 # Sumber gaya mengikuti konvensi Android Studio/Kotlin.
 ktlint_code_style = android_studio
 
