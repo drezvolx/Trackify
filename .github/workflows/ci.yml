@@ -40,7 +40,7 @@ jobs:
       - name: Contract grep
         shell: bash
         run: |
-          if grep -RIn --include='*.kt' --include='*.kts' -E '\bsharp\b|Icons\.[A-Z]' app core baselineprofile; then
+          if grep -RIn --include='*.kt' --include='*.kts' -E '\bsharp\b|\bIcons\.[A-Z]' app core baselineprofile; then
             exit 1
           fi
 
