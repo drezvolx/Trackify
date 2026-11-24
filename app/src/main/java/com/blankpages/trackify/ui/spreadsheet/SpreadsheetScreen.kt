@@ -57,7 +57,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -74,6 +73,7 @@ import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyButton
+import com.blankpages.trackify.ui.theme.TrackifyColors
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyGradients
 import com.blankpages.trackify.ui.theme.TrackifyIconButton
@@ -359,7 +359,7 @@ fun SpreadsheetScreen(
                                 modifier = Modifier
                                     .width(56.dp)
                                     .height(2.dp)
-                                    .background(if (active) scheme.onSurface else Color.Transparent),
+                                    .background(if (active) scheme.onSurface else TrackifyColors.Transparent),
                             )
                         }
                     }
@@ -716,7 +716,7 @@ fun SpreadsheetScreen(
                                         Box(
                                             modifier = Modifier
                                                 .clip(CircleShape)
-                                                .background(if (sel) scheme.onSurface else Color.Transparent)
+                                                .background(if (sel) scheme.onSurface else TrackifyColors.Transparent)
                                                 .border(1.dp, scheme.outlineVariant, CircleShape)
                                                 .clickable {
                                                     val next = if (stateVal) {
@@ -962,7 +962,7 @@ fun SpreadsheetScreen(
 
                                         val cellBg = when {
                                             isToday -> scheme.onSurface
-                                            isOffDay -> Color.Transparent
+                                            isOffDay -> TrackifyColors.Transparent
                                             else -> scheme.surfaceVariant
                                         }
                                         val cellFg = if (isToday) scheme.surface else scheme.onSurface
@@ -1084,7 +1084,7 @@ fun SpreadsheetScreen(
                                         modifier = Modifier
                                             .weight(1f)
                                             .clip(CircleShape)
-                                            .background(if (sel) scheme.onSurface else Color.Transparent)
+                                            .background(if (sel) scheme.onSurface else TrackifyColors.Transparent)
                                             .border(1.dp, scheme.outlineVariant, CircleShape)
                                             .clickable { viewMode = idx }
                                             .padding(vertical = 8.dp),
@@ -1257,7 +1257,7 @@ fun SpreadsheetScreen(
                                                             if (item.isWorkingDay) {
                                                                 scheme.onSurface
                                                             } else {
-                                                                Color.Transparent
+                                                                TrackifyColors.Transparent
                                                             },
                                                         )
                                                         .then(

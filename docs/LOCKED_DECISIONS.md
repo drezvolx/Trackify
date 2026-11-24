@@ -18,6 +18,10 @@
 8. **Header semua tab cukup judul, tanpa subtext**, dan wajib memakai `ScreenTitle` dari `ui/theme/TrackifyTheme.kt`.
 9. **Tema aplikasi wajib mengikuti perangkat otomatis**. Menu pilihan tema manual dilarang.
 10. **Orientasi wajib portrait**. Jangan menghidupkan rotasi otomatis di app.
+11. **Satu sumber warna**: `res/values/colors.xml`. Dilarang warna di luar tema di UI lama maupun baru;
+    Kotlin wajib lewat `TrackifyColors.kt`. Lihat §4.9.
+12. **Header Catatan sudah final**: tombol ikon **Pilih/Batal** di samping **Tambah**, plus long-press sebagai
+    jalur alternatif. Teks **Pilih/Batal** di header dilarang. Lihat §4.9.
 
 ---
 
@@ -618,6 +622,48 @@ Catatan uji: saat keyboard terbuka, tombol dialog bergeser ke atas (mis. `Simpan
 
 ---
 
+### 4.9 Sumber warna tunggal & header Catatan
+
+Keputusan final user 24 Nov 2026: **tema harus konsisten dan tidak boleh ada warna lain selain tema,
+baik di UI lama maupun UI baru.** Ini kontrak permanen, bukan preferensi sementara.
+
+**Sumber warna:**
+
+- `app/src/main/res/values/colors.xml` adalah **satu-satunya** definisi warna aplikasi, termasuk drawable
+  launcher. Semua token wajib monokrom netral (charcoal, abu, putih, alpha-nya). Hijau Android `#3DDC84`
+  sudah dihapus dan launcher memakai token charcoal.
+- `app/src/main/java/com/blankpages/trackify/ui/theme/TrackifyColors.kt` adalah satu-satunya jembatan
+  Compose ke token tersebut. File Kotlin UI dilarang memanggil `Color(0x…)`, `Color.White`, `Color.Black`,
+  `Color.Red`, `Color.Green`, `Color.Blue`, `Color.Yellow`, `Color.Gray`, `Color.Transparent`,
+  `Color.Unspecified`, atau `colorResource(...)` secara langsung.
+- `TrackifyMockupPalette`, `MockupDarkColorScheme`, dan `MockupLightColorScheme` tidak lagi dipakai.
+  `mockupDarkColorScheme()` / `mockupLightColorScheme()` bersifat `@Composable` dan mengisi **semua** slot
+  `ColorScheme` dengan token supaya default Material3 (error merah, tertiary ungu, scrim hitam) tidak bocor.
+- `TrackifyGradients` tidak lagi menyimpan hex; gradien latar/hero serta `HeroInk`/`HeroMute`/`HeroTrack`/
+  `HeroLine`/`HeroChipInk` membaca `TrackifyColors`. Stop gradien Fase 15 tidak berubah nilainya.
+- Turunan transparan diperbolehkan **hanya** dari warna bertema, misalnya
+  `scheme.background.copy(alpha = 0.72f)` pada bottom nav (sudah dikunci di §1.2). Dilarang memakai
+  `Color.Transparent` mentah di helper tombol, Home, atau Rekap; memakai `TrackifyColors.Transparent`.
+- `TrackifyIcons` tidak menuliskan warna sama sekali: canvas default `ImageVector` selalu ditimpa `tint`
+  saat dirender. Dilarang menambah `SolidColor(Color.Black)` atau warna lain di file ikon.
+- CI `validate` menjalankan **Theme color guard**: grep literal warna di Kotlin di luar facade, grep hex di
+  XML di luar `colors.xml`, dan pemeriksaan spread RGB tiap token. Gate lokal wajib sama hijau sebelum commit.
+
+**Header Catatan (final):**
+
+- Judul tetap `ScreenTitle(text = "Catatan")` tanpa subtext.
+- Di sebelah kanan judul, urutannya: tombol ikon bulat **Pilih** (`TrackifyIcons.Check`) / **Batal**
+  (`TrackifyIcons.Close`), jarak `8.dp`, lalu tombol **Tambah**. Keduanya tinggi `36.dp`; ikon `18.dp`;
+  warna `scheme.onSurface`. `contentDescription` tetap "Pilih catatan" / "Batal pilih".
+- Teks **Pilih** / **Batal** di header dilarang (sumber ketidakrapian yang dilaporkan user).
+- Long-press kartu catatan masuk mode seleksi dan langsung memilih catatan itu; long-press berikutnya
+  menoggle. Checkbox di kartu tetap jalur tap saat mode seleksi aktif.
+- Bar aksi seleksi memakai `TrackifyCard`: label `n dipilih`, tombol **Selesai**, dan tombol **Hapus**
+  dengan `contentColor = scheme.error`. Hapus massal tetap lewat `TrackifyDialog` konfirmasi.
+- `TrackifyCard` menerima `onLongClick` opsional lewat `combinedClickable`; tampilan kartu tidak berubah.
+
+---
+
 ## 5. FILE KRITIS
 
 | File | Kenapa krit |
@@ -625,7 +671,9 @@ Catatan uji: saat keyboard terbuka, tombol dialog bergeser ke atas (mis. `Simpan
 | `app/src/main/java/com/blankpages/trackify/MainActivity.kt` | Bottom nav final, Scaffold insets, status bar |
 | `app/src/main/java/com/blankpages/trackify/navigation/TrackifyNavigation.kt` | `TrackifyTab` + urutan tab |
 | `app/src/main/java/com/blankpages/trackify/ui/theme/TrackifyTheme.kt` | `ScreenTitle`: satu-satunya gaya header tab; tema sistem otomatis |
-| `app/src/main/java/com/blankpages/trackify/ui/theme/TrackifyComponents.kt` | `TrackifyCard` + `TrackifyDialog`: token kartu & dialog tunggal |
+| `app/src/main/java/com/blankpages/trackify/ui/theme/TrackifyColors.kt` | Facade Compose: satu-satunya pembaca token warna di Kotlin |
+| `app/src/main/java/com/blankpages/trackify/ui/theme/TrackifyComponents.kt` | `TrackifyCard` + `TrackifyDialog`: token kartu & dialog tunggal, `onLongClick` opsional |
+| `app/src/main/res/values/colors.xml` | Sumber warna tunggal; semua token monokrom netral |
 | `app/src/main/res/values/themes.xml` | Window background light |
 | `app/src/main/res/values-night/themes.xml` | Window background dark |
 | `app/src/main/java/com/blankpages/trackify/ui/locations/LocationsScreen.kt` | Padding bawah 96.dp + kartu Lokasi |
@@ -723,6 +771,17 @@ adb shell monkey -p com.blankpages.trackify -c android.intent.category.LAUNCHER 
 
 Expected (Fase 15): light background `#FAFAFA → #F1F1F1 → #E8E8E8`, hero `#3A3A3C → #232324 → #161617`;
 dark background `#25262A → #1E1F22 → #17181A`, hero `#4C4E51 → #2C2D31 → #1E2023`. Tema mengikuti perangkat.
+
+Cek sumber warna (contract permanen, §4.9):
+
+```powershell
+# CI `validate` menjalankan Theme color guard:
+# 1. grep Color(0x...)/Color.X/colorResource(...) di *.kt/*.kts di luar TrackifyColors.kt
+# 2. grep #hex di *.xml di luar res/values/colors.xml
+# 3. tiap token colors.xml wajib 8 digit AARRGGBB dengan spread RGB <= 6
+```
+
+Expected: ketiga pemeriksaan bersih dan langkah `Theme color guard` hijau di CI.
 
 Install & cek visual:
 
@@ -888,7 +947,8 @@ User meminta templat tidak memaksa dan catatan bisa membawa beberapa foto. Keput
 
 User menyetujui pergantian palet solid menjadi gradien monokrom. Keputusan:
 
-- `TrackifyGradients.kt` adalah **satu-satunya** sumber warna gradien:
+- `TrackifyGradients.kt` adalah **satu-satunya** sumber gradien (nilainya kini dibaca dari token `colors.xml`
+  lewat `TrackifyColors`, lihat §4.9):
   - dark latar `#25262A → #1E1F22 → #17181A`; dark hero `#4C4E51 → #2C2D31 → #1E2023`;
   - light latar `#FAFAFA → #F1F1F1 → #E8E8E8`; light hero `#3A3A3C → #232324 → #161617`.
 - `TrackifyTheme` tetap dipanggil tanpa argumen dan memakai `isSystemInDarkTheme()`. Nilainya diteruskan
@@ -988,3 +1048,18 @@ User mengubah `LocationShareText.build` menjadi empat baris: `Nama Penerima : �
 `Maps : …`, dan `by Trackify.`. Header `FOTO`, garis pemisah `-------`, dan baris kosong dihapus total.
 KDoc, `LocationShareTextTest`, `docs/FEATURE_ROADMAP.md`, dan kontrak ini disamakan ke format tersebut.
 Tidak ada perubahan pada `Intent.ACTION_SEND`, lampiran foto, `FileProvider`, atau field `SavedLocation`.
+
+### 24 Nov 2026 — Header Catatan rapi & satu sumber warna
+
+User melaporkan tombol **Pilih** di samping **Tambah** tidak rapi dan meminta audit tema sampai ke akar:
+"jangan pernah ada warna lain selain tema ... di ui lama ataupun baru, catat itu dan ingat". Keputusan:
+
+- Tombol **Pilih/Batal** di header Catatan diganti tombol ikon Coolicons resmi (`Check`/`Close`) yang sejajar
+  dengan **Tambah**; long-press kartu menjadi jalur alternatif masuk seleksi; bar aksi seleksi memakai
+  `TrackifyCard` dengan label jumlah, **Selesai**, dan **Hapus**. Teks **Pilih/Batal** di header dilarang.
+- `res/values/colors.xml` menjadi satu-satunya sumber warna, dibaca Kotlin lewat facade `TrackifyColors`.
+  Seluruh hex di Kotlin/gradien/launcher dihapus, hijau launcher `#3DDC84` diganti charcoal, dan semua slot
+  `ColorScheme` diisi token agar default Material3 tidak menyisipkan warna lain.
+- CI `validate` mendapat langkah **Theme color guard**. Aturan ini bersifat permanen untuk UI lama maupun baru.
+- Tidak ada perubahan pada bottom nav, `ScreenTitle`, tema otomatis, orientasi portrait, `TrackifyCard`/
+  `TrackifyDialog`, token tombol/spacing, versi, tag, atau rilis.

@@ -200,5 +200,12 @@ tetapi user bisa mengetik jumlah persis lewat keyboard numerik. Nilai lokal di-c
   `Nama Penerima : …`, `Detail/Patokan : …`, `Maps : …`, `by Trackify.` — tanpa `FOTO`, garis pemisah, atau
   baris kosong. KDoc dan `LocationShareTextTest` disamakan.
 
+- **Header Catatan & satu sumber warna (selesai):** teks **Pilih/Batal** di header Catatan diganti tombol ikon
+  Coolicons (`Check`/`Close`) yang sejajar dengan **Tambah**. Long-press kartu masuk mode seleksi dan bar aksi
+  memakai `TrackifyCard` berisi label jumlah + tombol **Selesai**/**Hapus**. `res/values/colors.xml` kini
+  satu-satunya token warna (monokrom netral); Kotlin hanya lewat `ui/theme/TrackifyColors.kt`. Semua slot
+  `ColorScheme` diisi token, gradien dan launcher ikut token, dan CI menjalankan **Theme color guard** agar
+  tidak ada warna di luar tema di UI lama maupun baru. Bottom nav, `ScreenTitle`, versi, dan rilis utuh.
+
 Tiap fase wajib: backup sebelum edit → ktlint exit 0 → `:app:assembleDebug :app:testDebugUnitTest` hijau
 → semua tes lulus (baseline 36) → grep kontrak kosong → smoke test perangkat → catatan di `CHANGELOG.md`.

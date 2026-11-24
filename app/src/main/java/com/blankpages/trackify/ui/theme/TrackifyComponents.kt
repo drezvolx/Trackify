@@ -1,6 +1,8 @@
 package com.blankpages.trackify.ui.theme
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -30,12 +32,14 @@ private val TrackifyCardBorder = 1.dp
  *
  * Token final: rounded 20.dp, `scheme.surface`, border `outlineVariant` 1.dp,
  * padding konten 16.dp. Komponen baru sebaiknya memakai ini agar tema tidak
- * beda-beda antar layar.
+ * beda-beda antar layar. `onLongClick` opsional dipakai untuk masuk mode seleksi.
  */
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 fun TrackifyCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(16.dp),
     borderColor: Color = MaterialTheme.colorScheme.outlineVariant,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
@@ -43,7 +47,15 @@ fun TrackifyCard(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val cardModifier = modifier.fillMaxWidth()
+    val baseModifier = modifier.fillMaxWidth()
+    val cardModifier = if (onLongClick != null) {
+        baseModifier.combinedClickable(
+            onClick = { onClick?.invoke() },
+            onLongClick = onLongClick,
+        )
+    } else {
+        baseModifier
+    }
 
     val cardContent: @Composable () -> Unit = {
         Column(
@@ -54,7 +66,7 @@ fun TrackifyCard(
         )
     }
 
-    if (onClick != null) {
+    if (onClick != null && onLongClick == null) {
         Surface(
             onClick = onClick,
             shape = RoundedCornerShape(TrackifyCardCorner),

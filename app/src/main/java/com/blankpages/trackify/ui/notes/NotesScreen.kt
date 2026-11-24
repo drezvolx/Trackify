@@ -136,14 +136,21 @@ fun NotesScreen(
                         text = "Catatan",
                         modifier = Modifier.weight(1f),
                     )
-                    TrackifyTextButton(
+                    TrackifyIconButton(
                         onClick = {
                             selectionMode = !selectionMode
                             selectedIds = emptySet()
                         },
+                        modifier = Modifier.size(36.dp),
                     ) {
-                        Text(if (selectionMode) "Batal" else "Pilih")
+                        Icon(
+                            imageVector = if (selectionMode) TrackifyIcons.Close else TrackifyIcons.Check,
+                            contentDescription = if (selectionMode) "Batal pilih" else "Pilih catatan",
+                            tint = scheme.onSurface,
+                            modifier = Modifier.size(18.dp),
+                        )
                     }
+                    Spacer(modifier = Modifier.width(8.dp))
                     TrackifyButton(
                         onClick = {
                             isNewNote = true
@@ -157,8 +164,12 @@ fun NotesScreen(
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                         modifier = Modifier.height(36.dp),
                     ) {
-                        Icon(TrackifyIcons.Plus, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(4.dp))
+                        Icon(
+                            imageVector = TrackifyIcons.Plus,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text("Tambah", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                     }
                 }
@@ -296,27 +307,55 @@ fun NotesScreen(
                 }
 
                 if (selectionMode) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TrackifyTextButton(
-                            onClick = {
-                                val today = LocalDate.now().toString()
-                                selectedNotes.forEach { note ->
-                                    onSaveNote(
-                                        note.copy(isResolved = true, updatedAt = today),
-                                        false,
-                                        notePhotos[note.id].orEmpty(),
-                                    )
-                                }
-                                selectionMode = false
-                                selectedIds = emptySet()
-                            },
-                            enabled = selectedIds.isNotEmpty(),
-                        ) { Text("Tandai selesai") }
-                        TrackifyTextButton(
-                            onClick = { showBulkDeleteConfirm = true },
-                            enabled = selectedIds.isNotEmpty(),
-                            contentColor = scheme.error,
-                        ) { Text("Hapus (${selectedIds.size})") }
+                    TrackifyCard {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "${selectedIds.size} dipilih",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = scheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f),
+                            )
+                            TrackifyButton(
+                                onClick = {
+                                    val today = LocalDate.now().toString()
+                                    selectedNotes.forEach { note ->
+                                        onSaveNote(
+                                            note.copy(isResolved = true, updatedAt = today),
+                                            false,
+                                            notePhotos[note.id].orEmpty(),
+                                        )
+                                    }
+                                    selectionMode = false
+                                    selectedIds = emptySet()
+                                },
+                                enabled = selectedIds.isNotEmpty(),
+                                modifier = Modifier.height(36.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                            ) {
+                                Text(
+                                    text = "Selesai",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                            }
+                            TrackifyButton(
+                                onClick = { showBulkDeleteConfirm = true },
+                                enabled = selectedIds.isNotEmpty(),
+                                contentColor = scheme.error,
+                                modifier = Modifier.height(36.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                            ) {
+                                Text(
+                                    text = "Hapus",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -345,6 +384,18 @@ fun NotesScreen(
                         {
                             isNewNote = false
                             editingNote = note
+                        }
+                    },
+                    onLongClick = {
+                        if (!selectionMode) {
+                            selectionMode = true
+                            selectedIds = setOf(note.id)
+                        } else {
+                            selectedIds = if (note.id in selectedIds) {
+                                selectedIds - note.id
+                            } else {
+                                selectedIds + note.id
+                            }
                         }
                     },
                     borderColor = if (note.isPinned) scheme.primary else scheme.outlineVariant,

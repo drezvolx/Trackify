@@ -39,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -56,6 +55,7 @@ import com.blankpages.trackify.domain.WagePeriod
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TabularFigures
 import com.blankpages.trackify.ui.theme.TrackifyButton
+import com.blankpages.trackify.ui.theme.TrackifyColors
 import com.blankpages.trackify.ui.theme.TrackifyDialog
 import com.blankpages.trackify.ui.theme.TrackifyGradients
 import com.blankpages.trackify.ui.theme.TrackifyIconButton
@@ -277,7 +277,9 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .background(if (activeToday.isWorkingDay) hero.onSurface else Color.Transparent)
+                                .background(
+                                    if (activeToday.isWorkingDay) hero.onSurface else TrackifyColors.Transparent,
+                                )
                                 .then(
                                     if (!activeToday.isWorkingDay) {
                                         Modifier.border(1.dp, hero.outline, CircleShape)

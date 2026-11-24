@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 /** Penyimpanan foto lokasi: kamera masuk galeri, salinan stabil disimpan di storage aplikasi. */
 object LocationPhotoStore {
     /**
-     * Baris MediaStore sengaja tidak memakai `IS_PENDING`: aplikasi kamera eksternal harus bisa
+     * Baris MediaStore sengaja tidak ditandai pending: aplikasi kamera eksternal harus bisa
      * menulis JPEG ke URI ini lewat izin yang diberikan `TakePicture`. Menandainya pending
      * mengunci tulis hanya untuk aplikasi ini dan membuat kamera vendor crash saat menekan done.
      */

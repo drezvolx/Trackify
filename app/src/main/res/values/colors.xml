@@ -1,10 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Token gradien Fase 15; sumber kebenaran ada di TrackifyGradients.kt. -->
-    <color name="trackify_background_light">#FFF1F1F1</color>
+    <!--
+      SUMBER WARNA TUNGGAL TRACKIFY.
+      Semua token wajib monokrom netral: tidak ada warna selain charcoal/putih/abu.
+      Kotlin hanya boleh membaca lewat ui/theme/TrackifyColors.kt.
+    -->
+    <color name="trackify_transparent">#00000000</color>
+
+    <!-- Royal Charcoal (gelap) -->
     <color name="trackify_background_dark">#FF1E1F22</color>
+    <color name="trackify_background_dark_end">#FF17181A</color>
+    <color name="trackify_surface_dark">#FF25262A</color>
+    <color name="trackify_raised_dark">#FF2C2D31</color>
+    <color name="trackify_line_dark">#FF3A3B3F</color>
+    <color name="trackify_ink_dark">#FFF5F5F5</color>
+    <color name="trackify_mute_dark">#FFA0A0A4</color>
+    <color name="trackify_segment_dark">#FF4C4E51</color>
+
+    <!-- Pure Charcoal (terang) -->
+    <color name="trackify_background_light">#FFF1F1F1</color>
+    <color name="trackify_surface_light">#FFFAFAFA</color>
+    <color name="trackify_raised_light">#FFE8E8E8</color>
+    <color name="trackify_line_light">#FFD6D6D6</color>
+    <color name="trackify_ink_light">#FF161617</color>
+    <color name="trackify_mute_light">#FF6A6A6A</color>
+    <color name="trackify_segment_light">#FFC9C9C9</color>
+
+    <!-- Stop gradien hero yang belum punya padanan token solid -->
     <color name="trackify_hero_light_start">#FF3A3A3C</color>
-    <color name="trackify_hero_light_end">#FF161617</color>
+    <color name="trackify_hero_light_mid">#FF232324</color>
     <color name="trackify_hero_dark_start">#FF4C4E51</color>
+    <color name="trackify_hero_dark_mid">#FF2C2D31</color>
     <color name="trackify_hero_dark_end">#FF1E2023</color>
+
+    <!-- Putih netral + turunan alpha untuk teks/garis di atas hero dan launcher -->
+    <color name="trackify_inverse">#FFFFFFFF</color>
+    <color name="trackify_inverse_mute">#B3FFFFFF</color>
+    <color name="trackify_inverse_track">#33FFFFFF</color>
+    <color name="trackify_inverse_line">#40FFFFFF</color>
+    <color name="trackify_launcher_shadow">#44000000</color>
 </resources>

@@ -1,7 +1,5 @@
 package com.blankpages.trackify.ui.theme
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
@@ -21,10 +19,8 @@ object TrackifyIcons {
         viewportWidth = 24f,
         viewportHeight = 24f,
     ).apply {
-        addPath(
-            pathData = PathParser().parsePathString(pathData).toNodes(),
-            fill = SolidColor(Color.Black),
-        )
+        // Canvas default ImageVector; selalu ditimpa `tint` saat dirender.
+        addPath(pathData = PathParser().parsePathString(pathData).toNodes())
     }.build()
 
     val Home: ImageVector by lazy {

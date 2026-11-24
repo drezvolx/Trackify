@@ -4,6 +4,52 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Header Catatan rapi & sumber warna tunggal (tanpa warna di luar tema)
+
+### Diubah
+
+- `ui/notes/NotesScreen.kt`: teks **Pilih/Batal** di header diganti `TrackifyIconButton` dengan ikon Coolicons
+  resmi `Check`/`Close` (`contentDescription` "Pilih catatan"/"Batal pilih"), tinggi `36.dp`, ikon `18.dp`,
+  jarak `8.dp`, sejajar dengan tombol **Tambah**. Long-press kartu masuk mode seleksi dan menoggle pilihan;
+  bar aksi seleksi kini `TrackifyCard` berisi label `n dipilih` + tombol **Selesai**/**Hapus** (`scheme.error`).
+- `ui/theme/TrackifyComponents.kt`: `TrackifyCard` menerima `onLongClick` opsional lewat `combinedClickable`;
+  bentuk, border, padding, dan warna kartu tidak berubah.
+- `res/values/colors.xml` + `ui/theme/TrackifyColors.kt` (baru): semua warna UI bersumber dari token monokrom
+  netral di `colors.xml`, dibaca Compose lewat facade `TrackifyColors`. Hex di `TrackifyMockupTheme.kt`,
+  `TrackifyGradients.kt`, `TrackifyButtons.kt`, Home, dan Rekap dihapus; `MockupDarkColorScheme` /
+  `MockupLightColorScheme` diganti fungsi `@Composable` yang mengisi **semua** slot `ColorScheme` dengan token
+  (default Material3 tidak lagi bocor). Canvas ikon memakai default `ImageVector` yang selalu ditimpa `tint`.
+- Drawable launcher: `#3DDC84`, `#44000000`, `#FFFFFF`, `#33FFFFFF`, dan `#00000000` diganti `@color/...`;
+  hijau Android hilang total. `TrackifyGradients` sekarang hanya membaca token, bukan menyimpan hex.
+- `.github/workflows/ci.yml`: langkah **Theme color guard** — grep literal warna di Kotlin di luar facade,
+  grep hex di XML di luar `colors.xml`, dan pemeriksaan spread RGB ≤ 6 pada tiap token.
+- `docs/LOCKED_DECISIONS.md` (Aturan Emas 11–12, §4.9, §5, §7, §9) dan `docs/FEATURE_ROADMAP.md`: kontrak
+  permanen dicatat — **tidak pernah ada warna lain selain tema, di UI lama maupun UI baru**.
+- Tidak ada perubahan pada bottom nav, `ScreenTitle`, tema otomatis, orientasi portrait, `TrackifyCard`/
+  `TrackifyDialog`, token tombol/spacing, versi (`2` / `1.1`), tag, atau rilis.
+
+### Verifikasi
+
+- ktlint `1.8.0` untuk seluruh `*.kt`/`*.kts` (kecuali `backup*/`, `trackify_fix/`, `**/build/**`): exit `0`.
+- `.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest --no-configuration-cache --console=plain`:
+  `BUILD SUCCESSFUL`; `SUITES=7 TESTS=36 FAILURES=0 ERRORS=0 SKIPPED=0`.
+- Grep kontrak: `COD_TOKEN=0`, `SHARP=0`, `DIRECT_ICON=0`, `IMAGE_VECTOR_BUILDER=1`, `SUBTEXT=0`,
+  `THEME_MANUAL_UI=0`, `SHADOW=0`, `IS_PENDING=0`, `OLD_LOCATION_ACTIONS=0`, `ALPHA_BORDER=0`,
+  `SCAFFOLD=1`; theme guard lokal `RAW_COLOR=0`, `XML_HEX=0`, `NON_NEUTRAL_TOTAL=0`.
+- Smoke perangkat TECNO LH7n (Android 14): overlay `com.hoffnung` di-force-stop, APK debug terpasang. Tab
+  **Catatan** menampilkan judul `[56,153][633,256]` → tombol **Pilih** `[633,137][769,273]` → **Tambah**
+  `[775,137][1024,273]` (berdampingan, tanpa teks "Pilih"). Tap **Pilih** menampilkan `Batal pilih` dan bar
+  `0 dipilih` + **Selesai**/**Hapus**; long-press kartu mengubahnya jadi `1 dipilih`.
+- Screenshot mode dark dan light: masing-masing 17.266 piksel sampel, `NON_NEUTRAL=0` (semua R/G/B selisih
+  ≤ 8) — tidak ada warna di luar tema pada UI utama.
+- CI `validate`: menunggu run setelah push.
+
+### Catatan
+
+- Perubahan ini **tidak** menaikkan versi dan tidak membuat tag/rilis baru. Tag dan rilis `v1.0.0`/`v1.1.0` utuh.
+
+---
+
 ## 24 Nov 2026 — Ikon Coolicons round, gaya idiomatic terkunci, & Bagikan Lokasi 4 baris
 
 ### Diubah

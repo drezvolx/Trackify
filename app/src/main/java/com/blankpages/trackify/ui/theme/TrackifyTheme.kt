@@ -18,7 +18,7 @@ val LocalTrackifyDarkTheme = compositionLocalOf { false }
 fun TrackifyTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalTrackifyDarkTheme provides darkTheme) {
         MaterialTheme(
-            colorScheme = if (darkTheme) MockupDarkColorScheme else MockupLightColorScheme,
+            colorScheme = if (darkTheme) mockupDarkColorScheme() else mockupLightColorScheme(),
             typography = MockupTypography,
             content = content,
         )

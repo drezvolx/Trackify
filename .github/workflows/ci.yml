@@ -44,6 +44,43 @@ jobs:
             exit 1
           fi
 
+      # Tema > Satu sumber warna: colors.xml + facade TrackifyColors.kt.
+      - name: Theme color guard
+        shell: bash
+        run: |
+          if grep -RIn --include='*.kt' --include='*.kts' \
+            -E 'Color\(0x|Color\.(White|Black|Red|Green|Blue|Yellow|Gray|Transparent|Unspecified)|colorResource\(' \
+            app core baselineprofile --exclude='TrackifyColors.kt'; then
+            exit 1
+          fi
+          if grep -RIn --include='*.xml' -E '#[0-9A-Fa-f]{3,8}' app/src/main/res --exclude='colors.xml'; then
+            exit 1
+          fi
+          awk '
+            function hexval(c) { return index("0123456789abcdef", tolower(c)) - 1 }
+            function byte(s) { return hexval(substr(s, 1, 1)) * 16 + hexval(substr(s, 2, 1)) }
+            {
+              pos = index($0, "#")
+              if (pos == 0) next
+              hex = substr($0, pos + 1, 8)
+              if (length(hex) != 8 || hex !~ /^[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]$/) {
+                print "Token warna wajib 8 digit AARRGGBB: " $0
+                bad = 1
+                next
+              }
+              r = byte(substr(hex, 3, 2))
+              g = byte(substr(hex, 5, 2))
+              b = byte(substr(hex, 7, 2))
+              lo = r; if (g < lo) lo = g; if (b < lo) lo = b
+              hi = r; if (g > hi) hi = g; if (b > hi) hi = b
+              if (hi - lo > 6) {
+                print "Warna bukan monokrom netral: #" hex " (spread " hi - lo ")"
+                bad = 1
+              }
+            }
+            END { exit bad }
+          ' app/src/main/res/values/colors.xml
+
       - name: Build and test
         shell: bash
         run: |

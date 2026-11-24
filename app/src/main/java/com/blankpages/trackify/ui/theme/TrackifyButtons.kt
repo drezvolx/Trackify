@@ -44,8 +44,8 @@ fun TrackifyButton(
         shape = shape,
         border = BorderStroke(1.dp, scheme.outlineVariant),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
+            containerColor = TrackifyColors.Transparent,
+            disabledContainerColor = TrackifyColors.Transparent,
             contentColor = contentColor,
             disabledContentColor = scheme.onSurfaceVariant.copy(alpha = 0.6f),
         ),
@@ -87,7 +87,7 @@ fun TrackifyIconButton(
     Box(
         modifier = modifier
             .clip(CircleShape)
-            .background(Color.Transparent)
+            .background(TrackifyColors.Transparent)
             .border(1.dp, scheme.outlineVariant, CircleShape)
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
