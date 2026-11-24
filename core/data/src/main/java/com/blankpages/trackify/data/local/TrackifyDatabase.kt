@@ -15,11 +15,15 @@ import androidx.room.Update
 import androidx.room.Upsert
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.blankpages.trackify.data.performance.PerformanceRuntime
+import com.blankpages.trackify.data.performance.RoomQueryGuard
 import com.blankpages.trackify.domain.BackupPayload
 import com.blankpages.trackify.domain.CourierNote
 import com.blankpages.trackify.domain.DailyLog
 import com.blankpages.trackify.domain.NotePhoto
 import com.blankpages.trackify.domain.SavedLocation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -33,8 +37,8 @@ interface TrackifyDao {
     @Query("SELECT * FROM daily_logs WHERE date = :date LIMIT 1")
     fun getLogByDate(date: String): Flow<DailyLog?>
 
-    @Query("SELECT * FROM daily_logs WHERE date LIKE :yearMonth || '%' ORDER BY date DESC")
-    fun getLogsByMonth(yearMonth: String): Flow<List<DailyLog>>
+    @Query("SELECT * FROM daily_logs WHERE date >= :startDate AND date < :endExclusive ORDER BY date DESC")
+    fun getLogsByRange(startDate: String, endExclusive: String): Flow<List<DailyLog>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLocation(location: SavedLocation)
@@ -108,14 +112,15 @@ interface TrackifyDao {
     /** Restore = ganti penuh, bukan tambah. Data yang tidak ada di backup ikut terhapus. */
     @Transaction
     suspend fun restoreSnapshot(payload: BackupPayload) {
+        val clean = BackupNormalizer.normalize(payload)
         clearLogs()
         clearLocations()
         clearNotePhotos()
         clearNotes()
-        if (payload.logs.isNotEmpty()) upsertLogs(payload.logs)
-        if (payload.locations.isNotEmpty()) insertLocations(payload.locations)
-        if (payload.notes.isNotEmpty()) insertNotes(payload.notes)
-        if (payload.notePhotos.isNotEmpty()) upsertNotePhotos(payload.notePhotos.take(5 * payload.notes.size))
+        if (clean.logs.isNotEmpty()) upsertLogs(clean.logs)
+        if (clean.locations.isNotEmpty()) insertLocations(clean.locations)
+        if (clean.notes.isNotEmpty()) insertNotes(clean.notes)
+        if (clean.photos.isNotEmpty()) upsertNotePhotos(clean.photos)
     }
 }
 
@@ -186,6 +191,10 @@ abstract class TrackifyDatabase : RoomDatabase() {
                 "trackify_offline_db",
             )
                 .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
+                .setQueryCallback(
+                    RoomQueryGuard(PerformanceRuntime.governor),
+                    Dispatchers.IO.asExecutor(),
+                )
                 .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                 .fallbackToDestructiveMigration(true)
                 .build()

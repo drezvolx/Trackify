@@ -63,7 +63,9 @@ import com.blankpages.trackify.domain.NoteBlocks
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.TrackifyEngine
 import com.blankpages.trackify.domain.noteTemplates
+import com.blankpages.trackify.performance.rememberAdaptiveListState
 import com.blankpages.trackify.ui.locations.LocationPhotoStore
+import com.blankpages.trackify.ui.locations.rememberDecodedPhoto
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyButton
 import com.blankpages.trackify.ui.theme.TrackifyCard
@@ -87,6 +89,7 @@ fun NotesScreen(
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
     val perf = DevicePerformance.config(context)
+    val adaptive = rememberAdaptiveListState()
 
     var query by rememberSaveable { mutableStateOf("") }
     var filterMode by rememberSaveable { mutableIntStateOf(0) }
@@ -117,6 +120,7 @@ fun NotesScreen(
     val selectedNotes = remember(notes, selectedIds) { notes.filter { it.id in selectedIds } }
 
     LazyColumn(
+        state = adaptive.listState,
         modifier = Modifier
             .fillMaxSize()
             .background(TrackifyGradients.background()),
@@ -514,11 +518,11 @@ fun NotesScreen(
                         }
                     }
 
-                    val cardPhotos = notePhotos[note.id].orEmpty().take(perf.maxPreviewItems)
+                    val cardPhotos = notePhotos[note.id].orEmpty().take(adaptive.budget.previewQuota)
                     if (cardPhotos.isNotEmpty()) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             cardPhotos.forEach { path ->
-                                val bitmap = remember(path) { LocationPhotoStore.load(path, perf) }
+                                val bitmap = rememberDecodedPhoto(path, perf, defer = adaptive.deferDecode)
                                 if (bitmap != null) {
                                     Image(
                                         bitmap = bitmap,
@@ -826,7 +830,7 @@ private fun NoteEditorDialog(
                 if (photoPaths.isNotEmpty()) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         photoPaths.forEachIndexed { index, path ->
-                            val bitmap = remember(path) { LocationPhotoStore.load(path, perf) }
+                            val bitmap = rememberDecodedPhoto(path, perf)
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 if (bitmap != null) {
                                     Image(

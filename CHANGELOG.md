@@ -4,6 +4,61 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 25 Nov 2026 — Trackify Performance Governor (TPG), belum dirilis
+
+Kerangka kerja mengikuti panduan performa Android
+<https://developer.android.com/topic/performance/overview?hl=id>: **ukur → perbaiki → ukur ulang**.
+Perubahan ini belum menaikkan versi, membuat tag, atau menerbitkan rilis.
+
+### Ditambahkan
+
+- Modul baru `:core:performance` (murni JVM, bisa diuji tanpa Android): `FrameHealth`,
+  `FrameHealthTracker` (jendela geser + histeresis), `AdaptiveBudget`, `AdaptiveBudgetPolicy`,
+  `QueryGuardPolicy`, dan `TrackifyGovernor`.
+- Adapter runtime: `PerformanceRuntime` (jembatan profil Fase 10), `RoomQueryGuard`,
+  `FrameHealthMonitor` (`Choreographer`), `rememberAdaptiveListState()` untuk Catatan/Lokasi, dan
+  `rememberDecodedPhoto()` + cache LRU bitmap.
+- Tes baru: `TpgGovernorTest` (9) dan `BackupNormalizerTest` (2). Total `47` tes; `36` tes lama tetap hijau.
+
+### Diubah
+
+- `getLogsByMonth` → `getLogsByRange(startDate, endExclusive)` memakai rentang tanggal, bukan
+  `date LIKE yearMonth || '%'`, supaya primary key `date` terpakai.
+- `restoreSnapshot` memakai `BackupNormalizer`: dedupe entitas, tolak `noteId <= 0`/orphan/path kosong,
+  maksimal 5 foto per catatan, dan urutan foto dihitung dengan counter lokal (bukan `count()` berulang).
+- Export/import CSV & JSON, reset, dan restore dipindah ke `Dispatchers.IO`; callback UI tetap di dispatcher utama.
+- `clearAllData()` kini `@Transaction`; file foto dihapus setelah transaksi penghapusan catatan berhasil.
+- VM: `selectedMonthLogsFlow` dipakai ulang, sanitasi log sekali per sumber, dan `LocalDate.parse` aman saat
+  tanggal tidak valid. UI: `NumberFormat` di-hoist, `workingDays` di-`remember`.
+- `MainActivity` menghidupkan/menghentikan monitor frame pada `ON_START`/`ON_STOP`.
+
+### Batas yang sengaja dijaga
+
+- Room `2.7.1` `QueryCallback` hanya punya `onQuery(sqlQuery, bindArgs)` — tanpa waktu mulai/selesai.
+  Jadi `RoomQueryGuard` melaporkan **query berpotensi lambat** berdasarkan bentuk SQL, **bukan durasi**.
+  Tidak ada klaim timing yang tidak bisa dibuktikan.
+- `previewQuota` selalu sama dengan `PerformanceConfig.maxPreviewItems`; TPG hanya mengatur **kapan** kerja
+  berat dilakukan, bukan mengubah jumlah foto, warna, ikon, teks, bottom nav, format Bagikan Lokasi 4 baris,
+  tema otomatis, atau orientasi portrait.
+- Fase 10 tidak diduplikasi: profil perangkat, `sampleSize`, filter GPS, dan downsample foto tetap dipakai.
+  R8 default tetap dipertahankan.
+- Database tetap **v8** dengan migrasi `5→6`, `6→7`, `7→8`. Tidak ada index komposit baru dan tidak ada
+  migrasi v9 dalam batch ini — itu butuh amandemen kontrak eksplisit. Aturan autobackup juga masih menunggu
+  keputusan, jadi `backup_rules.xml`/`data_extraction_rules.xml` tidak diubah.
+- `versionCode = 3` / `versionName = "1.1.1"`, tag `v1.1.1`, dan rilis `v1.1.1` tidak diubah.
+
+### Verifikasi
+
+- ktlint `1.8.0` exit `0`; `.\gradlew.bat :app:assembleDebug :app:assembleRelease :app:testDebugUnitTest
+  --no-configuration-cache --console=plain`: `BUILD SUCCESSFUL`;
+  `SUITES=9 TESTS=47 FAILURES=0 ERRORS=0 SKIPPED=0`.
+- Grep kontrak & theme guard lokal: `CONTRACT=0`, `RAW_COLOR=0`, `XML_HEX=0`, `NON_NEUTRAL_TOTAL=0`.
+- Smoke TECNO LH7n (Android 14), APK debug: terang `#F1F1F1` vs gelap `#1E1F22`, teks Home identik;
+  ikon dan bottom nav terbaca; format Bagikan Lokasi 4 baris dijaga `LocationShareTextTest`.
+- CI `validate`: akan dicatat setelah commit/push. Belum ada rilis baru untuk perubahan ini.
+
+---
+
 ## 25 Nov 2026 — Rilis patch v1.1.1 (perbaikan ikon)
 
 ### Diubah

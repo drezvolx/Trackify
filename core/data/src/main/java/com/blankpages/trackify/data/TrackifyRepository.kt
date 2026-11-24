@@ -13,9 +13,11 @@ import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.WageMode
 import com.blankpages.trackify.domain.WagePeriod
 import java.io.File
+import java.time.YearMonth
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 const val MAX_PHOTOS_PER_NOTE = 5
 
@@ -38,7 +40,10 @@ data class TrackifySettings(
 @Singleton
 class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, private val prefs: AppPreferences) {
     fun logByDate(date: String): Flow<DailyLog?> = dao.getLogByDate(date)
-    fun logsByMonth(yearMonth: String): Flow<List<DailyLog>> = dao.getLogsByMonth(yearMonth)
+    fun logsByMonth(yearMonth: String): Flow<List<DailyLog>> {
+        val month = runCatching { YearMonth.parse(yearMonth) }.getOrNull() ?: return flowOf(emptyList())
+        return dao.getLogsByRange(month.atDay(1).toString(), month.plusMonths(1).atDay(1).toString())
+    }
     fun allLocations(): Flow<List<SavedLocation>> = dao.getAllLocations()
     fun allNotes(): Flow<List<CourierNote>> = dao.getAllNotes()
     fun allNotePhotos(): Flow<List<NotePhoto>> = dao.getAllNotePhotos()
@@ -149,11 +154,16 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
         return noteId
     }
 
-    @Transaction
+    /** File dihapus setelah commit DB berhasil, supaya kegagalan transaksi tidak kehilangan foto. */
     suspend fun deleteNoteWithPhotos(note: CourierNote, paths: List<String>) {
+        deleteNoteFromDatabase(note)
+        paths.forEach { runCatching { File(it).delete() } }
+    }
+
+    @Transaction
+    internal suspend fun deleteNoteFromDatabase(note: CourierNote) {
         dao.deleteNotePhotos(note.id)
         dao.deleteNote(note)
-        paths.forEach { runCatching { File(it).delete() } }
     }
 
     suspend fun dumpLogs(): List<DailyLog> = dao.dumpLogs()
@@ -163,6 +173,7 @@ class TrackifyRepository @Inject constructor(private val dao: TrackifyDao, priva
 
     suspend fun restoreSnapshot(payload: BackupPayload) = dao.restoreSnapshot(payload)
 
+    @Transaction
     suspend fun clearAllData() {
         dao.clearLogs()
         dao.clearLocations()

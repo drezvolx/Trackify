@@ -74,12 +74,12 @@ import kotlin.math.roundToInt
 private val homeIdLocale = Locale.forLanguageTag("id-ID")
 private val homeShortDayFmt = DateTimeFormatter.ofPattern("EEE", homeIdLocale)
 
-private fun Double.homeIdr(): String {
-    val nf = NumberFormat.getCurrencyInstance(homeIdLocale)
-    nf.maximumFractionDigits = 0
-    nf.minimumFractionDigits = 0
-    return nf.format(this).replace("Rp", "Rp").replace("\u00a0", "")
+private val homeIdrFormat = NumberFormat.getCurrencyInstance(homeIdLocale).apply {
+    maximumFractionDigits = 0
+    minimumFractionDigits = 0
 }
+
+private fun Double.homeIdr(): String = homeIdrFormat.format(this).replace("\u00a0", "")
 
 @Composable
 fun HomeScreen(

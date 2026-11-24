@@ -2,12 +2,16 @@ package com.blankpages.trackify
 
 import android.app.Application
 import android.util.Log
+import com.blankpages.trackify.data.performance.PerformanceRuntime
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class TrackifyApp : Application() {
     override fun onCreate() {
         super.onCreate()
+
+        // TPG > Bind profil perangkat sekali sebelum database dan UI dibuat.
+        PerformanceRuntime.bind(this)
 
         // Crash handler > Delegate to the previous handler so the OS still reports it.
         val previousHandler = Thread.getDefaultUncaughtExceptionHandler()

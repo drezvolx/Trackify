@@ -73,6 +73,7 @@ import com.blankpages.trackify.data.performance.DevicePerformance
 import com.blankpages.trackify.domain.MapUrlParser
 import com.blankpages.trackify.domain.SavedLocation
 import com.blankpages.trackify.domain.TrackifyEngine
+import com.blankpages.trackify.performance.rememberAdaptiveListState
 import com.blankpages.trackify.ui.theme.ScreenTitle
 import com.blankpages.trackify.ui.theme.TrackifyButton
 import com.blankpages.trackify.ui.theme.TrackifyCard
@@ -103,6 +104,7 @@ fun LocationsScreen(
     val context = LocalContext.current
     val scheme = MaterialTheme.colorScheme
     val perf = DevicePerformance.config(context)
+    val adaptive = rememberAdaptiveListState()
 
     var query by rememberSaveable { mutableStateOf("") }
     var currentLat by remember { mutableStateOf<Double?>(null) }
@@ -211,6 +213,7 @@ fun LocationsScreen(
     }
 
     LazyColumn(
+        state = adaptive.listState,
         modifier = Modifier
             .fillMaxSize()
             .background(TrackifyGradients.background()),
@@ -426,6 +429,7 @@ fun LocationsScreen(
                             items(filtered, key = { it.first.id }) { entry ->
                                 LocationNearbyCard(
                                     entry = entry,
+                                    deferDecode = adaptive.deferDecode,
                                     onNavigate = { openMapNavigation(context, entry.first) },
                                     onDetail = { detailEntry = entry },
                                     onShare = { LocationSharing.share(context, entry.first) },
@@ -556,7 +560,7 @@ fun LocationsScreen(
     detailEntry?.let { entry ->
         val target = entry.first
         val coordStr = String.format(Locale.US, "%.6f, %.6f", target.latitude, target.longitude)
-        val detailPhoto = remember(target.photoPath) { LocationPhotoStore.load(target.photoPath, perf) }
+        val detailPhoto = rememberDecodedPhoto(target.photoPath, perf)
         TrackifyDialog(
             onDismissRequest = { detailEntry = null },
             title = {
@@ -723,6 +727,7 @@ fun LocationsScreen(
 @Composable
 private fun LocationNearbyCard(
     entry: Pair<SavedLocation, Double?>,
+    deferDecode: Boolean = false,
     onNavigate: () -> Unit,
     onDetail: () -> Unit,
     onShare: () -> Unit,
@@ -731,7 +736,7 @@ private fun LocationNearbyCard(
     val perf = DevicePerformance.config(LocalContext.current)
     val loc = entry.first
     val coordText = String.format(Locale.US, "%.6f, %.6f", loc.latitude, loc.longitude)
-    val nearPhoto = remember(loc.photoPath) { LocationPhotoStore.load(loc.photoPath, perf) }
+    val nearPhoto = rememberDecodedPhoto(loc.photoPath, perf, defer = deferDecode)
 
     Surface(
         modifier = Modifier.width(310.dp),
@@ -886,7 +891,7 @@ private fun LocationEditorDialog(
     var photoPath by remember(initial.id, isNew) { mutableStateOf(initial.photoPath) }
     var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
     val scope = rememberCoroutineScope()
-    val photoBitmap = remember(photoPath) { LocationPhotoStore.load(photoPath, perf) }
+    val photoBitmap = rememberDecodedPhoto(photoPath, perf)
 
     val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {

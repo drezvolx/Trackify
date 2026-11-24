@@ -104,12 +104,12 @@ private fun sanitizeDecimalInput(value: String): String {
 private val shortMonthFmt = DateTimeFormatter.ofPattern("MMM", idLocale)
 private val shortDayFmt = DateTimeFormatter.ofPattern("EEE", idLocale)
 
-private fun Double.formatIdr(): String {
-    val nf = NumberFormat.getCurrencyInstance(idLocale)
-    nf.maximumFractionDigits = 0
-    nf.minimumFractionDigits = 0
-    return nf.format(this).replace("Rp", "Rp").replace("\u00a0", "")
+private val idrFormat = NumberFormat.getCurrencyInstance(idLocale).apply {
+    maximumFractionDigits = 0
+    minimumFractionDigits = 0
 }
+
+private fun Double.formatIdr(): String = idrFormat.format(this).replace("\u00a0", "")
 
 private fun Double.formatCompactK(): String {
     val rounded = this.roundToInt()
@@ -575,7 +575,9 @@ fun SpreadsheetScreen(
                     )
 
                     SheetCard {
-                        val workingDays = monthlyLogs.map { it.sanitized() }.filter { it.isWorkingDay }
+                        val workingDays = remember(monthlyLogs) {
+                            monthlyLogs.map { it.sanitized() }.filter { it.isWorkingDay }
+                        }
                         if (workingDays.isEmpty()) {
                             Box(
                                 modifier = Modifier

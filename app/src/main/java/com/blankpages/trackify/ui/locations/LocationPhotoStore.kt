@@ -20,6 +20,24 @@ import kotlinx.coroutines.withContext
 /** Penyimpanan foto lokasi: kamera masuk galeri, salinan stabil disimpan di storage aplikasi. */
 object LocationPhotoStore {
     /**
+     * Cache preview lintas scroll. Tanpa ini, setiap kali kartu keluar masuk
+     * komposisi bitmap di-decode ulang di IO thread dan memori low-end cepat penuh.
+     */
+    private val previewCache = object :
+        LinkedHashMap<String, ImageBitmap>(CACHE_INITIAL_CAPACITY, CACHE_LOAD_FACTOR, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, ImageBitmap>?): Boolean =
+            size > CACHE_MAX_ENTRIES
+    }
+
+    @Synchronized
+    fun cached(path: String): ImageBitmap? = previewCache[path]
+
+    @Synchronized
+    private fun cache(path: String, bitmap: ImageBitmap) {
+        previewCache[path] = bitmap
+    }
+
+    /**
      * Baris MediaStore sengaja tidak ditandai pending: aplikasi kamera eksternal harus bisa
      * menulis JPEG ke URI ini lewat izin yang diberikan `TakePicture`. Menandainya pending
      * mengunci tulis hanya untuk aplikasi ini dan membuat kamera vendor crash saat menekan done.
@@ -77,6 +95,7 @@ object LocationPhotoStore {
 
     fun load(path: String, config: PerformanceConfig): ImageBitmap? {
         if (path.isBlank()) return null
+        cached(path)?.let { return it }
         return runCatching {
             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             BitmapFactory.decodeFile(path, bounds)
@@ -89,11 +108,16 @@ object LocationPhotoStore {
                 path,
                 BitmapFactory.Options().apply { inSampleSize = sample },
             )?.asImageBitmap()
-        }.getOrNull()
+        }.getOrNull()?.also { cache(path, it) }
     }
 
     fun delete(path: String?) {
         if (path.isNullOrBlank()) return
+        synchronized(this) { previewCache.remove(path) }
         runCatching { File(path).delete() }
     }
+
+    private const val CACHE_INITIAL_CAPACITY = 16
+    private const val CACHE_MAX_ENTRIES = 24
+    private const val CACHE_LOAD_FACTOR = 0.75f
 }

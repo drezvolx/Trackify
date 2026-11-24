@@ -18,6 +18,7 @@ android {
 
 dependencies {
     implementation(project(":core:domain"))
+    implementation(project(":core:performance"))
     implementation(libs.androidx.core.ktx)
 
     val roomVersion = "2.7.1"

@@ -63,7 +63,9 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.blankpages.trackify.data.performance.PerformanceRuntime
 import com.blankpages.trackify.navigation.TrackifyTab
+import com.blankpages.trackify.performance.FrameHealthMonitor
 import com.blankpages.trackify.ui.TrackifyUiState
 import com.blankpages.trackify.ui.TrackifyViewModel
 import com.blankpages.trackify.ui.home.HomeScreen
@@ -94,6 +96,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             val state by vm.uiState.collectAsState()
 
+            // TPG > Pantau frame hanya saat Activity berada di foreground.
+            LifecycleEventEffect(Lifecycle.Event.ON_START) {
+                FrameHealthMonitor.start(PerformanceRuntime.governor)
+            }
+            LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+                FrameHealthMonitor.stop()
+            }
             LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
                 vm.syncCurrentDate()
             }

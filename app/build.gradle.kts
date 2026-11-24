@@ -86,6 +86,7 @@ dependencies {
     // Modules > Internal modules
     implementation(project(":core:domain"))
     implementation(project(":core:data"))
+    implementation(project(":core:performance"))
 
     // DI > Hilt
     val hiltVersion = "2.60.1"

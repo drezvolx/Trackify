@@ -151,11 +151,15 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         .distinctUntilChanged()
         .flatMapLatest { ym -> repository.logsByMonth(ym) }
 
+    // StateFlow sudah mengoreksi emisi identik; distinctUntilChanged di sini hanya warning.
+    private val selectedMonthLogsFlow: Flow<List<DailyLog>> = selectedMonthFlow
+        .flatMapLatest { ym -> repository.logsByMonth(ym.toString()) }
+
     val uiState: StateFlow<TrackifyUiState> = combine(
         defaultRateFlow,
         selectedMonthFlow,
         activeTodayLogFlow,
-        selectedMonthFlow.flatMapLatest { ym -> repository.logsByMonth(ym.toString()) },
+        selectedMonthLogsFlow,
         repository.allLocations(),
         repository.allNotes(),
         settingsFlow,
@@ -189,7 +193,8 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
         val latestRelease = args[9] as ReleaseInfo?
         val checkingRelease = args[10] as Boolean
 
-        val yesterdayStr = LocalDate.parse(today.date).minusDays(1).toString()
+        val todayDate = runCatching { LocalDate.parse(today.date) }.getOrDefault(LocalDate.now())
+        val yesterdayStr = todayDate.minusDays(1).toString()
         val yLog = nowLogs.find { it.date == yesterdayStr } ?: logs.find { it.date == yesterdayStr }
         val yRem = if (yLog != null && yLog.isWorkingDay) yLog.remainingPackages else 0
         val activeNotes = notesList.count { !it.isResolved }
@@ -366,106 +371,110 @@ class TrackifyViewModel @Inject constructor(private val repository: TrackifyRepo
 
     fun exportMonthlyCsv(uri: Uri, onResult: (String) -> Unit) {
         viewModelScope.launch {
-            val csv = TrackifyEngine.encodeMonthlyCsv(uiState.value.monthlyLogs)
-            val ok = runCatching {
-                getApplication<Application>().contentResolver.openOutputStream(uri)?.use { out ->
-                    out.write(csv.toByteArray(Charsets.UTF_8))
-                } != null
-            }.getOrDefault(false)
-            onResult(if (ok) "CSV berhasil diekspor" else "Gagal mengekspor CSV")
+            val message = withContext(Dispatchers.IO) {
+                val csv = TrackifyEngine.encodeMonthlyCsv(uiState.value.monthlyLogs)
+                val ok = writeText(uri, csv)
+                if (ok) "CSV berhasil diekspor" else "Gagal mengekspor CSV"
+            }
+            onResult(message)
         }
     }
 
     fun exportCsvForMonth(uri: Uri, month: YearMonth, onResult: (String) -> Unit) {
         viewModelScope.launch {
-            val prefix = month.toString()
-            val logs = repository.dumpLogs().filter { it.date.startsWith(prefix) }
-            val csv = TrackifyEngine.encodeMonthlyCsv(logs)
-            val ok = runCatching {
-                getApplication<Application>().contentResolver.openOutputStream(uri)?.use { out ->
-                    out.write(csv.toByteArray(Charsets.UTF_8))
-                } != null
-            }.getOrDefault(false)
-            onResult(if (ok) "CSV berhasil diekspor" else "Gagal mengekspor CSV")
+            val message = withContext(Dispatchers.IO) {
+                val prefix = month.toString()
+                val logs = repository.dumpLogs().filter { it.date.startsWith(prefix) }
+                val ok = writeText(uri, TrackifyEngine.encodeMonthlyCsv(logs))
+                if (ok) "CSV berhasil diekspor" else "Gagal mengekspor CSV"
+            }
+            onResult(message)
         }
     }
 
+    /** Dipanggil dari Dispatchers.IO; callback UI tetap dikirim di dispatcher utama. */
+    private fun writeText(uri: Uri, text: String): Boolean = runCatching {
+        getApplication<Application>().contentResolver.openOutputStream(uri)?.use { out ->
+            out.write(text.toByteArray(Charsets.UTF_8))
+        } != null
+    }.getOrDefault(false)
+
     fun exportBackup(uri: Uri, onResult: (String) -> Unit) {
         viewModelScope.launch {
-            // Backup > Export all data, not only the open month.
-            val payload = BackupPayload(
-                logs = repository.dumpLogs(),
-                locations = repository.dumpLocations(),
-                notes = repository.dumpNotes(),
-                notePhotos = repository.dumpNotePhotos(),
-                settings = repository.readBackupSettings(),
-            )
-            when (val res = TrackifyEngine.encodeBackup(LocalDate.now().toString(), payload)) {
-                is EngineResult.Ok -> {
-                    val ok = runCatching {
-                        getApplication<Application>().contentResolver.openOutputStream(uri)?.use { out ->
-                            out.write(res.value.toByteArray(Charsets.UTF_8))
-                        } != null
-                    }.getOrDefault(false)
-                    onResult(if (ok) "Backup JSON berhasil disimpan" else "Gagal menulis file backup")
-                }
+            val message = withContext(Dispatchers.IO) {
+                // Backup > Export all data, not only the open month.
+                val payload = BackupPayload(
+                    logs = repository.dumpLogs(),
+                    locations = repository.dumpLocations(),
+                    notes = repository.dumpNotes(),
+                    notePhotos = repository.dumpNotePhotos(),
+                    settings = repository.readBackupSettings(),
+                )
+                when (val res = TrackifyEngine.encodeBackup(LocalDate.now().toString(), payload)) {
+                    is EngineResult.Ok -> {
+                        val ok = writeText(uri, res.value)
+                        if (ok) "Backup JSON berhasil disimpan" else "Gagal menulis file backup"
+                    }
 
-                is EngineResult.Err -> onResult(res.message)
+                    is EngineResult.Err -> res.message
+                }
             }
+            onResult(message)
         }
     }
 
     fun importBackup(uri: Uri, onResult: (String) -> Unit) {
         viewModelScope.launch {
-            val raw = runCatching {
-                getApplication<Application>().contentResolver.openInputStream(uri)?.bufferedReader()?.use {
-                    it.readText()
-                }
-            }.getOrNull()
-            if (raw.isNullOrBlank()) {
-                onResult("File backup kosong atau tidak terbaca")
-                return@launch
-            }
-            when (val decoded = TrackifyEngine.decodeBackup(raw, LocalDate.now().toString())) {
-                is EngineResult.Ok -> {
-                    repository.restoreSnapshot(decoded.value)
-                    repository.restoreBackupSettings(decoded.value.settings)
-                    overrideTodayLogFlow.value = null
-                    defaultRateFlow.value = repository.defaultRate
-                    settingsFlow.value = readSettings()
-                    withContext(Dispatchers.Default) {
-                        DailyReminderScheduler.schedule(
-                            getApplication(),
-                            settingsFlow.value.dailyReminderEnabled,
-                        )
+            val message = withContext(Dispatchers.IO) {
+                val raw = runCatching {
+                    getApplication<Application>().contentResolver.openInputStream(uri)?.bufferedReader()?.use {
+                        it.readText()
                     }
-                    onResult("Restore JSON berhasil (${decoded.value.logs.size} log)")
-                }
+                }.getOrNull()
+                if (raw.isNullOrBlank()) {
+                    "File backup kosong atau tidak terbaca"
+                } else {
+                    when (val decoded = TrackifyEngine.decodeBackup(raw, LocalDate.now().toString())) {
+                        is EngineResult.Ok -> {
+                            repository.restoreSnapshot(decoded.value)
+                            repository.restoreBackupSettings(decoded.value.settings)
+                            overrideTodayLogFlow.value = null
+                            defaultRateFlow.value = repository.defaultRate
+                            settingsFlow.value = readSettings()
+                            DailyReminderScheduler.schedule(
+                                getApplication(),
+                                settingsFlow.value.dailyReminderEnabled,
+                            )
+                            "Restore JSON berhasil (${decoded.value.logs.size} log)"
+                        }
 
-                is EngineResult.Err -> onResult("Restore gagal: ${decoded.message}")
+                        is EngineResult.Err -> "Restore gagal: ${decoded.message}"
+                    }
+                }
             }
+            onResult(message)
         }
     }
 
     fun resetAllData(onResult: (String) -> Unit = {}) {
         viewModelScope.launch {
-            runCatching {
-                repository.clearAllData()
-                repository.resetPreferences()
-                overrideTodayLogFlow.value = null
-                defaultRateFlow.value = repository.defaultRate
-                settingsFlow.value = readSettings()
-                withContext(Dispatchers.Default) {
+            val message = withContext(Dispatchers.IO) {
+                runCatching {
+                    repository.clearAllData()
+                    repository.resetPreferences()
+                    overrideTodayLogFlow.value = null
+                    defaultRateFlow.value = repository.defaultRate
+                    settingsFlow.value = readSettings()
                     DailyReminderScheduler.schedule(
                         getApplication(),
                         settingsFlow.value.dailyReminderEnabled,
                     )
-                }
-            }.onSuccess {
-                onResult("Semua data lokal berhasil dihapus")
-            }.onFailure { err ->
-                onResult("Gagal mereset data: ${err.message}")
+                }.fold(
+                    onSuccess = { "Semua data lokal berhasil dihapus" },
+                    onFailure = { "Gagal mereset data: ${it.message}" },
+                )
             }
+            onResult(message)
         }
     }
 }

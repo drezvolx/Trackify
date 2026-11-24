@@ -366,7 +366,9 @@ Jangan kembali ke `viewModels()` manual dengan DAO langsung.
 - Migrasi aktif: **`MIGRATION_5_6`**, **`MIGRATION_6_7`**, dan **`MIGRATION_7_8`**.
 - `exportSchema = false`.
 - Mode WAL aktif: `setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)`.
+- Query log bulanan memakai rentang `date >= startDate AND date < endExclusive`, bukan `LIKE 'YYYY-MM%'`.
 - `fallbackToDestructiveMigration(true)` tetap dipakai untuk ketahanan, tapi **bukan alasan untuk menaikkan versi sembarangan**.
+- Index komposit baru untuk `courier_notes`/`note_photos` **tidak** ditambahkan di batch TPG; DB tetap v8.
 
 `MIGRATION_5_6` menghapus kolom pembayaran tunai dari `daily_logs`. **Jangan menambahkan kolom itu lagi.**
 
@@ -1118,3 +1120,31 @@ Atas permintaan eksplisit user, kontrak versi yang sebelumnya dikunci dibuka **h
 - Tag dan rilis baru `v1.1.1` diterbitkan dengan aset `.apk`. Tag/release `v1.0.0` dan `v1.1.0` tidak diubah.
 - Pengecheck pembaruan memakai `ReleaseVersion`, jadi `v1.1.1` dianggap lebih baru dari `v1.1.0`.
 - Versi berikutnya tetap memerlukan keputusan eksplisit; amandemen ini tidak otomatis mengizinkan bump lain.
+
+### 25 Nov 2026 — TPG: anggaran adaptif tanpa mengubah kontrak visual atau DB
+
+Trackify Performance Governor (TPG) mengikuti prinsip
+<https://developer.android.com/topic/performance/overview?hl=id>: ukur → perbaiki → ukur ulang.
+
+- Modul `:core:performance` berisi logika murni JVM: `FrameHealthTracker`, `AdaptiveBudgetPolicy`,
+  `QueryGuardPolicy`, dan `TrackifyGovernor`. Tidak ada dependensi Android, jadi bisa diuji di JVM.
+- Sinyal frame diambil dari `Choreographer` di `MainActivity` hanya saat `ON_START`..`ON_STOP`.
+  perubahan grade frame diteruskan ke daftar Catatan/Lokasi lewat listener governor.
+- Aturan permanen: anggaran TPG hanya mengatur **kapan** kerja berat dilakukan dan seberapa sensitif
+  deteksi query. `previewQuota` wajib sama dengan `PerformanceConfig.maxPreviewItems`; TPG tidak boleh
+  mengubah jumlah foto yang tampil, warna, ikon, teks, bottom nav, format Bagikan Lokasi 4 baris,
+  tema otomatis, orientasi portrait, atau token UI lain.
+- Fase 10 tidak diduplikasi: `DevicePerformance`, `PerformancePolicy.sampleSize`, filter akurasi/umur GPS,
+  dan downsample foto saat persist tetap menjadi sumber keputusan perangkat.
+- Room `2.7.1` hanya mengekspos `onQuery(sqlQuery, bindArgs)` tanpa timestamp mulai/selesai. Karena itu
+  `RoomQueryGuard` **dilarang mengklaim durasi query**; ia hanya melaporkan bentuk SQL berpotensi lambat
+  (`LIKE + ORDER BY`, sort tanpa index, `UPDATE linkedLocationId`) dengan deduplikasi 60 detik.
+- `restoreSnapshot` tetap full-replace dan format JSON tetap kompatibel dengan schema lama. Normalisasi
+  dilakukan tepat sebelum upsert: entitas dideduplikasi, foto dengan `noteId <= 0`, orphan, path kosong,
+  atau melebihi 5 per catatan dibuang. `decodeBackup` tetap tidak menolak schema lama.
+- Database tetap v8 dengan `MIGRATION_5_6`, `MIGRATION_6_7`, `MIGRATION_7_8`. Index komposit dan
+  migrasi v9 memerlukan amandemen kontrak terpisah.
+- Aturan autobackup belum diputuskan; `backup_rules.xml` dan `data_extraction_rules.xml` sengaja tidak diubah.
+- R8 default sengaja dipertahankan (paket scope pernah membuat APK keluar instan).
+- Perubahan TPG **belum dirilis**. `versionCode = 3` / `versionName = "1.1.1"`, tag, dan rilis `v1.1.1`
+  tidak diubah; rilis berikutnya tetap butuh keputusan eksplisit.
