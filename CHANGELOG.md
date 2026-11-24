@@ -42,7 +42,8 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
   `0 dipilih` + **Selesai**/**Hapus**; long-press kartu mengubahnya jadi `1 dipilih`.
 - Screenshot mode dark dan light: masing-masing 17.266 piksel sampel, `NON_NEUTRAL=0` (semua R/G/B selisih
   ≤ 8) — tidak ada warna di luar tema pada UI utama.
-- CI `validate`: menunggu run setelah push.
+- CI `validate`: run `45419094359` (`#36`, commit `cbcfc32`) hijau — semua langkah, termasuk **Theme color guard**,
+  `Build and test`, dan post-jobs, ber-conclusion `success` (mulai 14:53:12Z, selesai 14:56:06Z; ±2m54s).
 
 ### Catatan
 

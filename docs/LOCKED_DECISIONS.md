@@ -959,8 +959,9 @@ User menyetujui pergantian palet solid menjadi gradien monokrom. Keputusan:
 - Hero "Terkirim hari ini" di Home memakai gradien hero dan teks `HeroInk` / `HeroMute` (putih) agar kontras
   di kedua tema. Ini satu-satunya kartu yang boleh keluar dari token `scheme.surface`; kartu lain tetap
   `scheme.surface` + border `outlineVariant`.
-- `TrackifyMockupPalette`, `res/values/colors.xml`, dan window background XML diselaraskan ke stop tengah
-  gradien. `ScreenTitle`, bottom nav, orientasi portrait, dan token dialog tidak berubah.
+- `res/values/colors.xml` dan window background XML diselaraskan ke stop tengah gradien;
+  `TrackifyMockupPalette` sudah digantikan `TrackifyColors` (§4.9). `ScreenTitle`, bottom nav, orientasi
+  portrait, dan token dialog tidak berubah.
 
 ### 24 Nov 2026 — Fase 16: typography
 
