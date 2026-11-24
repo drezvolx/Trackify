@@ -37,7 +37,9 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
   chooser dengan preview persis empat baris: `Nama Penerima : Ka Syahri`, `Detail/Patokan : `, `Maps : https://…`,
   `by Trackify.` — tanpa `FOTO`, garis pemisah, atau baris kosong. Tab Catatan menampilkan kontrol pin; pemilihan
   `PinFilled`/`PinOutlined` mengikuti `isPinned` di kode.
-- CI `validate`: menunggu run setelah push; id dan hasilnya dicatat setelah hijau.
+- CI `validate`: run `45411940188` pada commit `c6adbe7` hijau (3m40s, tanpa annotation). Run awal `45411607262`
+  gagal hanya pada `Contract grep` karena regex tanpa word boundary ikut mencocokkan `TrackifyIcons.X`; regex sudah
+  diperbaiki. Versi, tag `v1.0.0`/`v1.1.0`, dan rilis tidak berubah.
 
 ---
 
