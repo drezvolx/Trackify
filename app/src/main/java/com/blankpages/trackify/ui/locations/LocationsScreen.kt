@@ -876,7 +876,6 @@ private fun LocationEditorDialog(
 
     val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
-            LocationPhotoStore.finalizeGalleryImage(context, pendingCameraUri)
             pendingCameraUri?.let { uri ->
                 scope.launch {
                     val saved = LocationPhotoStore.persist(context, uri, perf)

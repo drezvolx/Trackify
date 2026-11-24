@@ -484,6 +484,9 @@ Hasil harus **kosong**.
 - Wajib cek: izin, GPS aktif, akurasi, umur fix.
 - Rationale izin permanen harus tetap ada.
 - Izin `CAMERA` dipakai untuk **Ambil foto**; hasilnya masuk galeri lewat `MediaStore` dan disalin ke storage aplikasi.
+  Baris MediaStore yang diserahkan ke kamera **tidak boleh** memakai `IS_PENDING = 1`: penanda itu mengunci tulis
+  hanya untuk Trackify, sehingga kamera vendor crash saat menekan **done**. Kamera menulis JPEG lewat izin URI
+  `TakePicture`; `finalizeGalleryImage()` tidak dipakai lagi.
 - Izin `INTERNET` dipakai untuk dua hal: mengikuti redirect short link Google Maps dan GET publik
   `https://api.github.com/repos/drezvolx/Trackify/releases/latest` untuk pengecekan versi (Fase 18). Tidak ada data
   aplikasi yang dikirim, tidak ada auto-install, dan semua fitur inti tetap offline.

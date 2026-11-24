@@ -19,26 +19,22 @@ import kotlinx.coroutines.withContext
 
 /** Penyimpanan foto lokasi: kamera masuk galeri, salinan stabil disimpan di storage aplikasi. */
 object LocationPhotoStore {
+    /**
+     * Baris MediaStore sengaja tidak memakai `IS_PENDING`: aplikasi kamera eksternal harus bisa
+     * menulis JPEG ke URI ini lewat izin yang diberikan `TakePicture`. Menandainya pending
+     * mengunci tulis hanya untuk aplikasi ini dan membuat kamera vendor crash saat menekan done.
+     */
     fun createGalleryImageUri(context: Context): Uri? {
         val values = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, "Trackify_${System.currentTimeMillis()}.jpg")
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/Trackify")
-                put(MediaStore.Images.Media.IS_PENDING, 1)
             }
         }
         return runCatching {
             context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
         }.getOrNull()
-    }
-
-    fun finalizeGalleryImage(context: Context, uri: Uri?) {
-        if (uri == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
-        runCatching {
-            val values = ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }
-            context.contentResolver.update(uri, values, null, null)
-        }
     }
 
     /**

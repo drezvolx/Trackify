@@ -564,7 +564,6 @@ private fun NoteEditorDialog(
     var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { taken ->
         if (taken && pendingCameraUri != null) {
-            LocationPhotoStore.finalizeGalleryImage(context, pendingCameraUri)
             scope.launch {
                 LocationPhotoStore.persist(
                     context,

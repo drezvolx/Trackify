@@ -4,6 +4,31 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 24 Nov 2026 — Perbaikan: kamera berhenti saat ambil foto Lokasi
+
+### Diubah
+
+- `LocationPhotoStore.createGalleryImageUri()` tidak lagi menandai baris MediaStore dengan `IS_PENDING = 1`.
+  Penanda itu mengunci tulis hanya untuk aplikasi, sehingga kamera vendor crash saat menekan **done** dan sistem
+  menampilkan "Kamera telah berhenti"/"paksa berhenti". Foto tetap masuk galeri lewat `MediaStore`, lalu salinan
+  stabil disimpan di `filesDir/location_photos` sesuai kontrak.
+- `finalizeGalleryImage()` dan pemanggilannya di `LocationsScreen` serta `NotesScreen` dihapus karena tidak lagi
+  diperlukan. Kontrak di `docs/LOCKED_DECISIONS.md §4.3` diamandemen untuk melarang `IS_PENDING` pada URI kamera.
+
+### Verifikasi
+
+- Reproduksi awal: Lokasi Baru → **Ambil foto** → shutter → **done** memunculkan dialog "Kamera telah berhenti".
+- Setelah perbaikan: alur yang sama kembali ke editor dengan tombol **Hapus foto**, tanpa dialog crash; baris galeri
+  `Pictures/Trackify/Trackify_*.jpg` terisi dengan ukuran > 0.
+- Smoke Lokasi: foto 0→1, preview di editor, **Simpan lokasi** berhasil, detail menampilkan **Foto lokasi**,
+  lalu **Edit** → **Hapus foto** → **Simpan perubahan** menghilangkan foto dari detail.
+- ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **36/36** tes, 0 failure.
+- Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`,
+  `DIRECT_BUTTONS=0`, `ALPHA_BORDER=0`, `SHADOW=0`, `OFF_SCALE_SPACING=0`; `Scaffold(` hanya di `MainActivity.kt`.
+- Perubahan ini **tidak** menaikkan versi dan tidak membuat tag/rilis baru. Tag dan rilis `v1.0.0`/`v1.1.0` utuh.
+
+---
+
 ## 24 Nov 2026 — Rilis v1.1.0
 
 ### Diubah
