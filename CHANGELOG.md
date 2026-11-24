@@ -37,7 +37,8 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
   - Catatan gelap: ikon yang sama punya `bright=142/2856`, `163/2704`, `701/2116`, dan `3450/4641`.
   - Lokasi terang: ikon **Rute** `dark=447/3111`, **GPS** `693/2401`, **Plus** `144/3213`, **Bagikan**
     `499/1936`.
-- CI `validate`: (diisi setelah push).
+- CI `validate`: run `45436978325` (`#40`, commit `8fb3bfd`) hijau — job `validate` ber-conclusion `success`,
+  termasuk ktlint, contract grep, Theme color guard, dan `Build and test`.
 
 ---
 
