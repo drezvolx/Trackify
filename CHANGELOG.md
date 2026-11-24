@@ -25,6 +25,7 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 - ktlint 1.8.0 exit 0; `:app:assembleDebug :app:testDebugUnitTest` hijau dengan **36/36** tes, 0 failure.
 - Grep kontrak: `COD_TOKEN=0`, `OLD_IDENTIFIERS=0`, `ALERT_DIRECT=0`, `SUBTEXT=0`, `THEME_MANUAL=0`,
   `DIRECT_BUTTONS=0`, `ALPHA_BORDER=0`, `SHADOW=0`, `OFF_SCALE_SPACING=0`; `Scaffold(` hanya di `MainActivity.kt`.
+- CI `validate` hijau: run `45406085894` (`2a067e6`).
 - Perubahan ini **tidak** menaikkan versi dan tidak membuat tag/rilis baru. Tag dan rilis `v1.0.0`/`v1.1.0` utuh.
 
 ---
