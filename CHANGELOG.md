@@ -4,11 +4,35 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
-## 25 Nov 2026 — Trackify Performance Governor (TPG), belum dirilis
+## 25 Nov 2026 — Rilis minor v1.2.0 (TPG)
+
+### Keputusan user
+
+- Versi berikutnya adalah **v1.2.0** (`versionCode = 4` / `versionName = "1.2.0"`).
+- Kontrak DB **tidak** diamandemen: tetap v8 dengan migrasi `5→6`, `6→7`, `7→8`; index komposit/v9 ditunda.
+- Aturan autobackup Android masih ditunda; `backup_rules.xml`/`data_extraction_rules.xml` tidak diubah.
+- Tag dan rilis `v1.0.0`, `v1.1.0`, dan `v1.1.1` tidak diubah.
+
+### Diubah
+
+- `app/build.gradle.kts`: bump versi minor untuk gebrakan performa TPG.
+- `docs/LOCKED_DECISIONS.md` (§2.3, §9): versi baru dan keputusan di atas dicatat permanen.
+
+### Verifikasi
+
+- ktlint `1.8.0` exit `0`; `.\gradlew.bat :app:assembleDebug :app:assembleRelease :app:testDebugUnitTest
+  --no-configuration-cache --console=plain`: `BUILD SUCCESSFUL`; `SUITES=9 TESTS=47 FAILURES=0 ERRORS=0 SKIPPED=0`.
+- CI `validate`: akan dicatat setelah push commit versi.
+- Tag, GitHub Release, dan aset APK: akan dicatat setelah diterbitkan. Aset tetap memakai debug keystore
+  karena belum ada keystore rilis resmi.
+
+---
+
+## 25 Nov 2026 — Trackify Performance Governor (TPG)
 
 Kerangka kerja mengikuti panduan performa Android
 <https://developer.android.com/topic/performance/overview?hl=id>: **ukur → perbaiki → ukur ulang**.
-Perubahan ini belum menaikkan versi, membuat tag, atau menerbitkan rilis.
+Saat batch ini dikerjakan versi belum dinaikkan; status akhir ada di entri rilis `v1.2.0` di bawah.
 
 ### Ditambahkan
 
@@ -56,7 +80,7 @@ Perubahan ini belum menaikkan versi, membuat tag, atau menerbitkan rilis.
 - Smoke TECNO LH7n (Android 14), APK debug: terang `#F1F1F1` vs gelap `#1E1F22`, teks Home identik;
   ikon dan bottom nav terbaca; format Bagikan Lokasi 4 baris dijaga `LocationShareTextTest`.
 - CI `validate`: run `45452004850` (`commit 3b139d5`) hijau — job `validate` ber-conclusion `success`.
-- Belum ada tag atau rilis baru untuk perubahan ini.
+- Status akhir: perubahan ini dirilis sebagai `v1.2.0`; lihat entri rilis di bawah.
 
 ---
 

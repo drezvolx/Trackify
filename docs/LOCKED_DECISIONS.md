@@ -335,7 +335,7 @@ Aturan:
 
 | Komponen | Versi tetap | Catatan |
 |---|---|---|
-| Aplikasi | `versionCode = 3` / `versionName = "1.1.1"` | Patch ikon; amandemen kontrak 25 Nov 2026 |
+| Aplikasi | `versionCode = 4` / `versionName = "1.2.0"` | Rilis minor TPG; amandemen kontrak 25 Nov 2026 |
 | AGP | `9.5.2` | Di `libs.versions.toml` |
 | Kotlin | `2.2.10` | Di `libs.versions.toml` |
 | Compose BOM | `2026.02.01` | Di `libs.versions.toml` |
@@ -1146,5 +1146,6 @@ Trackify Performance Governor (TPG) mengikuti prinsip
   migrasi v9 memerlukan amandemen kontrak terpisah.
 - Aturan autobackup belum diputuskan; `backup_rules.xml` dan `data_extraction_rules.xml` sengaja tidak diubah.
 - R8 default sengaja dipertahankan (paket scope pernah membuat APK keluar instan).
-- Perubahan TPG **belum dirilis**. `versionCode = 3` / `versionName = "1.1.1"`, tag, dan rilis `v1.1.1`
-  tidak diubah; rilis berikutnya tetap butuh keputusan eksplisit.
+- Perubahan TPG awalnya belum dirilis; setelah keputusan eksplisit user, dirilis sebagai `v1.2.0`
+  (`versionCode = 4`). Tag dan rilis `v1.1.1` tidak diubah.
+- Atas keputusan yang sama: DB tetap v8 (tidak ada amandemen v9), dan aturan autobackup masih ditunda.
