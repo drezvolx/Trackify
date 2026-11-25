@@ -8,15 +8,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -37,27 +32,26 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
  * Splash satu Activity: geometri bookmark-book.svg, Geist, dan token tema.
  *
- * Optimasi sengaja sederhana: tidak ada Activity kedua, tidak ada `Thread.sleep`,
- * tidak ada workload database di jalur animasi, dan layar utama baru dikomposisi
- * setelah [onFinished]. `windowBackground` theme menutup jeda sebelum frame pertama.
+ * Hanya menampilkan ikon lalu nama aplikasi dalam satu baris. Typography bergerak per huruf
+ * memakai satu [Animatable], tanpa timer per huruf. Tidak ada Activity kedua, `Thread.sleep`,
+ * atau workload database di jalur animasi; `windowBackground` theme menutup frame pertama.
  */
 @Composable
 fun TrackifySplash(onFinished: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val markAlpha = remember { Animatable(0f) }
-    val markScale = remember { Animatable(0.86f) }
-    val textAlpha = remember { Animatable(0f) }
-    val lineProgress = remember { Animatable(0f) }
+    val markScale = remember { Animatable(0.82f) }
+    val reveal = remember { Animatable(0f) }
     val markPath = remember { bookmarkPath() }
+    val letters = remember { "Trackify".toCharArray() }
 
     LaunchedEffect(Unit) {
-        launch { markAlpha.animateTo(1f, tween(320)) }
+        launch { markAlpha.animateTo(1f, tween(220)) }
         launch {
             markScale.animateTo(
                 targetValue = 1f,
@@ -67,11 +61,7 @@ fun TrackifySplash(onFinished: () -> Unit) {
                 ),
             )
         }
-        launch {
-            delay(90)
-            textAlpha.animateTo(1f, tween(320))
-        }
-        lineProgress.animateTo(1f, tween(620, easing = FastOutSlowInEasing))
+        reveal.animateTo(1f, tween(520, easing = FastOutSlowInEasing))
         onFinished()
     }
 
@@ -81,10 +71,10 @@ fun TrackifySplash(onFinished: () -> Unit) {
             .background(scheme.background),
         contentAlignment = Alignment.Center,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Canvas(
                 modifier = Modifier
-                    .size(76.dp)
+                    .size(46.dp)
                     .alpha(markAlpha.value)
                     .scale(markScale.value),
             ) {
@@ -104,48 +94,30 @@ fun TrackifySplash(onFinished: () -> Unit) {
                 }
             }
 
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.width(12.dp))
 
-            Text(
-                text = "Trackify",
-                style = MaterialTheme.typography.displayMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = (-1.4).sp,
-                ),
-                color = scheme.onBackground,
-                modifier = Modifier
-                    .alpha(textAlpha.value)
-                    .graphicsLayer { translationY = (1f - textAlpha.value) * 10.dp.toPx() },
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            Text(
-                text = "CATAT • TEMUKAN • LACAK",
-                style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.4.sp),
-                color = scheme.onSurfaceVariant,
-                modifier = Modifier.alpha(textAlpha.value),
-            )
-
-            Spacer(Modifier.height(22.dp))
-
-            Box(
-                modifier = Modifier
-                    .width(88.dp)
-                    .height(2.dp)
-                    .clip(CircleShape)
-                    .background(scheme.outlineVariant),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(lineProgress.value)
-                        .background(scheme.primary),
-                )
+            Row {
+                letters.forEachIndexed { index, letter ->
+                    val local = ((reveal.value - index * LETTER_STEP) / LETTER_SPAN).coerceIn(0f, 1f)
+                    Text(
+                        text = letter.toString(),
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = 0.sp,
+                        ),
+                        color = scheme.onBackground,
+                        modifier = Modifier
+                            .alpha(local)
+                            .graphicsLayer { translationY = (1f - local) * 12.dp.toPx() },
+                    )
+                }
             }
         }
     }
 }
+
+private const val LETTER_STEP = 0.055f
+private const val LETTER_SPAN = 0.42f
 
 /** Path SVG asli (viewBox 24) dipakai ulang supaya launcher dan splash identik. */
 private fun bookmarkPath(): Path = Path().apply {

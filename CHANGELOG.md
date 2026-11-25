@@ -14,10 +14,11 @@ Menindaklanjuti permintaan logo dan splash. Tidak ada bump versi, tag, rilis, pe
   `drawable/ic_launcher_foreground.xml` dengan viewport adaptive `108dp`. Latar launcher memakai gradien
   charcoal dari token yang sama dengan hero aplikasi (`values/colors.xml`). Ini **pengecualian launcher/brand**
   dari aturan `TrackifyIcons.kt`; ikon UI tetap Coolicons `fill/round` dan tidak ada aset ikon UI baru.
-- Splash baru `ui/splash/TrackifySplash.kt`: geometri bookmark yang sama, tipografi Geist, tiga animasi
-  ringkas (mark fade+spring, teks naik, garis progres), dan latar token tema. Dipasang sebagai overlay dalam
-  `MainActivity` satu Activity; komposisi layar utama ditunda sampai animasi selesai. Tidak ada Activity kedua,
-  `Thread.sleep`, dependensi baru, atau warna literal.
+- Splash baru `ui/splash/TrackifySplash.kt`: geometri bookmark yang sama, tipografi Geist, dan format
+  `[ikon] Trackify` dalam satu baris. Animasinya hanya mark fade+spring dan huruf nama yang naik bergantian
+  dari satu `Animatable`; tagline dan garis progres dihapus. Dipasang sebagai overlay dalam `MainActivity` satu
+  Activity; komposisi layar utama ditunda sampai animasi selesai. Tidak ada Activity kedua, `Thread.sleep`,
+  dependensi baru, atau warna literal.
 - Level observabilitas TPG dinaikkan `Log.d` → `Log.i` di `TpgFrameLogger` dan `RoomQueryGuard`, karena perangkat
   uji menyaring priority `D`. Perilaku governor, kuota visual, dan format baris log tidak berubah.
 

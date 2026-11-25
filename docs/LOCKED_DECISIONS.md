@@ -1220,9 +1220,10 @@ tipografi animasi. Karena keputusan ikon 24 Nov melarang aset ikon di luar `Trac
 - Warna launcher/splash tetap hanya dari `values/colors.xml` lewat `TrackifyColors.kt` / token XML; tidak ada
   hex baru dan tidak ada warna non-netral. Latar launcher memakai gradien charcoal yang sama dengan hero app.
 - Splash memakai satu `MainActivity` dengan overlay Compose, Geist, dan animasi `Animatable` tanpa
-  `Thread.sleep`/Activity tambahan/dependensi baru. Layar utama baru dikomposisi setelah animasi selesai;
-  `windowBackground` theme menutup frame pertama. Bottom nav, format Bagikan Lokasi, tema otomatis, dan
-  orientasi portrait tidak berubah.
+  `Thread.sleep`/Activity tambahan/dependensi baru. Format splash final adalah `[ikon] Trackify` dalam satu
+  baris: mark fade+spring dan typography per huruf, tanpa tagline/garis progres. Layar utama baru dikomposisi
+  setelah animasi selesai; `windowBackground` theme menutup frame pertama. Bottom nav, format Bagikan Lokasi,
+  tema otomatis, dan orientasi portrait tidak berubah.
 - Level log TPG dinaikkan ke `Log.i` karena filter `logd` perangkat uji menyaring `Log.d`. Format dan frekuensi
   log tidak berubah. Jika logcat tetap kosong walau `Log.e` juga tidak muncul, itu keterbatasan perangkat.
 - Tidak ada bump versi, tag, rilis, DB v9, atau autobackup akibat perubahan ini.
