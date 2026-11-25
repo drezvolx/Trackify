@@ -8,6 +8,7 @@ import com.blankpages.trackify.performance.FrameGrade
 import com.blankpages.trackify.performance.FrameHealth
 import com.blankpages.trackify.performance.FrameHealthTracker
 import com.blankpages.trackify.performance.QueryGuardPolicy
+import com.blankpages.trackify.performance.TpgFrameLogger
 import com.blankpages.trackify.performance.TrackifyGovernor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -125,5 +126,60 @@ class TpgGovernorTest {
         assertEquals(2, seen.size)
         assertEquals(FrameGrade.CRITICAL, seen.last().grade)
         governor.removeListener(listener)
+    }
+
+    @Test
+    fun frameLogger_ignoresSamplesInsideSameGrade() {
+        val governor = TrackifyGovernor()
+        val lines = mutableListOf<String>()
+        val logger = TpgFrameLogger(governor) { lines += it }
+        governor.bind(PerformancePolicy.configFor(PerformanceTier.BALANCED))
+        logger.attach()
+
+        repeat(60) { governor.recordFrameDeltaNanos(16_000_000L) }
+        repeat(12) { governor.recordFrameDeltaNanos(25_000_000L) }
+
+        assertTrue(lines.isEmpty())
+        assertTrue(governor.snapshot().frameHealth.score < 100)
+        assertEquals(FrameGrade.SMOOTH, governor.snapshot().frameHealth.grade)
+    }
+
+    @Test
+    fun frameLogger_logsOnceWithHealthOnGradeTransition() {
+        val governor = TrackifyGovernor()
+        val lines = mutableListOf<String>()
+        val logger = TpgFrameLogger(governor) { lines += it }
+        governor.bind(PerformancePolicy.configFor(PerformanceTier.BALANCED))
+        logger.attach()
+
+        repeat(60) { governor.recordFrameDeltaNanos(50_000_000L) }
+
+        assertEquals(1, lines.size)
+        val line = lines.single()
+        assertTrue(line.contains("grade=SMOOTH->CRITICAL"))
+        assertTrue(line.contains("score="))
+        assertTrue(line.contains("jank="))
+        assertTrue(line.contains("median="))
+        assertTrue(line.contains("samples="))
+    }
+
+    @Test
+    fun frameLogger_reportsBudgetThatMatchesPolicyOnTransition() {
+        val governor = TrackifyGovernor()
+        val config = PerformancePolicy.configFor(PerformanceTier.LOW)
+        val lines = mutableListOf<String>()
+        val logger = TpgFrameLogger(governor) { lines += it }
+        governor.bind(config)
+        logger.attach()
+
+        repeat(60) { governor.recordFrameDeltaNanos(50_000_000L) }
+
+        val expected = AdaptiveBudgetPolicy.budgetFor(config, FrameHealth(FrameGrade.CRITICAL))
+        val line = lines.single()
+        assertTrue(line.contains("tier=LOW"))
+        assertTrue(line.contains("queryWarnMs=${expected.queryWarnMs}"))
+        assertTrue(line.contains("frameSampleEvery=${expected.frameSampleEvery}"))
+        assertTrue(line.contains("deferDecode=true"))
+        assertTrue(line.contains("previewQuota=${config.maxPreviewItems}"))
     }
 }

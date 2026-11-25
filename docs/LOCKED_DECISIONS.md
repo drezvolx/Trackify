@@ -1195,3 +1195,14 @@ Trackify Performance Governor (TPG) mengikuti prinsip
   bisa diukur langsung dari logcat. Ini calon perbaikan terpisah, bukan bagian dari stress test.
 - Tidak ada bump versi, tag, rilis, DB, atau autobackup. Data asli dipulihkan dan perangkat kembali
   ke APK rilis `v1.2.0`.
+
+### 25 Nov 2026 — Logging grade frame TPG
+
+- Keterbatasan observabilitas ditutup dengan observer ringan di layer app (`TpgFrameLogger.kt`), dipasang
+  sekali dari `TrackifyApp` setelah bind. `:core:performance` tetap murni JVM tanpa dependensi Android.
+- Satu baris `TPG/Frame` hanya pada transisi grade, memuat grade lama→baru, metrik frame, dan anggaran baru.
+  Tidak ada log per frame, tidak ada timer, dan tidak ada perubahan perilaku, kuota visual, DB, atau versi.
+- Log kosong pada beban normal berarti grade tidak berubah, **bukan** bukti governor idle. Membuktikan
+  adaptasi tetap memerlukan beban yang benar-benar memicu transisi grade; ini tidak membuka amandemen DB v9.
+- Gate: ktlint `0`, build + 50 tes hijau, grep kontrak/tema bersih, smoke light/dark tanpa `FATAL`.
+- Tidak ada bump versi, tag, rilis, DB, atau autobackup. Perangkat kembali ke APK rilis `v1.2.0`.

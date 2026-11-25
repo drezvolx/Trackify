@@ -4,6 +4,37 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 25 Nov 2026 — Logging grade frame TPG (tanpa rilis baru)
+
+Menutup koreksi observabilitas dari ukur ulang dan stress test. Sebelumnya logcat hanya bisa menunjukkan
+verdict `RoomQueryGuard`, sehingga aktivitas frame governor tidak bisa dibedakan dari "tidak ada log".
+Perubahan ini hanya menambah observasi; perilaku TPG, kuota visual, DB, versi, tag, dan rilis tidak berubah.
+
+### Perubahan
+
+- Kelas baru `app/src/main/java/com/blankpages/trackify/performance/TpgFrameLogger.kt` dipasang sekali dari
+  `TrackifyApp` setelah `PerformanceRuntime.bind(...)`, memakai listener governor yang sudah ada.
+- Satu baris `Log.d("TPG/Frame", ...)` ditulis **hanya saat grade frame berubah**
+  (`SMOOTH`/`STRAINED`/`CRITICAL`). Isinya: grade lama→baru, `score`, `jankRatio`, `medianFrameMs`,
+  `samples`, serta anggaran baru (`tier`, `queryWarnMs`, `frameSampleEvery`, `deferDecode`, `previewQuota`).
+- Tidak ada log per frame, tidak ada timer, dan `:core:performance` tetap murni JVM tanpa dependensi Android.
+
+### Verifikasi
+
+- 3 tes baru di `TpgGovernorTest`: skor yang berubah dalam grade yang sama tidak memicu log, transisi uniform
+  menghasilkan tepat satu baris, dan angka anggaran mengikuti `AdaptiveBudgetPolicy`.
+  Total `SUITES=9 TESTS=50 FAILURES=0 ERRORS=0 SKIPPED=0` (sebelumnya 47 tes; tes lama tetap hijau).
+- ktlint `1.8.0` exit `0`; `:app:assembleDebug :app:assembleRelease :app:testDebugUnitTest` →
+  `BUILD SUCCESSFUL`.
+- Grep kontrak/tema: `ICON_CONTRACT_HITS=0`, `RAW_COLOR_HITS=0`, `XML_HEX_HITS=0`, `NON_NEUTRAL_TOTAL=0`,
+  `CORE_ANDROID_HITS=0`.
+- Smoke debug di TECNO LH7n / Android 14: kelima tab terjangkau, Setelan terbuka, tema terang vs gelap
+  terverifikasi (rerata kecerahan `104,2` vs `60,6`), `FATAL_LINES=0`. Tidak ada baris `TPG/Frame` pada beban
+  normal karena tidak terjadi transisi grade — sesuai desain, bukan kegagalan logging. Perangkat dikembalikan
+  ke APK rilis `v1.2.0`.
+
+---
+
 ## 25 Nov 2026 — Stress test TPG dengan data berat (tanpa rilis baru)
 
 Melanjutkan ukur ulang, beban buatan disuntikkan supaya kondisi yang sebelumnya tidak tercapai benar-benar
