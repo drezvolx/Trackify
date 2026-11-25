@@ -7,15 +7,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -76,7 +72,6 @@ import com.blankpages.trackify.ui.home.HomeScreen
 import com.blankpages.trackify.ui.locations.LocationsScreen
 import com.blankpages.trackify.ui.notes.NotesScreen
 import com.blankpages.trackify.ui.settings.SettingsScreen
-import com.blankpages.trackify.ui.splash.TrackifySplash
 import com.blankpages.trackify.ui.spreadsheet.SpreadsheetScreen
 import com.blankpages.trackify.ui.theme.TrackifyTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -99,6 +94,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
+            val state by vm.uiState.collectAsState()
+
             // TPG > Pantau frame hanya saat Activity berada di foreground.
             LifecycleEventEffect(Lifecycle.Event.ON_START) {
                 FrameHealthMonitor.start(PerformanceRuntime.governor)
@@ -110,107 +107,91 @@ class MainActivity : ComponentActivity() {
                 vm.syncCurrentDate()
             }
 
-            var showSplash by rememberSaveable { mutableStateOf(true) }
-
             // Theme & System bar > Follow the device via SystemBarStyle.auto.
             TrackifyTheme {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    // Splash > Layar utama baru dikomposisi setelah animasi selesai.
-                    if (!showSplash) {
-                        val state by vm.uiState.collectAsState()
-                        val stateHolder = rememberSaveableStateHolder()
-                        val scheme = MaterialTheme.colorScheme
+                val stateHolder = rememberSaveableStateHolder()
+                val scheme = MaterialTheme.colorScheme
 
-                        var tabOrdinal by rememberSaveable { mutableIntStateOf(0) }
-                        var inSettings by rememberSaveable { mutableStateOf(false) }
-                        val currentTab = TrackifyTab.of(tabOrdinal)
+                var tabOrdinal by rememberSaveable { mutableIntStateOf(0) }
+                var inSettings by rememberSaveable { mutableStateOf(false) }
+                val currentTab = TrackifyTab.of(tabOrdinal)
 
-                        BackHandler(inSettings) { inSettings = false }
-                        BackHandler(!inSettings && currentTab != TrackifyTab.HOME) { tabOrdinal = 0 }
+                BackHandler(inSettings) { inSettings = false }
+                BackHandler(!inSettings && currentTab != TrackifyTab.HOME) { tabOrdinal = 0 }
 
-                        Scaffold(
-                            containerColor = scheme.background,
-                            // Insets > Honor status bars everywhere; skip bottom inset behind the bar.
-                            contentWindowInsets = WindowInsets.statusBars,
-                            bottomBar = {
-                                if (!inSettings) {
-                                    ReferenceNotchedBottomBar(
-                                        currentTab = currentTab,
-                                        onSelectTab = { tabOrdinal = it.ordinal },
-                                    )
-                                }
-                            },
-                        ) { padding ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(
-                                        start = padding.calculateStartPadding(LocalLayoutDirection.current),
-                                        top = padding.calculateTopPadding(),
-                                        end = padding.calculateEndPadding(LocalLayoutDirection.current),
-                                    ),
-                            ) {
-                                if (inSettings) {
-                                    SettingsScreen(
-                                        defaultRate = state.defaultRate,
-                                        defaultBonus = state.settings.defaultBonus,
-                                        targetAmount = state.settings.targetAmount,
-                                        dailyReminderEnabled = state.settings.dailyReminderEnabled,
-                                        wageMode = state.settings.wageMode,
-                                        flatDailyAmount = state.settings.flatDailyAmount,
-                                        wagePeriod = state.settings.wagePeriod,
-                                        paydayDate = state.settings.paydayDate,
-                                        reminderTime = state.settings.reminderTime,
-                                        appVersion = appVersion,
-                                        onBack = { inSettings = false },
-                                        onUpdateRate = vm::updateDefaultRate,
-                                        onUpdateBonus = vm::updateDefaultBonus,
-                                        onUpdateTarget = vm::updateTargetAmount,
-                                        onToggleReminder = vm::setDailyReminder,
-                                        onUpdateWageMode = vm::updateWageMode,
-                                        onUpdateFlatDailyAmount = vm::updateFlatDailyAmount,
-                                        onUpdateWagePeriod = vm::updateWagePeriod,
-                                        onUpdatePaydayDate = vm::updatePaydayDate,
-                                        onUpdateReminderTime = vm::updateReminderTime,
-                                        onExportCsv = vm::exportCsvForMonth,
-                                        onBackupData = vm::exportBackup,
-                                        onRestoreData = vm::importBackup,
-                                        onResetData = {
-                                            vm.resetAllData { msg ->
-                                                Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
-                                            }
-                                        },
-                                    )
-                                } else {
-                                    AnimatedContent(
-                                        targetState = currentTab,
-                                        transitionSpec = {
-                                            EnterTransition.None togetherWith ExitTransition.None
-                                        },
-                                        label = "fast_tab_switch",
-                                    ) { tab ->
-                                        stateHolder.SaveableStateProvider(tab.name) {
-                                            TabContent(
-                                                tab = tab,
-                                                state = state,
-                                                onOpenSettings = { inSettings = true },
-                                                onNavigateTab = { tabOrdinal = it.ordinal },
-                                                vm = vm,
-                                                appVersion = appVersion,
-                                            )
-                                        }
+                Scaffold(
+                    containerColor = scheme.background,
+                    // Insets > Honor status bars everywhere; skip bottom inset behind the bar.
+                    contentWindowInsets = WindowInsets.statusBars,
+                    bottomBar = {
+                        if (!inSettings) {
+                            ReferenceNotchedBottomBar(
+                                currentTab = currentTab,
+                                onSelectTab = { tabOrdinal = it.ordinal },
+                            )
+                        }
+                    },
+                ) { padding ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                start = padding.calculateStartPadding(LocalLayoutDirection.current),
+                                top = padding.calculateTopPadding(),
+                                end = padding.calculateEndPadding(LocalLayoutDirection.current),
+                            ),
+                    ) {
+                        if (inSettings) {
+                            SettingsScreen(
+                                defaultRate = state.defaultRate,
+                                defaultBonus = state.settings.defaultBonus,
+                                targetAmount = state.settings.targetAmount,
+                                dailyReminderEnabled = state.settings.dailyReminderEnabled,
+                                wageMode = state.settings.wageMode,
+                                flatDailyAmount = state.settings.flatDailyAmount,
+                                wagePeriod = state.settings.wagePeriod,
+                                paydayDate = state.settings.paydayDate,
+                                reminderTime = state.settings.reminderTime,
+                                appVersion = appVersion,
+                                onBack = { inSettings = false },
+                                onUpdateRate = vm::updateDefaultRate,
+                                onUpdateBonus = vm::updateDefaultBonus,
+                                onUpdateTarget = vm::updateTargetAmount,
+                                onToggleReminder = vm::setDailyReminder,
+                                onUpdateWageMode = vm::updateWageMode,
+                                onUpdateFlatDailyAmount = vm::updateFlatDailyAmount,
+                                onUpdateWagePeriod = vm::updateWagePeriod,
+                                onUpdatePaydayDate = vm::updatePaydayDate,
+                                onUpdateReminderTime = vm::updateReminderTime,
+                                onExportCsv = vm::exportCsvForMonth,
+                                onBackupData = vm::exportBackup,
+                                onRestoreData = vm::importBackup,
+                                onResetData = {
+                                    vm.resetAllData { msg ->
+                                        Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
                                     }
+                                },
+                            )
+                        } else {
+                            AnimatedContent(
+                                targetState = currentTab,
+                                transitionSpec = {
+                                    EnterTransition.None togetherWith ExitTransition.None
+                                },
+                                label = "fast_tab_switch",
+                            ) { tab ->
+                                stateHolder.SaveableStateProvider(tab.name) {
+                                    TabContent(
+                                        tab = tab,
+                                        state = state,
+                                        onOpenSettings = { inSettings = true },
+                                        onNavigateTab = { tabOrdinal = it.ordinal },
+                                        vm = vm,
+                                        appVersion = appVersion,
+                                    )
                                 }
                             }
                         }
-                    }
-
-                    // Splash > Overlay satu Activity, tidak menambah Activity atau jendela baru.
-                    AnimatedVisibility(
-                        visible = showSplash,
-                        exit = fadeOut(tween(220)),
-                    ) {
-                        TrackifySplash(onFinished = { showSplash = false })
                     }
                 }
             }

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Launcher/brand asset: adaptasi bookmark-book.svg ke viewport adaptive 108dp.
-  Dikecualikan dari aturan TrackifyIcons (UI), tetap memakai token colors.xml.
+  Launcher/brand asset: bookmark-book.svg diadaptasi jadi solid fill (bukan goresan)
+  untuk viewport adaptive 108dp. Dikecualikan dari TrackifyIcons (UI), warna tetap
+  dari token colors.xml. evenOdd membuat pita bookmark dan dua garis halaman
+  menjadi potongan negatif di dalam buku.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -9,30 +11,7 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="@color/trackify_transparent"
-        android:pathData="M34,71.5L34,36.5C34,33.7386 36.2386,31.5 39,31.5L72.5,31.5C73.3285,31.5 74,32.1716 74,32.9L74,65.7858"
-        android:strokeColor="@color/trackify_inverse"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:strokeWidth="3.75" />
-    <path
-        android:fillColor="@color/trackify_transparent"
-        android:pathData="M44,31.5L44,51.5L50.25,47.5L56.5,51.5L56.5,31.5"
-        android:strokeColor="@color/trackify_inverse"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:strokeWidth="3.75" />
-    <path
-        android:fillColor="@color/trackify_transparent"
-        android:pathData="M39,66.5L74,66.5M39,76.5L74,76.5"
-        android:strokeColor="@color/trackify_inverse"
-        android:strokeLineCap="round"
-        android:strokeWidth="3.75" />
-    <path
-        android:fillColor="@color/trackify_transparent"
-        android:pathData="M39,76.5C36.2386,76.5 34,74.2615 34,71.5C34,68.7385 36.2386,66.5 39,66.5"
-        android:strokeColor="@color/trackify_inverse"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:strokeWidth="3.75" />
+        android:fillColor="@color/trackify_inverse"
+        android:fillType="evenOdd"
+        android:pathData="M39,31.5L72.5,31.5C73.3285,31.5 74,32.1716 74,32.9L74,71.5C74,74.2615 71.7615,76.5 69,76.5L39,76.5C36.2386,76.5 34,74.2615 34,71.5L34,36.5C34,33.7386 36.2386,31.5 39,31.5ZM44,30.25L56.5,30.25L56.5,51.5L50.25,47.5L44,51.5ZM39,65L74,65L74,67.5L39,67.5ZM39,75L74,75L74,77.75L39,77.75Z" />
 </vector>

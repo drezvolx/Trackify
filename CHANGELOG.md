@@ -4,6 +4,30 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 25 Nov 2026 — Splash dihapus & ikon launcher solid fill (tanpa rilis baru)
+
+Keputusan terbaru user menggantikan bagian splash dari entri sebelumnya: tidak ada splash screen sama sekali,
+dan logo buku launcher memakai **solid fill**, bukan stroke. Tidak ada bump versi, tag, rilis, DB, atau autobackup.
+
+### Perubahan
+
+- `ui/splash/TrackifySplash.kt` dihapus. `MainActivity` dikembalikan persis ke kondisi sebelum splash:
+  tidak ada overlay, `AnimatedVisibility`, penundaan komposisi, atau animasi startup. Startup kembali langsung
+  ke layar utama dengan `windowBackground` token tema.
+- `drawable/ic_launcher_foreground.xml` sekarang satu path `fillType="evenOdd"` berwarna token
+  `trackify_inverse`: buku solid dengan potongan negatif untuk pita bookmark dan dua garis halaman. Semua atribut
+  `stroke*` dihapus; latar launcher tetap gradien charcoal dari `colors.xml`.
+- Ikon UI tetap Coolicons `fill/round` di `TrackifyIcons.kt`; pengecualian brand hanya berlaku untuk launcher.
+
+### Verifikasi
+
+- ktlint `1.8.0` exit `0`; `:app:assembleDebug :app:assembleRelease :app:testDebugUnitTest` hijau dengan
+  `SUITES=9 TESTS=50 FAILURES=0 ERRORS=0 SKIPPED=0`.
+- Grep kontrak/tema tetap bersih; tidak ada hex baru, tidak ada warna non-netral, tidak ada stroke drawable baru.
+- Build debug terpasang di perangkat untuk verifikasi visual; data asli tetap utuh. Belum ada rilis/tag baru.
+
+---
+
 ## 25 Nov 2026 — App icon bookmark, splash animasi, dan verifikasi logging (tanpa rilis baru)
 
 Menindaklanjuti permintaan logo dan splash. Tidak ada bump versi, tag, rilis, perubahan DB v8, atau autobackup.
