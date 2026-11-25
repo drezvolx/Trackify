@@ -40,6 +40,7 @@ teruji. Tidak ada perubahan kode, versi, tag, atau rilis dalam entri ini.
   entri ukur ulang. Belum ada logging frame grade, jadi efek adaptif TPG belum bisa dibuktikan langsung.
 - Data asli dipulihkan, foto uji dan file sementara dihapus, perangkat kembali ke APK rilis `v1.2.0`.
   Tidak ada bump versi, tag, atau rilis baru.
+- CI `validate`: run `45616209967` (`commit f6d1010`) hijau — job `validate` ber-conclusion `success`.
 
 ---
 
