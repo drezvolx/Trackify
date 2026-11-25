@@ -32,6 +32,7 @@ Perubahan ini hanya menambah observasi; perilaku TPG, kuota visual, DB, versi, t
   terverifikasi (rerata kecerahan `104,2` vs `60,6`), `FATAL_LINES=0`. Tidak ada baris `TPG/Frame` pada beban
   normal karena tidak terjadi transisi grade — sesuai desain, bukan kegagalan logging. Perangkat dikembalikan
   ke APK rilis `v1.2.0`.
+- CI `validate`: run `45621307012` (`commit a213119`) hijau — job `validate` ber-conclusion `success`.
 
 ---
 
