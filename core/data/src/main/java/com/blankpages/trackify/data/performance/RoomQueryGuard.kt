@@ -13,7 +13,7 @@ import com.blankpages.trackify.performance.TrackifyGovernor
  */
 class RoomQueryGuard(
     private val governor: TrackifyGovernor,
-    private val onVerdict: (String) -> Unit = { Log.d(TAG, it) },
+    private val onVerdict: (String) -> Unit = { Log.i(TAG, it) },
 ) : RoomDatabase.QueryCallback {
 
     override fun onQuery(sqlQuery: String, bindArgs: List<Any?>) {

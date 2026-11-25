@@ -1206,3 +1206,23 @@ Trackify Performance Governor (TPG) mengikuti prinsip
   adaptasi tetap memerlukan beban yang benar-benar memicu transisi grade; ini tidak membuka amandemen DB v9.
 - Gate: ktlint `0`, build + 50 tes hijau, grep kontrak/tema bersih, smoke light/dark tanpa `FATAL`.
 - Tidak ada bump versi, tag, rilis, DB, atau autobackup. Perangkat kembali ke APK rilis `v1.2.0`.
+
+### 25 Nov 2026 — App icon bookmark & animated splash (amandemen terbatas)
+
+User secara eksplisit meminta app icon dari `bookmark-book.svg` dengan gaya minimalist-clean-modern dan splash
+tipografi animasi. Karena keputusan ikon 24 Nov melarang aset ikon di luar `TrackifyIcons.kt`, disepakati
+**amandemen terbatas**:
+
+- Pengecualian hanya untuk **launcher/brand asset**: `drawable/ic_launcher_foreground.xml` dan
+  `drawable/ic_launcher_background.xml` boleh memakai path SVG bookmark dengan stroke round. Aturan
+  `TrackifyIcons.kt` (`fill`/round, tanpa `sharp`, tanpa Material, tanpa `painterResource`) tetap mutlak untuk
+  **semua ikon UI** dan tidak mewariskan gaya stroke ke ikon navigasi.
+- Warna launcher/splash tetap hanya dari `values/colors.xml` lewat `TrackifyColors.kt` / token XML; tidak ada
+  hex baru dan tidak ada warna non-netral. Latar launcher memakai gradien charcoal yang sama dengan hero app.
+- Splash memakai satu `MainActivity` dengan overlay Compose, Geist, dan animasi `Animatable` tanpa
+  `Thread.sleep`/Activity tambahan/dependensi baru. Layar utama baru dikomposisi setelah animasi selesai;
+  `windowBackground` theme menutup frame pertama. Bottom nav, format Bagikan Lokasi, tema otomatis, dan
+  orientasi portrait tidak berubah.
+- Level log TPG dinaikkan ke `Log.i` karena filter `logd` perangkat uji menyaring `Log.d`. Format dan frekuensi
+  log tidak berubah. Jika logcat tetap kosong walau `Log.e` juga tidak muncul, itu keterbatasan perangkat.
+- Tidak ada bump versi, tag, rilis, DB v9, atau autobackup akibat perubahan ini.

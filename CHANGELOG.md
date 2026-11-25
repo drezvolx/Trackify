@@ -4,6 +4,40 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 25 Nov 2026 — App icon bookmark, splash animasi, dan verifikasi logging (tanpa rilis baru)
+
+Menindaklanjuti permintaan logo dan splash. Tidak ada bump versi, tag, rilis, perubahan DB v8, atau autobackup.
+
+### Perubahan
+
+- Launcher/brand asset diganti dari `bookmark-book.svg` (Coolicons `bookmark-book`, stroke round) ke
+  `drawable/ic_launcher_foreground.xml` dengan viewport adaptive `108dp`. Latar launcher memakai gradien
+  charcoal dari token yang sama dengan hero aplikasi (`values/colors.xml`). Ini **pengecualian launcher/brand**
+  dari aturan `TrackifyIcons.kt`; ikon UI tetap Coolicons `fill/round` dan tidak ada aset ikon UI baru.
+- Splash baru `ui/splash/TrackifySplash.kt`: geometri bookmark yang sama, tipografi Geist, tiga animasi
+  ringkas (mark fade+spring, teks naik, garis progres), dan latar token tema. Dipasang sebagai overlay dalam
+  `MainActivity` satu Activity; komposisi layar utama ditunda sampai animasi selesai. Tidak ada Activity kedua,
+  `Thread.sleep`, dependensi baru, atau warna literal.
+- Level observabilitas TPG dinaikkan `Log.d` → `Log.i` di `TpgFrameLogger` dan `RoomQueryGuard`, karena perangkat
+  uji menyaring priority `D`. Perilaku governor, kuota visual, dan format baris log tidak berubah.
+
+### Verifikasi
+
+- ktlint `1.8.0` exit `0`; `:app:assembleDebug :app:assembleRelease :app:testDebugUnitTest` →
+  `BUILD SUCCESSFUL`; `SUITES=9 TESTS=50 FAILURES=0 ERRORS=0 SKIPPED=0` (tes lama tetap hijau).
+- Grep kontrak/tema: `ICON_CONTRACT_HITS=0`, `RAW_COLOR_HITS=0` (kecuali facade), `XML_HEX_HITS=0`,
+  `NON_NEUTRAL_TOTAL=0` dari 26 token, `CORE_ANDROID_HITS=0`.
+- UI dump perangkat: teks `Trackify` dan tagline splash tampil saat startup, lalu navigasi utama muncul setelah
+  animasi; tidak ada `FATAL`.
+- Stress test ulang dengan build logging pada beban sintetis 1004 lokasi / 1000 catatan / 2000 foto:
+  Lokasi jank `36,46%` p95 `69ms` slowUI `66`; Catatan jank `2,78%` p95 `16ms` slowUI `2`; `FATAL=0`.
+  Baris `TPG/Frame` tetap tidak tertangkap: logcat perangkat menolak **semua** tulisan aplikasi, termasuk
+  penanda `Log.e` sementara dan `log` shell; penanda sudah dihapus. Ini keterbatasan perangkat, bukan
+  kegagalan observer — transisi grade sudah diuji di unit test.
+- Data asli dipulihkan dan perangkat dikembalikan ke APK rilis `v1.2.0` setelah pengukuran.
+
+---
+
 ## 25 Nov 2026 — Logging grade frame TPG (tanpa rilis baru)
 
 Menutup koreksi observabilitas dari ukur ulang dan stress test. Sebelumnya logcat hanya bisa menunjukkan

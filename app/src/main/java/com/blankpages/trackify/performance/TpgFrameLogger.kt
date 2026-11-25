@@ -10,8 +10,10 @@ import java.util.Locale
  * ada log per frame, tidak ada timer, dan tidak ada kerja tambahan di jalur
  * `Choreographer`. Kelas ini sengaja berada di layer app supaya
  * `:core:performance` tetap murni JVM tanpa dependensi Android.
+ *
+ * Prioritas `Info` dipakai karena sebagian perangkat menyaring `Log.d` secara global.
  */
-class TpgFrameLogger(private val governor: TrackifyGovernor, private val log: (String) -> Unit = { Log.d(TAG, it) }) {
+class TpgFrameLogger(private val governor: TrackifyGovernor, private val log: (String) -> Unit = { Log.i(TAG, it) }) {
     private var lastGrade: FrameGrade = FrameGrade.SMOOTH
     private val listener: (AdaptiveBudget) -> Unit = { budget -> onBudget(budget) }
 
