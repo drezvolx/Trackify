@@ -1170,9 +1170,28 @@ Trackify Performance Governor (TPG) mengikuti prinsip
 - Hasil: cold start median `399 ms` (v1.1.1) vs `388–401 ms` (v1.2.0); jank Home `4,08%` vs
   `3,97–4,29%`; Catatan `0,15%` vs `0,14–0,15%`; Lokasi `0,15%` vs `0,14–0,15%`. Semua selisih
   masih di dalam noise — **tidak ada regresi terukur, juga tidak ada bukti percepatan besar**.
-- `TPG_LOG_LINES=0` selama pengukuran: governor tidak mengubah anggaran karena frame dalam keadaan
-  sehat. Ini sesuai kontrak bahwa TPG aktif hanya saat kondisi memburuk, bukan pengubah kuota visual.
+- **Koreksi observabilitas:** `FrameHealthMonitor`/`TrackifyGovernor` tidak emit log; hanya
+  `RoomQueryGuard` yang menulis `TPG/Room`. Jadi `TPG_LOG_LINES=0` hanya berarti tidak ada verdict
+  query berisiko, **bukan** bukti governor tidak menyesuaikan anggaran. Aktivitas frame governor belum
+  bisa dibuktikan dari logcat.
 - Batas yang dicatat: jalur decode foto tidak teruji (catatan di perangkat tanpa foto), satu perangkat,
   pengecekan update asinkron menyumbang noise, dan jank `gfxinfo` bersampel.
 - Tidak ada perubahan versi, tag, rilis, DB, atau autobackup akibat pengukuran ini. Perangkat
   dikembalikan ke APK rilis `v1.2.0`.
+
+### 25 Nov 2026 — Stress test TPG dengan data berat
+
+- Beban sintetis disuntikkan ke salinan DB sementara: 203 catatan, 1000 `note_photos` (5 per catatan),
+  dan 204 lokasi, dengan 200 JPEG grayscale di direktori privat aplikasi. DB asli (main + WAL + SHM)
+  dicadangkan dan dipulihkan persis setelahnya; APK rilis `v1.2.0` tidak diubah.
+- Protokol sama dengan ukur ulang, tetapi 40 swipe per layar dan tambahan 30 swipe pada detail
+  catatan berfoto agar `rememberDecodedPhoto()` ikut terlatih.
+- Hasil: cold start median `415 ms`; jank Catatan `3,51%` (p95 `24 ms`), Lokasi `6,25%` (p95 `25 ms`),
+  Home `3,74%`; detail catatan berfoto 715 frame dengan jank `1,12%` dan p95 `16 ms`.
+- Beban berhasil memicu jank yang sebelumnya tidak terlihat, tanpa crash/OOM dan tanpa error decode.
+  Titik terlemah ada pada daftar **Lokasi**, tetapi ini belum membenarkan amandemen DB v9/index
+  komposit; keputusan DB v8 tetap berlaku.
+- Keterbatasan observabilitas tetap: tidak ada log frame grade, jadi kontribusi adaptif TPG tidak
+  bisa diukur langsung dari logcat. Ini calon perbaikan terpisah, bukan bagian dari stress test.
+- Tidak ada bump versi, tag, rilis, DB, atau autobackup. Data asli dipulihkan dan perangkat kembali
+  ke APK rilis `v1.2.0`.

@@ -4,6 +4,45 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 25 Nov 2026 — Stress test TPG dengan data berat (tanpa rilis baru)
+
+Melanjutkan ukur ulang, beban buatan disuntikkan supaya kondisi yang sebelumnya tidak tercapai benar-benar
+teruji. Tidak ada perubahan kode, versi, tag, atau rilis dalam entri ini.
+
+### Protokol
+
+- Data uji: 203 catatan (3 asli + 200 sintetis), 1000 `note_photos` (5 per catatan sintetis), dan
+  204 lokasi. 200 JPEG grayscale 160×160 disimpan di direktori privat aplikasi dan dirujuk oleh
+  foto/lokasi uji.
+- DB asli (main + WAL + SHM) dicadangkan lebih dulu, lalu dipulihkan persis setelah pengukuran.
+- APK rilis `v1.2.0` tetap dipakai; yang berubah hanya isi data.
+- Cold start 6× seperti sebelumnya; scroll 40 swipe per layar; ditambah 30 swipe pada detail catatan
+  berfoto untuk mengeksekusi `rememberDecodedPhoto()`.
+
+### Hasil
+
+| Metrik | Beban normal | Beban stress |
+|---|---|---|
+| Cold start median | `388–401 ms` | `415 ms` |
+| Home — janky frames | `3,97–4,29%` | `3,74%` |
+| Catatan — janky frames | `0,14–0,15%` | `3,51%` (p95 `24 ms`) |
+| Lokasi — janky frames | `0,14–0,15%` | `6,25%` (p95 `25 ms`) |
+| Detail catatan berfoto | tidak diukur | 715 frame, jank `1,12%`, p50 `11 ms`, p95 `16 ms` |
+
+### Kesimpulan
+
+- Beban berhasil memicu jank yang sebelumnya tidak terlihat: Catatan naik sekitar 23× dan Lokasi
+  sekitar 42× dibanding beban normal. Jalur daftar adaptif dan decode foto benar-benar terlatih.
+- Tidak ada crash/OOM dan tidak ada error decode di logcat. Cold start hanya naik sekitar `14–27 ms`.
+- Titik terlemah ada di **Lokasi** (p95 `25 ms`, di atas anggaran 16,7 ms). Ini bukti daftar Lokasi
+  layak dipantau, tapi **belum** cukup untuk membuka amandemen DB v9/index komposit.
+- `TPG_LOG_LINES=0` tetap tidak bisa dipakai sebagai indikator aktivitas governor; lihat koreksi pada
+  entri ukur ulang. Belum ada logging frame grade, jadi efek adaptif TPG belum bisa dibuktikan langsung.
+- Data asli dipulihkan, foto uji dan file sementara dihapus, perangkat kembali ke APK rilis `v1.2.0`.
+  Tidak ada bump versi, tag, atau rilis baru.
+
+---
+
 ## 25 Nov 2026 — Ukur ulang TPG (tanpa rilis baru)
 
 Menindaklanjuti panduan performa Android
@@ -33,14 +72,16 @@ atau rilis dalam entri ini.
 | Home — slow UI thread | `6` | `2–12` | Bervariasi antar run |
 | Catatan — janky frames | `0,15%`, p95 `21 ms` | `0,14–0,15%`, p95 `21 ms` | Sama |
 | Lokasi — janky frames | `0,15%`, p95 `22 ms` | `0,14–0,15%`, p95 `22 ms` | Sama |
-| Log TPG saat pengukuran | tidak ada | `TPG_LOG_LINES=0` | Governor tidak perlu turun tangan |
+| Log guard query | tidak ada | `0 verdict` | Hanya `RoomQueryGuard` yang emit log; frame governor tidak punya log |
 
 ### Kesimpulan jujur
 
 - **Tidak ada regresi terukur** pada startup maupun scroll ketiga layar.
 - **Belum ada bukti percepatan besar** pada beban saat ini; selisihnya masih di dalam noise pengukuran.
-  Ini wajar: TPG adalah jaring pengaman adaptif, bukan pengubah kuota visual, dan tidak aktif jika
-  frame sehat (`TPG_LOG_LINES=0`).
+  Ini wajar: TPG adalah jaring pengaman adaptif, bukan pengubah kuota visual.
+- **Koreksi:** `FrameHealthMonitor`/`TrackifyGovernor` tidak menulis log, jadi `TPG_LOG_LINES=0` hanya
+  berarti tidak ada verdict `RoomQueryGuard`, **bukan** bukti governor tidak menyesuaikan anggaran.
+  Aktivitas frame governor tidak bisa disimpulkan dari logcat saat ini.
 - Manfaat perbaikan struktural (query rentang tanggal, I/O off-main, normalisasi restore, decode async)
   tetap diverifikasi lewat 47 unit test, bukan lewat makro-benchmark ini.
 - Batas pengukuran: jalur `rememberDecodedPhoto()` **tidak terlatih** karena catatan di perangkat
