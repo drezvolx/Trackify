@@ -35,6 +35,7 @@ Menindaklanjuti permintaan logo dan splash. Tidak ada bump versi, tag, rilis, pe
   penanda `Log.e` sementara dan `log` shell; penanda sudah dihapus. Ini keterbatasan perangkat, bukan
   kegagalan observer — transisi grade sudah diuji di unit test.
 - Data asli dipulihkan dan perangkat dikembalikan ke APK rilis `v1.2.0` setelah pengukuran.
+- CI `validate`: run `45628535061` (commit `0355c91`) ber-conclusion `success`.
 
 ---
 
