@@ -1158,3 +1158,21 @@ Trackify Performance Governor (TPG) mengikuti prinsip
   keystore karena belum ada keystore rilis resmi.
 - Tag dan rilis `v1.0.0`, `v1.1.0`, `v1.1.1` tidak diubah; `releases/latest` sekarang `v1.2.0`.
 - Rilis berikutnya tetap memerlukan keputusan eksplisit; keputusan v1.2.0 tidak otomatis mengizinkan bump lain.
+
+### 25 Nov 2026 — Ukur ulang TPG: release vs release
+
+- Pengukuran ulang memakai rilis `v1.1.1` sebagai baseline dan rilis `v1.2.0` sebagai kandidat, di
+  TECNO LH7n / Android 14, portrait, tema terang. Perbandingan debug-vs-release sengaja dibatalkan
+  karena tidak sepadan dan tidak dipakai sebagai bukti.
+- Protokol: 6 cold start per build (`am start -W`, emisi pertama dibuang), lalu `gfxinfo reset` + 24
+  swipe per layar untuk Home, Catatan, dan Lokasi. Urutan baseline → kandidat → kandidat dipakai
+  untuk menyeimbangkan suhu perangkat.
+- Hasil: cold start median `399 ms` (v1.1.1) vs `388–401 ms` (v1.2.0); jank Home `4,08%` vs
+  `3,97–4,29%`; Catatan `0,15%` vs `0,14–0,15%`; Lokasi `0,15%` vs `0,14–0,15%`. Semua selisih
+  masih di dalam noise — **tidak ada regresi terukur, juga tidak ada bukti percepatan besar**.
+- `TPG_LOG_LINES=0` selama pengukuran: governor tidak mengubah anggaran karena frame dalam keadaan
+  sehat. Ini sesuai kontrak bahwa TPG aktif hanya saat kondisi memburuk, bukan pengubah kuota visual.
+- Batas yang dicatat: jalur decode foto tidak teruji (catatan di perangkat tanpa foto), satu perangkat,
+  pengecekan update asinkron menyumbang noise, dan jank `gfxinfo` bersampel.
+- Tidak ada perubahan versi, tag, rilis, DB, atau autobackup akibat pengukuran ini. Perangkat
+  dikembalikan ke APK rilis `v1.2.0`.

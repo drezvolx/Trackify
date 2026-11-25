@@ -4,6 +4,53 @@ Catatan perubahan Trackify. Urutan terbaru di atas.
 
 ---
 
+## 25 Nov 2026 — Ukur ulang TPG (tanpa rilis baru)
+
+Menindaklanjuti panduan performa Android
+<https://developer.android.com/topic/performance/overview?hl=id>, TPG diukur ulang dengan
+perbandingan **release vs release** di TECNO LH7n / Android 14. Tidak ada perubahan kode, versi, tag,
+atau rilis dalam entri ini.
+
+### Protokol
+
+- Baseline: rilis `v1.1.1` (APK release asli, `versionCode=3`). Kandidat: rilis `v1.2.0`
+  (`versionCode=4`, APK release yang ditandatangani). Susunan dijalankan berpasangan
+  baseline → kandidat → kandidat lagi untuk menyeimbangkan suhu perangkat.
+- Cold start: `am force-stop` lalu `am start -W`; 6 kali per build, emisi pertama dibuang,
+  dilaporkan median dan rata-rata `TotalTime`.
+- Scroll: `dumpsys gfxinfo ... reset`, 24 swipe bolak-balik per layar (Home, Catatan, Lokasi),
+  lalu dibaca `Janky frames`, `50th/95th percentile`, `Missed Vsync`, dan `Slow UI thread`.
+- Orientasi portrait dan tema terang dikunci. Data di perangkat: 135 paket, 2 catatan, beberapa lokasi.
+- Percobaan debug-vs-release dibatalkan karena tidak sepadan (debug jauh lebih lambat); tidak dipakai
+  sebagai dasar kesimpulan.
+
+### Hasil
+
+| Metrik | v1.1.1 release | v1.2.0 release | Catatan |
+|---|---|---|---|
+| Cold start median | `399 ms` (mean `397,6 ms`) | `388–401 ms` (mean `391,2–401,2 ms`) | Dalam noise; tidak ada regresi terukur |
+| Home — janky frames | `4,08%`, p95 `23 ms` | `3,97–4,29%`, p95 `23 ms` | Sama secara statistik |
+| Home — slow UI thread | `6` | `2–12` | Bervariasi antar run |
+| Catatan — janky frames | `0,15%`, p95 `21 ms` | `0,14–0,15%`, p95 `21 ms` | Sama |
+| Lokasi — janky frames | `0,15%`, p95 `22 ms` | `0,14–0,15%`, p95 `22 ms` | Sama |
+| Log TPG saat pengukuran | tidak ada | `TPG_LOG_LINES=0` | Governor tidak perlu turun tangan |
+
+### Kesimpulan jujur
+
+- **Tidak ada regresi terukur** pada startup maupun scroll ketiga layar.
+- **Belum ada bukti percepatan besar** pada beban saat ini; selisihnya masih di dalam noise pengukuran.
+  Ini wajar: TPG adalah jaring pengaman adaptif, bukan pengubah kuota visual, dan tidak aktif jika
+  frame sehat (`TPG_LOG_LINES=0`).
+- Manfaat perbaikan struktural (query rentang tanggal, I/O off-main, normalisasi restore, decode async)
+  tetap diverifikasi lewat 47 unit test, bukan lewat makro-benchmark ini.
+- Batas pengukuran: jalur `rememberDecodedPhoto()` **tidak terlatih** karena catatan di perangkat
+  tidak memiliki foto; hanya satu perangkat; pengecekan update berjalan asinkron sehingga menyumbang
+  noise; persentase jank dari `gfxinfo` bersampel dan bisa berubah beberapa persepuluh persen.
+- Keputusan lanjutan tetap: DB v8, tanpa v9/index komposit; autobackup ditunda; tidak ada bump versi,
+  tag, atau rilis baru. Perangkat dikembalikan ke APK rilis `v1.2.0`.
+
+---
+
 ## 25 Nov 2026 — Rilis minor v1.2.0 (TPG)
 
 ### Keputusan user
